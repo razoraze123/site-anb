@@ -2,7 +2,10 @@
 // sur Cloudflare Workers sans dépendance externe).
 // Algorithme : PBKDF2-SHA-256, 200 000 itérations, sel aléatoire 16 octets.
 
-const ITERATIONS = 200_000;
+// Cloudflare Workers (workerd) plafonne PBKDF2 à 100 000 itérations max —
+// une valeur plus haute passe en local (wrangler dev / Node) mais lève
+// `NotSupportedError` en production.
+const ITERATIONS = 100_000;
 const KEY_LENGTH = 32; // octets
 const ALGORITHM = 'SHA-256';
 

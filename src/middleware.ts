@@ -9,9 +9,9 @@ const PROTECTED_ROUTES = [
 
 // Routes protégées selon le rôle
 const ROLE_REQUIRED: Record<string, string[]> = {
-  '/admin': ['admin', 'superadmin'],
-  '/superadmin': ['superadmin'],
-  '/editeur': ['admin', 'superadmin', 'editeur'],
+  '/admin': ['admin', 'super_admin'],
+  '/superadmin': ['super_admin'],
+  '/editeur': ['admin', 'super_admin', 'editeur'],
 };
 
 // Cache les pages SSR qui lisent D1 à chaque visite (événements, actualités)
