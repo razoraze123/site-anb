@@ -52,3 +52,35 @@ export const nextEvent = {
   place: 'Bordeaux Métropole',
   description: "Musique, danses, gastronomie et rencontres : une journée pour célébrer nos traditions et partager la richesse de notre culture avec toute la métropole.",
 };
+
+export const events = [
+  { id: 1, date: 'Samedi 20 septembre 2026', title: 'Journée culturelle nigérienne', place: 'Parc Bordelais, Bordeaux', desc: "Musique, danses, gastronomie et rencontres pour célébrer nos traditions, ouvert à tous.", category: 'Culture', color: '#176B4D', isPast: false },
+  { id: 2, date: 'Dimanche 12 octobre 2026', title: 'Tournoi de football amical', place: 'Stade Léo Lagrange, Bordeaux', desc: 'Un tournoi convivial entre équipes de la communauté et amis du Niger.', category: 'Sport', color: '#E97824', isPast: false },
+  { id: 3, date: 'Samedi 8 novembre 2026', title: "Soirée d'entraide et collecte solidaire", place: 'Salle associative, Bordeaux', desc: "Une collecte pour soutenir des familles et des projets solidaires au Niger.", category: 'Solidarité', color: '#1F2925', isPast: false },
+  { id: 4, date: 'Juin 2026', title: 'Pique-nique communautaire', place: 'Bords de Garonne, Bordeaux', desc: "Un après-midi convivial entre familles, au bord de l'eau.", category: 'Rencontres', color: '#176B4D', isPast: true },
+  { id: 5, date: 'Mars 2026', title: 'Soirée musique et poésie', place: 'Bordeaux', desc: 'Une soirée dédiée aux artistes nigériens de la région.', category: 'Culture', color: '#E97824', isPast: true },
+  { id: 6, date: 'Janvier 2026', title: "Repas de nouvel an de l'ANB", place: 'Bordeaux', desc: "Le traditionnel repas partagé pour bien commencer l'année ensemble.", category: 'Rencontres', color: '#1F2925', isPast: true },
+] as const;
+
+export const eventFilters = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontres'] as const;
+
+export const teamMembers = [
+  { name: 'Prénom Nom', role: 'Président', bg: 'linear-gradient(150deg,#176B4D,#1F2925)' },
+  { name: 'Prénom Nom', role: 'Vice-Présidente', bg: 'linear-gradient(150deg,#E97824,#E8D8BF)' },
+  { name: 'Prénom Nom', role: 'Trésorier', bg: 'linear-gradient(150deg,#1F2925,#176B4D)' },
+  { name: 'Prénom Nom', role: 'Secrétaire générale', bg: 'linear-gradient(150deg,#E8D8BF,#E97824)' },
+  { name: 'Prénom Nom', role: 'Responsable culture', bg: 'linear-gradient(150deg,#176B4D,#E97824)' },
+  { name: 'Prénom Nom', role: 'Responsable solidarité', bg: 'linear-gradient(150deg,#E97824,#1F2925)' },
+] as const;
+
+export const timeline = [
+  { year: '20XX', text: "Création de l'association par un groupe d'étudiants et de familles nigériennes de Bordeaux." },
+  { year: '20XX', text: "Premiers événements culturels et mise en place d'un réseau d'entraide pour les nouveaux arrivants." },
+  { year: '20XX', text: 'Structuration du bureau et lancement des actions solidaires en direction du Niger.' },
+  { year: "Aujourd'hui", text: 'Une communauté active, des événements réguliers et un accompagnement renforcé pour chacun.' },
+] as const;
+
+export const fullGallery = [
+  ...homeGallery,
+  ...homeGallery.map((g, i) => ({ ...g, label: `${g.label} — ${i + 2}` })),
+];

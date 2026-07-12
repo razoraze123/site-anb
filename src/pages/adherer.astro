@@ -1,0 +1,111 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Adhérer / Nous soutenir" description="Rejoignez une communauté qui vous ressemble : adhérez à l'ANB Bordeaux.">
+  <main>
+    <section style="max-width:1280px; margin:0 auto; padding:70px clamp(20px,4vw,48px) 90px; display:flex; flex-wrap:wrap; gap:56px;">
+      <div style="flex:1 1 420px; min-width:280px;">
+        <div style="font-size:13px; font-weight:700; color:#E97824; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:16px;">Adhérer / Nous soutenir</div>
+        <h1 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(2rem,3.6vw,2.8rem); color:#1F2925; margin:0 0 24px;">Rejoignez une communauté qui vous ressemble.</h1>
+        <p style="font-size:17px; line-height:1.7; color:#3f4a45; margin:0 0 36px;">Adhérer à l'ANB, c'est intégrer un réseau chaleureux, participer à des événements toute l'année et contribuer à des actions solidaires qui comptent.</p>
+
+        <div style="display:flex; flex-direction:column; gap:18px; margin-bottom:20px;">
+          <div style="display:flex; gap:14px; align-items:flex-start;">
+            <div style="width:36px; height:36px; border-radius:10px; background:rgba(23,107,77,0.1); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <div style="font-size:15px; color:#3f4a45; padding-top:6px;">Accès prioritaire à tous nos événements</div>
+          </div>
+          <div style="display:flex; gap:14px; align-items:flex-start;">
+            <div style="width:36px; height:36px; border-radius:10px; background:rgba(23,107,77,0.1); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <div style="font-size:15px; color:#3f4a45; padding-top:6px;">Un réseau d'entraide dès votre arrivée à Bordeaux</div>
+          </div>
+          <div style="display:flex; gap:14px; align-items:flex-start;">
+            <div style="width:36px; height:36px; border-radius:10px; background:rgba(23,107,77,0.1); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <div style="font-size:15px; color:#3f4a45; padding-top:6px;">La possibilité de participer aux décisions de l'association</div>
+          </div>
+        </div>
+
+        <div style="background:#F0E9DA; border-radius:20px; padding:26px; margin-top:24px;">
+          <div style="font-size:14px; font-weight:700; color:#1F2925; margin-bottom:6px;">Une question avant d'adhérer ?</div>
+          <div style="font-size:14px; color:#5a655f;">contact@anb-bordeaux.fr · 06 00 00 00 00</div>
+        </div>
+      </div>
+
+      <div style="flex:1 1 460px; min-width:300px;">
+        <div style="background:#FFFFFF; border-radius:28px; padding:clamp(28px,3vw,40px); box-shadow:0 20px 50px rgba(31,41,37,0.1);">
+          <h3 style="font-size:19px; font-weight:700; color:#1F2925; margin:0 0 22px;">Formulaire d'adhésion</h3>
+          <div style="display:flex; gap:8px; margin-bottom:22px; flex-wrap:wrap;">
+            {['Adhésion', 'Bénévolat', 'Don / Partenariat'].map((t, i) => (
+              <button
+                type="button"
+                class="member-type-btn"
+                data-type={t}
+                aria-pressed={i === 0 ? 'true' : 'false'}
+                style={`flex:1 1 auto; background:${i === 0 ? '#176B4D' : 'transparent'}; color:${i === 0 ? '#FFFFFF' : '#176B4D'}; border:2px solid #176B4D; padding:10px 14px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;`}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+          <form id="member-form" style="display:flex; flex-direction:column; gap:16px;">
+            <input type="hidden" name="type" value="Adhésion" />
+            <div style="display:flex; gap:14px; flex-wrap:wrap;">
+              <div style="flex:1 1 160px;">
+                <label for="member-prenom" style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Prénom</label>
+                <input id="member-prenom" name="prenom" required style="width:100%; padding:13px 16px; border-radius:12px; border:1.5px solid #d8d0c0; font-size:14.5px; font-family:inherit;" placeholder="Votre prénom" />
+              </div>
+              <div style="flex:1 1 160px;">
+                <label for="member-nom" style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Nom</label>
+                <input id="member-nom" name="nom" required style="width:100%; padding:13px 16px; border-radius:12px; border:1.5px solid #d8d0c0; font-size:14.5px; font-family:inherit;" placeholder="Votre nom" />
+              </div>
+            </div>
+            <div>
+              <label for="member-email" style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Email</label>
+              <input id="member-email" name="email" type="email" required style="width:100%; padding:13px 16px; border-radius:12px; border:1.5px solid #d8d0c0; font-size:14.5px; font-family:inherit;" placeholder="vous@email.fr" />
+            </div>
+            <div>
+              <label for="member-tel" style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Téléphone</label>
+              <input id="member-tel" name="telephone" style="width:100%; padding:13px 16px; border-radius:12px; border:1.5px solid #d8d0c0; font-size:14.5px; font-family:inherit;" placeholder="06 00 00 00 00" />
+            </div>
+            <div>
+              <label for="member-message" style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Message (facultatif)</label>
+              <textarea id="member-message" name="message" rows="3" style="width:100%; padding:13px 16px; border-radius:12px; border:1.5px solid #d8d0c0; font-size:14.5px; font-family:inherit; resize:vertical;" placeholder="Un mot pour nous ?"></textarea>
+            </div>
+            <button type="submit" style="background:#E97824; color:#FFFFFF; border:none; padding:16px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer; margin-top:8px; box-shadow:0 10px 22px rgba(233,120,36,0.28);">Envoyer ma demande</button>
+            <p id="member-form-note" style="display:none; font-size:13.5px; color:#5a655f; text-align:center; margin:4px 0 0;">Ce formulaire sera bientôt connecté (validation et envoi sécurisés en préparation) — merci de nous écrire directement à contact@anb-bordeaux.fr en attendant.</p>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const typeButtons = document.querySelectorAll<HTMLButtonElement>('.member-type-btn');
+    const typeInput = document.querySelector<HTMLInputElement>('#member-form input[name="type"]');
+
+    typeButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        typeButtons.forEach((b) => {
+          const active = b === btn;
+          b.setAttribute('aria-pressed', String(active));
+          b.style.background = active ? '#176B4D' : 'transparent';
+          b.style.color = active ? '#FFFFFF' : '#176B4D';
+        });
+        if (typeInput) typeInput.value = btn.dataset.type ?? '';
+      });
+    });
+
+    const form = document.querySelector<HTMLFormElement>('#member-form');
+    const note = document.querySelector<HTMLElement>('#member-form-note');
+    form?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (note) note.style.display = 'block';
+    });
+  </script>
+</Layout>

@@ -1,0 +1,82 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { events, eventFilters, nextEvent } from '../lib/demo-data';
+
+const upcoming = events.filter((e) => !e.isPast);
+const next = upcoming[0] ?? events[0];
+---
+
+<Layout title="Événements" description="Se retrouver, célébrer et partager toute l'année avec l'ANB Bordeaux.">
+  <main>
+    <section style="max-width:1280px; margin:0 auto; padding:70px clamp(20px,4vw,48px) 20px;">
+      <div style="font-size:13px; font-weight:700; color:#E97824; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:16px;">Événements</div>
+      <h1 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(2.1rem,4vw,3rem); color:#1F2925; margin:0 0 40px; max-width:760px;">Se retrouver, célébrer et partager toute l'année.</h1>
+
+      <div id="event-filters" style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:48px;">
+        {eventFilters.map((f, i) => (
+          <button
+            type="button"
+            data-filter={f}
+            class="filter-btn"
+            aria-pressed={i === 0 ? 'true' : 'false'}
+            style={`background:${i === 0 ? '#176B4D' : 'transparent'}; color:${i === 0 ? '#FFFFFF' : '#176B4D'}; border:2px solid #176B4D; padding:11px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;`}
+          >
+            {f}
+          </button>
+        ))}
+      </div>
+
+      <!-- NEXT EVENT LARGE -->
+      <div style="background:#176B4D; border-radius:28px; overflow:hidden; display:flex; flex-wrap:wrap; margin-bottom:64px; box-shadow:0 24px 50px rgba(31,41,37,0.15);">
+        <div style="flex:1 1 380px; min-width:260px; aspect-ratio:16/11; background:linear-gradient(150deg,#E97824,#1F2925);"></div>
+        <div style="flex:1 1 380px; min-width:260px; padding:clamp(28px,3.5vw,44px); display:flex; flex-direction:column; justify-content:center;">
+          <div style="display:inline-block; align-self:flex-start; background:rgba(233,120,36,0.2); color:#E97824; font-size:12px; font-weight:700; padding:6px 14px; border-radius:999px; margin-bottom:16px;">Prochain événement · {next.category}</div>
+          <div style="font-size:14px; font-weight:700; color:#F8F4EC; opacity:0.8; margin-bottom:8px;">{next.date}</div>
+          <h3 style="font-family:'Unbounded',sans-serif; font-size:clamp(1.4rem,2.2vw,1.9rem); font-weight:700; color:#FFFFFF; margin:0 0 12px;">{next.title}</h3>
+          <p style="font-size:15.5px; line-height:1.7; color:#F8F4EC; opacity:0.85; margin:0 0 26px;">{next.desc}</p>
+          <a href="/adherer" style="align-self:flex-start; background:#E97824; color:#FFFFFF; border:none; padding:15px 30px; border-radius:999px; font-weight:700; font-size:14.5px; cursor:pointer; display:inline-block;">Je participe</a>
+        </div>
+      </div>
+
+      <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.5rem,2.4vw,1.9rem); color:#1F2925; margin:0 0 32px;">Tous les événements</h2>
+      <div id="event-grid" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:26px; margin-bottom:60px;">
+        {events.map((ev) => (
+          <div class="event-card" data-category={ev.category} style="background:#FFFFFF; border-radius:22px; overflow:hidden; box-shadow:0 10px 26px rgba(31,41,37,0.07);">
+            <div style={`aspect-ratio:16/10; background:${ev.color}; position:relative;`}>
+              {ev.isPast && (
+                <div style="position:absolute; top:14px; left:14px; background:rgba(31,41,37,0.7); color:#FFFFFF; font-size:11px; font-weight:700; padding:6px 12px; border-radius:999px;">Événement passé</div>
+              )}
+            </div>
+            <div style="padding:24px;">
+              <div style="font-size:12px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;">{ev.category} · {ev.date}</div>
+              <h3 style="font-size:17px; font-weight:700; color:#1F2925; margin:0 0 8px;">{ev.title}</h3>
+              <p style="font-size:14px; color:#5a655f; margin:0 0 6px;">{ev.place}</p>
+              <p style="font-size:14px; line-height:1.6; color:#5a655f; margin:0;">{ev.desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const buttons = document.querySelectorAll<HTMLButtonElement>('.filter-btn');
+    const cards = document.querySelectorAll<HTMLElement>('.event-card');
+
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const filter = btn.dataset.filter;
+        buttons.forEach((b) => {
+          const active = b === btn;
+          b.setAttribute('aria-pressed', String(active));
+          b.style.background = active ? '#176B4D' : 'transparent';
+          b.style.color = active ? '#FFFFFF' : '#176B4D';
+        });
+        cards.forEach((card) => {
+          const show = filter === 'Tous' || card.dataset.category === filter;
+          card.style.display = show ? '' : 'none';
+        });
+      });
+    });
+  </script>
+</Layout>
