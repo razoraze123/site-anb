@@ -1,9 +1,13 @@
 import { env } from "cloudflare:workers";
+import { requireRole, unauthorized } from "../../../lib/auth.js";
 
 export const prerender = false;
 
 export async function GET(context) {
   try {
+    const user = await requireRole(context, ['admin', 'super_admin']);
+    if (!user) return unauthorized();
+
     const db = env.DB;
     if (!db) {
       return new Response(JSON.stringify({ error: "La base de données D1 (DB) n'est pas configurée dans env. Veuillez vérifier wrangler.jsonc." }), {

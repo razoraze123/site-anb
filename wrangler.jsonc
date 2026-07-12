@@ -12,13 +12,19 @@
     {
       "binding": "DB",
       "database_name": "anb-db",
-      "database_id": "00000000-0000-0000-0000-000000000000"
+      "database_id": "8afeca22-832e-4204-a9fe-94917848c3ce"
     }
   ],
   "r2_buckets": [
     {
       "binding": "R2",
       "bucket_name": "anb-media"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "RATE_LIMIT",
+      "id": "e21147b326a94d96844df725b69e5b3d"
     }
   ]
 }

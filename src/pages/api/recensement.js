@@ -1,9 +1,14 @@
 import { env } from "cloudflare:workers";
+import { isRateLimited, tooManyRequests } from "../../lib/rateLimit.js";
 
 export const prerender = false;
 
 export async function POST(context) {
   try {
+    if (await isRateLimited(context.request, { bucket: 'recensement', limit: 5, windowSeconds: 600 })) {
+      return tooManyRequests();
+    }
+
     const db = env.DB;
     if (!db) {
       return new Response(JSON.stringify({ error: "La base de données D1 (DB) n'est pas configurée." }), {

@@ -1,9 +1,13 @@
 import { env } from "cloudflare:workers";
+import { requireRole, unauthorized } from "../../../lib/auth.js";
 
 export const prerender = false;
 
 export async function POST(context) {
   try {
+    const user = await requireRole(context, ['admin', 'super_admin']);
+    if (!user) return unauthorized();
+
     const r2 = env.R2;
     if (!r2) {
       return new Response(JSON.stringify({ error: "Le bucket R2 n'est pas configuré dans env. R2." }), {

@@ -1,3 +1,11 @@
+---
+export const prerender = false;
+
+const user = await Astro.session?.get('user');
+if (!user || !['admin', 'super_admin'].includes(user.role)) {
+  return Astro.redirect('/connexion');
+}
+---
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -1636,7 +1644,8 @@
 
       // Logout handler
       document.querySelectorAll('.logout-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
+          await fetch('/api/logout', { method: 'POST' });
           window.location.href = '/connexion';
         });
       });
