@@ -12,7 +12,7 @@ const next = upcoming[0] ?? events[0];
       <div style="font-size:13px; font-weight:700; color:#E97824; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:16px;">Événements</div>
       <h1 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(2.1rem,4vw,3rem); color:#1F2925; margin:0 0 40px; max-width:760px;">Se retrouver, célébrer et partager toute l'année.</h1>
 
-      <div id="event-filters" style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:48px;">
+      <div id="event-filters" class="filter-row" style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:48px;">
         {eventFilters.map((f, i) => (
           <button
             type="button"
@@ -39,7 +39,7 @@ const next = upcoming[0] ?? events[0];
       </div>
 
       <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.5rem,2.4vw,1.9rem); color:#1F2925; margin:0 0 32px;">Tous les événements</h2>
-      <div id="event-grid" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:26px; margin-bottom:60px;">
+      <div id="event-grid" data-grid-mobile="1" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:26px; margin-bottom:60px;">
         {events.map((ev) => (
           <div class="event-card" data-category={ev.category} style="background:#FFFFFF; border-radius:22px; overflow:hidden; box-shadow:0 10px 26px rgba(31,41,37,0.07);">
             <div style={`aspect-ratio:16/10; background:${ev.color}; position:relative;`}>

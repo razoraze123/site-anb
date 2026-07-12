@@ -35,5 +35,33 @@ const {
       <slot />
       <Footer />
     </div>
+    <script>
+      // Drives the orange "shelf-thread" progress bar under each mobile
+      // horizontal scroll shelf. A thread is any `.shelf-thread` element
+      // immediately following a `.mobile-shelf` in the markup.
+      function initShelfThreads() {
+        document.querySelectorAll<HTMLElement>('.mobile-shelf').forEach((shelf) => {
+          const thread = shelf.nextElementSibling as HTMLElement | null;
+          if (!thread?.classList.contains('shelf-thread')) return;
+          const thumb = thread.querySelector<HTMLElement>('span');
+          if (!thumb) return;
+
+          const update = () => {
+            const trackWidth = thread.clientWidth;
+            const visibleRatio = Math.min(1, shelf.clientWidth / shelf.scrollWidth);
+            const thumbWidth = visibleRatio * trackWidth;
+            const maxScroll = shelf.scrollWidth - shelf.clientWidth;
+            const scrollRatio = maxScroll > 0 ? shelf.scrollLeft / maxScroll : 0;
+            thumb.style.width = `${thumbWidth}px`;
+            thumb.style.transform = `translateX(${scrollRatio * (trackWidth - thumbWidth)}px)`;
+          };
+
+          shelf.addEventListener('scroll', update, { passive: true });
+          window.addEventListener('resize', update);
+          update();
+        });
+      }
+      document.addEventListener('DOMContentLoaded', initShelfThreads);
+    </script>
   </body>
 </html>

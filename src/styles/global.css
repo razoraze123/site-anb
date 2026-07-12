@@ -69,3 +69,157 @@ button {
 .mobile-drawer.is-hidden {
   display: none;
 }
+
+/* ==========================================================================
+   Mobile layer
+   ==========================================================================
+   Desktop keeps every original inline style untouched (approved design).
+   Everything below is scoped to <=640px and layered on top via `!important`
+   on purpose: retrofitting layout onto markup that intentionally carries
+   its visual identity inline is exactly the case where a single, well-
+   documented override layer is safer than rewriting every section's inline
+   style (which would risk the desktop look). Nothing here touches color,
+   type, or shadow — only rhythm and how collections of cards are browsed.
+
+   Signature: teaser rows (the site's "moments" — actions, gallery, news)
+   become horizontal snap shelves with a thin orange progress thread
+   instead of stacking one-per-row. Dedicated list/browse pages (the full
+   events list, articles, gallery) stay compact multi-column grids, since
+   those are read/scanned rather than swiped. See Layout.astro for the
+   small script that drives the progress thread.
+   ========================================================================== */
+
+:root {
+  --space-band-mobile: 48px;
+  --space-section-mobile: 40px;
+  --space-hero-mobile: 36px;
+}
+
+@media (max-width: 640px) {
+  /* every two-column section (hero, mission, next-event, gallery preview
+     card, contact/adherer forms...) uses `flex:1 1 <desktop-width>` with an
+     explicit `min-width:260-460px` floor so it reads well as a real column
+     on tablet/desktop. Below 640px that floor is wider than the available
+     content width itself, which forces the flex item — and any child with
+     its own `max-width` in px, like the hero paragraph — to overflow the
+     viewport instead of wrapping. Dropping the floor and letting items cap
+     at 100% keeps every section a single full-width column on phones. */
+  main [style*="flex:1 1"] {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* vertical rhythm — bands (colored full-bleed sections) get a touch more
+     air than plain content sections, everything shorter than desktop */
+  main > section {
+    padding-top: var(--space-section-mobile) !important;
+    padding-bottom: var(--space-section-mobile) !important;
+  }
+  main > section:first-child {
+    padding-top: var(--space-hero-mobile) !important;
+  }
+  main > section[data-band] {
+    padding-top: var(--space-band-mobile) !important;
+    padding-bottom: var(--space-band-mobile) !important;
+  }
+
+  /* dedicated list/browse pages: compact multi-column grids, not shelves */
+  [data-grid-mobile='2'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+  [data-grid-mobile='1'] {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+}
+
+/* ---- horizontal snap shelf (teaser rows) -------------------------------- */
+.mobile-shelf {
+  scroll-padding-left: clamp(20px, 4vw, 48px);
+}
+@media (max-width: 640px) {
+  .mobile-shelf {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    gap: 14px !important;
+    grid-auto-rows: unset !important;
+    margin: 0 calc(-1 * clamp(20px, 4vw, 48px)) !important;
+    padding: 2px clamp(20px, 4vw, 48px) 10px !important;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .mobile-shelf::-webkit-scrollbar {
+    display: none;
+  }
+  .mobile-shelf > * {
+    flex: 0 0 auto !important;
+    width: 72vw !important;
+    max-width: 320px;
+    scroll-snap-align: start;
+    grid-row: auto !important;
+  }
+  .mobile-shelf[data-shelf-square] > * {
+    width: 42vw !important;
+    height: 42vw !important;
+    max-width: 200px;
+    max-height: 200px;
+  }
+}
+
+.shelf-thread {
+  display: none;
+}
+@media (max-width: 640px) {
+  .shelf-thread {
+    display: block;
+    height: 3px;
+    border-radius: 999px;
+    background: rgba(31, 41, 37, 0.1);
+    margin: 4px clamp(20px, 4vw, 48px) 0;
+    overflow: hidden;
+  }
+  .shelf-thread > span {
+    display: block;
+    height: 100%;
+    width: 28%;
+    border-radius: inherit;
+    background: var(--color-orange);
+    transform: translateX(0);
+    transition: transform 0.08s linear;
+  }
+}
+
+/* ---- hero floating card: static on mobile, no overlap ------------------ */
+@media (max-width: 640px) {
+  .hero-float-card {
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    top: auto !important;
+    max-width: none !important;
+    width: 100% !important;
+    margin-top: 16px !important;
+    animation: none !important;
+  }
+}
+
+/* ---- horizontal scrolling filter/pill row ------------------------------- */
+@media (max-width: 640px) {
+  .filter-row {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    scrollbar-width: none;
+    margin: 0 calc(-1 * clamp(20px, 4vw, 48px)) !important;
+    padding: 2px clamp(20px, 4vw, 48px) 6px !important;
+  }
+  .filter-row::-webkit-scrollbar {
+    display: none;
+  }
+  .filter-row > * {
+    flex: 0 0 auto !important;
+  }
+}

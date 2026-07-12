@@ -64,7 +64,7 @@ import { timeline, teamMembers } from '../lib/demo-data';
     <section style="background:#FFFFFF; padding:90px 0;">
       <div style="max-width:1280px; margin:0 auto; padding:0 clamp(20px,4vw,48px);">
         <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.7rem,2.8vw,2.2rem); color:#1F2925; margin:0 0 44px; text-align:center;">Le bureau de l'ANB</h2>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:24px;">
+        <div data-grid-mobile="2" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:24px;">
           {teamMembers.map((member) => (
             <div style="text-align:center;">
               <div style={`border-radius:18px; aspect-ratio:1/1; background:${member.bg}; margin-bottom:14px;`}></div>
@@ -77,10 +77,10 @@ import { timeline, teamMembers } from '../lib/demo-data';
     </section>
 
     <!-- POURQUOI REJOINDRE -->
-    <section style="background:#176B4D; padding:90px 0;">
+    <section data-band style="background:#176B4D; padding:90px 0;">
       <div style="max-width:1280px; margin:0 auto; padding:0 clamp(20px,4vw,48px); text-align:center;">
         <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.8rem,3vw,2.4rem); color:#FFFFFF; margin:0 0 40px;">Pourquoi rejoindre l'ANB ?</h2>
-        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:20px; margin-bottom:44px;">
+        <div data-grid-mobile="1" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:20px; margin-bottom:44px;">
           <div style="background:rgba(255,255,255,0.08); border-radius:20px; padding:26px; color:#FFFFFF;">Un réseau chaleureux dès votre arrivée</div>
           <div style="background:rgba(255,255,255,0.08); border-radius:20px; padding:26px; color:#FFFFFF;">Des événements toute l'année</div>
           <div style="background:rgba(255,255,255,0.08); border-radius:20px; padding:26px; color:#FFFFFF;">Un lien vivant avec vos racines</div>
