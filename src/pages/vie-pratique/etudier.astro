@@ -1,0 +1,119 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Étudier à Bordeaux" description="Guide complet pour les étudiants nigériens à Bordeaux : inscriptions universitaires, bourses, CROUS, tutorat et vie de campus.">
+
+  <main style="background:var(--color-cream); min-height:88vh;">
+
+    <!-- HERO -->
+    <div style="background:linear-gradient(135deg,#176B4D 0%,#0f4a35 100%); padding:70px clamp(20px,5vw,80px) 80px; position:relative; overflow:hidden;">
+      <div style="position:absolute;inset:0;background:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22400%22><circle cx=%22350%22 cy=%2250%22 r=%22200%22 fill=%22rgba(255,255,255,0.04)%22/><circle cx=%2250%22 cy=%22350%22 r=%22150%22 fill=%22rgba(255,255,255,0.03)%22/></svg>') no-repeat; pointer-events:none;"></div>
+      <div style="max-width:860px; margin:0 auto; position:relative;">
+        <a href="/vie-pratique" style="display:inline-flex; align-items:center; gap:8px; color:rgba(255,255,255,0.7); font-size:13px; font-weight:600; text-decoration:none; margin-bottom:24px; transition:color 0.2s;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          Vie pratique
+        </a>
+        <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
+          <div style="width:54px;height:54px;border-radius:16px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12.5V17c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/></svg>
+          </div>
+          <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:0.08em;text-transform:uppercase;">Vie pratique</span>
+        </div>
+        <h1 style="font-family:var(--font-display);font-weight:800;font-size:clamp(2rem,4.5vw,3rem);color:#FFFFFF;margin:0 0 16px;line-height:1.15;">Étudier à Bordeaux</h1>
+        <p style="font-size:17px;line-height:1.7;color:rgba(255,255,255,0.8);margin:0;max-width:640px;">Inscriptions universitaires, bourses, CROUS, tutorat et tout ce qu'il faut savoir pour réussir votre parcours académique à Bordeaux.</p>
+      </div>
+    </div>
+
+    <!-- CONTENU -->
+    <div style="max-width:860px; margin:0 auto; padding:60px clamp(20px,4vw,40px) 80px;">
+
+      <div style="display:grid; gap:28px;">
+
+        <!-- Bloc 1 -->
+        <div style="background:#FFFFFF;border-radius:24px;padding:32px;box-shadow:0 8px 28px rgba(31,41,37,0.06);border:1px solid rgba(31,41,37,0.04);">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+            <span style="font-size:24px;">🎓</span>
+            <h2 style="font-family:var(--font-display);font-size:20px;font-weight:800;color:var(--color-dark);margin:0;">Inscription à l'université</h2>
+          </div>
+          <p style="font-size:15px;line-height:1.75;color:#3f4a45;margin:0 0 16px;">Pour s'inscrire dans une université bordelaise (Bordeaux Montaigne, Bordeaux INP, Sciences Po…), vous devez passer par la plateforme nationale <strong>Parcoursup</strong> (licences) ou <strong>Mon Master</strong> (masters).</p>
+          <ul style="padding-left:20px;color:#3f4a45;font-size:15px;line-height:1.9;margin:0 0 16px;">
+            <li>Vérifiez votre équivalence de diplôme avec la plateforme ENIC-NARIC</li>
+            <li>Constituez votre dossier en français avec traductions certifiées</li>
+            <li>Les inscriptions se font généralement entre juin et septembre</li>
+          </ul>
+          <a href="https://www.parcoursup.fr" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;color:var(--color-green);font-weight:700;font-size:14px;text-decoration:none;">
+            Parcoursup.fr <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+          </a>
+        </div>
+
+        <!-- Bloc 2 -->
+        <div style="background:#FFFFFF;border-radius:24px;padding:32px;box-shadow:0 8px 28px rgba(31,41,37,0.06);border:1px solid rgba(31,41,37,0.04);">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+            <span style="font-size:24px;">💰</span>
+            <h2 style="font-family:var(--font-display);font-size:20px;font-weight:800;color:var(--color-dark);margin:0;">Bourses et aides financières</h2>
+          </div>
+          <p style="font-size:15px;line-height:1.75;color:#3f4a45;margin:0 0 16px;">Plusieurs aides sont disponibles pour les étudiants étrangers en France :</p>
+          <div style="display:grid;gap:12px;margin-bottom:16px;">
+            <div style="background:#F8F4EC;border-radius:14px;padding:16px 18px;">
+              <div style="font-weight:700;color:#1F2925;font-size:14.5px;margin-bottom:4px;">Bourses du CROUS</div>
+              <div style="color:#5a655f;font-size:14px;">Sur critères sociaux, pour les étudiants dont les parents résident en France.</div>
+            </div>
+            <div style="background:#F8F4EC;border-radius:14px;padding:16px 18px;">
+              <div style="font-weight:700;color:#1F2925;font-size:14.5px;margin-bottom:4px;">Bourses du gouvernement français</div>
+              <div style="color:#5a655f;font-size:14px;">Via Campus France Niger, pour les étudiants en master ou doctorat sélectionnés avant le départ.</div>
+            </div>
+            <div style="background:#F8F4EC;border-radius:14px;padding:16px 18px;">
+              <div style="font-weight:700;color:#1F2925;font-size:14.5px;margin-bottom:4px;">Aides d'urgence universitaires</div>
+              <div style="color:#5a655f;font-size:14px;">En cas de difficultés financières imprévues, contactez le service social de votre université.</div>
+            </div>
+          </div>
+          <a href="https://www.campusfrance.org/fr/niger" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;color:var(--color-green);font-weight:700;font-size:14px;text-decoration:none;">
+            Campus France Niger <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+          </a>
+        </div>
+
+        <!-- Bloc 3 -->
+        <div style="background:#FFFFFF;border-radius:24px;padding:32px;box-shadow:0 8px 28px rgba(31,41,37,0.06);border:1px solid rgba(31,41,37,0.04);">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+            <span style="font-size:24px;">🏠</span>
+            <h2 style="font-family:var(--font-display);font-size:20px;font-weight:800;color:var(--color-dark);margin:0;">CROUS Bordeaux</h2>
+          </div>
+          <p style="font-size:15px;line-height:1.75;color:#3f4a45;margin:0 0 16px;">Le CROUS gère les résidences universitaires, les restaurants universitaires (RU) et des services sociaux pour étudiants.</p>
+          <ul style="padding-left:20px;color:#3f4a45;font-size:15px;line-height:1.9;margin:0 0 16px;">
+            <li>Demandez un logement en résidence CROUS via <strong>trouverunlogement.lescrous.fr</strong></li>
+            <li>Les RU proposent des repas à tarif réduit (3,30 € avec carte étudiante)</li>
+            <li>Des assistantes sociales peuvent vous aider en cas de difficultés</li>
+          </ul>
+          <a href="https://www.crous-bordeaux.fr" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;color:var(--color-green);font-weight:700;font-size:14px;text-decoration:none;">
+            CROUS Bordeaux <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+          </a>
+        </div>
+
+        <!-- Bloc 4 -->
+        <div style="background:#FFFFFF;border-radius:24px;padding:32px;box-shadow:0 8px 28px rgba(31,41,37,0.06);border:1px solid rgba(31,41,37,0.04);">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+            <span style="font-size:24px;">🤝</span>
+            <h2 style="font-family:var(--font-display);font-size:20px;font-weight:800;color:var(--color-dark);margin:0;">Tutorat & Vie de campus</h2>
+          </div>
+          <p style="font-size:15px;line-height:1.75;color:#3f4a45;margin:0 0 16px;">Intégrez la vie universitaire bordelaise grâce aux associations étudiantes et aux dispositifs d'entraide :</p>
+          <ul style="padding-left:20px;color:#3f4a45;font-size:15px;line-height:1.9;margin:0;">
+            <li>Les BDE (Bureaux des Étudiants) organisent des événements et soirées d'intégration</li>
+            <li>Des tuteurs bénévoles proposent un soutien scolaire dans la plupart des facultés</li>
+            <li><strong>L'ANB Bordeaux</strong> peut vous mettre en contact avec d'autres étudiants nigériens sur le campus</li>
+            <li>Des associations d'étudiants africains existent dans la plupart des universités bordelaises</li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- CTA -->
+      <div style="margin-top:48px;background:linear-gradient(135deg,rgba(23,107,77,0.08),rgba(233,120,36,0.06));border-radius:24px;padding:36px;text-align:center;border:1px solid rgba(23,107,77,0.1);">
+        <p style="font-size:16px;font-weight:700;color:var(--color-dark);margin:0 0 8px;">Vous avez des questions sur votre parcours étudiant ?</p>
+        <p style="font-size:14px;color:var(--color-muted-text);margin:0 0 20px;">L'ANB Bordeaux peut vous orienter et vous mettre en contact avec des membres qui ont vécu la même expérience.</p>
+        <a href="/adherer" style="display:inline-block;background:var(--color-orange);color:#FFFFFF;text-decoration:none;padding:13px 28px;border-radius:999px;font-weight:700;font-size:14.5px;box-shadow:0 8px 20px rgba(233,120,36,0.25);">Rejoindre la communauté ANB</a>
+      </div>
+
+    </div>
+  </main>
+</Layout>

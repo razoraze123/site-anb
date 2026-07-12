@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <title>Espace ANB — Super Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style is:global>
+    :root {
+      --color-cream: #F8F4EC;
+      --color-green: #176B4D;
+      --color-orange: #E97824;
+      --color-dark: #1F2925;
+      --color-sand: #E8D8BF;
+      --color-body-text: #3f4a45;
+      --color-muted-text: #5a655f;
+      --font-display: 'Unbounded', sans-serif;
+      --font-body: 'Manrope', sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-body);
+      background: var(--color-cream);
+      color: var(--color-dark);
+      -webkit-font-smoothing: antialiased;
+    }
+    a { text-decoration: none; }
+    button, input, textarea, select { font-family: inherit; }
+    ::selection { background: var(--color-orange); color: #FFFFFF; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-thumb { background: rgba(31,41,37,0.15); border-radius: 8px; }
+    
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in { animation: fadeInUp 0.4s ease both; }
+    .hidden { display: none !important; }
+    .active-nav-btn {
+      color: var(--color-green) !important;
+      background: rgba(23, 107, 77, 0.09) !important;
+      font-weight: 700 !important;
+    }
+    
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--color-body-text);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      background: transparent;
+      border: none;
+      width: 100%;
+      text-align: left;
+    }
+    .sidebar-link:hover {
+      background: rgba(31, 41, 37, 0.04);
+      color: var(--color-dark);
+    }
+    
+    .nav-desktop-only { display: flex; }
+    .nav-mobile-only { display: none; }
+    @media (max-width: 980px) {
+      .nav-desktop-only { display: none; }
+      .nav-mobile-only { display: flex; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- APP SHELL -->
+  <div id="app-shell-view" style="display:flex; min-height:100vh;">
+    
+    <!-- SIDEBAR DESKTOP -->
+    <aside class="nav-desktop-only" style="width:260px; flex-shrink:0; background:#FFFFFF; border-right:1px solid rgba(31,41,37,0.08); display:flex; flex-direction:column; height:100vh; position:sticky; top:0;">
+      <div style="padding:22px 20px; display:flex; align-items:center; gap:12px; border-bottom:1px solid rgba(31,41,37,0.06);">
+        <div style="width:38px; height:38px; border-radius:11px; background:#176B4D; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <span style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:12px; color:#FFFFFF;">ANB</span>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:14.5px; color:#176B4D; white-space:nowrap;">Espace ANB</div>
+          <div style="font-size:11px; color:#5a655f; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Super Admin</div>
+        </div>
+      </div>
+      
+      <nav id="desktop-sidebar-nav" style="flex:1; overflow-y:auto; padding:16px 12px; display:flex; flex-direction:column; gap:4px;">
+        <!-- Dynamically rendered -->
+      </nav>
+      
+      <div style="padding:16px; border-top:1px solid rgba(31,41,37,0.06); display:flex; align-items:center; gap:12px;">
+        <div style="width:38px; height:38px; border-radius:50%; background:linear-gradient(150deg,#176B4D,#E97824); flex-shrink:0;"></div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:13.5px; font-weight:700; color:#1F2925; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Nasser Diallo</div>
+          <div style="font-size:11.5px; color:#5a655f;">Super Admin</div>
+        </div>
+        <button class="logout-btn" aria-label="Déconnexion" style="width:34px; height:34px; border-radius:10px; background:#F8F4EC; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1F2925" stroke-width="1.8"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MOBILE DRAWER -->
+    <div id="mobile-sidebar-drawer" class="hidden" style="position:fixed; inset:0; z-index:300; background:#FFFFFF; display:flex; flex-direction:column; overflow-y:auto;">
+      <div style="padding:20px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(31,41,37,0.06);">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:38px; height:38px; border-radius:11px; background:#176B4D; display:flex; align-items:center; justify-content:center;">
+            <span style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:12px; color:#FFFFFF;">ANB</span>
+          </div>
+          <div style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:14.5px; color:#176B4D; white-space:nowrap;">Espace ANB</div>
+        </div>
+        <button id="close-mobile-drawer" aria-label="Fermer" style="width:40px; height:40px; border-radius:10px; background:#F8F4EC; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F2925" stroke-width="2"><line x1="5" y1="5" x2="19" y2="19"></line><line x1="19" y1="5" x2="5" y2="19"></line></svg>
+        </button>
+      </div>
+      <nav id="mobile-sidebar-nav" style="flex:1; padding:16px; display:flex; flex-direction:column; gap:4px;">
+        <!-- Dynamically rendered -->
+      </nav>
+      <div style="padding:16px; border-top:1px solid rgba(31,41,37,0.06);">
+        <button class="logout-btn" style="width:100%; background:#F8F4EC; border:none; padding:14px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer; color:#1F2925;">Se déconnecter</button>
+      </div>
+    </div>
+
+    <!-- MAIN COLUMN -->
+    <div style="flex:1; min-width:0; display:flex; flex-direction:column;">
+      
+      <!-- TOP BAR -->
+      <div style="position:sticky; top:0; z-index:50; background:rgba(248,244,236,0.92); backdrop-filter:blur(8px); border-bottom:1px solid rgba(31,41,37,0.08); padding:16px clamp(16px,3vw,32px); display:flex; align-items:center; gap:16px;">
+        <button id="open-mobile-drawer" class="nav-mobile-only" aria-label="Menu" style="width:40px; height:40px; border-radius:10px; background:#FFFFFF; border:1px solid rgba(31,41,37,0.1); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F2925" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:12px; color:#5a655f; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Espace ANB / <span id="breadcrumb-page-label">Vue d'ensemble</span></div>
+          <div id="title-page-label" style="font-size:17px; font-weight:800; color:#1F2925; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Vue d'ensemble</div>
+        </div>
+        <div class="nav-desktop-only" style="flex:1; max-width:340px; position:relative;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5a655f" stroke-width="1.8" style="position:absolute; left:14px; top:50%; transform:translateY(-50%);"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
+          <input id="global-search-input" placeholder="Recherche globale…" style="width:100%; padding:11px 16px 11px 40px; border-radius:999px; border:1.5px solid #e3dccb; background:#FFFFFF; font-size:13.5px;" />
+        </div>
+        <button aria-label="Notifications" style="position:relative; width:40px; height:40px; border-radius:10px; background:#FFFFFF; border:1px solid rgba(31,41,37,0.08); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F2925" stroke-width="1.7"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 01-3.4 0"></path></svg>
+          <span style="position:absolute; top:6px; right:7px; width:8px; height:8px; border-radius:50%; background:#E97824; border:1.5px solid #FFFFFF;"></span>
+        </button>
+        <button class="nav-desktop-only" aria-label="Aide" style="width:40px; height:40px; border-radius:10px; background:#FFFFFF; border:1px solid rgba(31,41,37,0.08); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F2925" stroke-width="1.7"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9.5a2.5 2.5 0 014.9.8c0 1.7-2.4 1.8-2.4 3.7"></path><circle cx="12" cy="17.2" r="0.4" fill="#1F2925"></circle></svg>
+        </button>
+        <div style="width:38px; height:38px; border-radius:50%; background:linear-gradient(150deg,#176B4D,#E97824); flex-shrink:0;"></div>
+      </div>
+
+      <!-- VIEWS CONTAINER -->
+      <div style="flex:1; padding:clamp(18px,3vw,32px);">
+        
+        <!-- OVERVIEW VIEW -->
+        <section id="view-overview" class="hidden fade-in">
+          <div style="display:flex; flex-direction:column; gap:24px;">
+            <div>
+              <h1 style="font-size:24px; font-weight:800; color:#1F2925; margin:0 0 6px;">Bonjour Nasser 👋</h1>
+              <p style="font-size:14.5px; color:#5a655f; margin:0;">Vue d'ensemble de la plateforme ANB.</p>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px;">
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#176B4D;">248</div><div style="font-size:13px; color:#5a655f;">Membres actifs</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#E97824;">12</div><div style="font-size:13px; color:#5a655f;">Nouvelles adhésions ce mois</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#176B4D;">3</div><div style="font-size:13px; color:#5a655f;">Événements à venir</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#E97824;">12</div><div style="font-size:13px; color:#5a655f;">Demandes à traiter</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#176B4D;">5</div><div style="font-size:13px; color:#5a655f;">Administrateurs actifs</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#B14524;">2</div><div style="font-size:13px; color:#5a655f;">Alertes sécurité / maintenance</div></div>
+            </div>
+
+            <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
+              <h3 style="font-size:16.5px; font-weight:700; color:#1F2925; margin:0 0 16px;">Attention requise</h3>
+              <div style="display:flex; flex-direction:column; gap:10px;" id="overview-attention-list">
+                <!-- Dynamic -->
+              </div>
+            </div>
+
+            <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
+              <h3 style="font-size:16.5px; font-weight:700; color:#1F2925; margin:0 0 16px;">Activité récente</h3>
+              <div style="display:flex; flex-direction:column; gap:14px;" id="overview-activity-list">
+                <!-- Dynamic -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- UTILISATEURS ET ROLES VIEW -->
+        <section id="view-users" class="hidden fade-in">
+          <div style="display:flex; flex-direction:column; gap:20px;">
+            <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:14px;">
+              <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Utilisateurs et rôles</h1>
+              <button id="toggle-invite-btn" style="background:#E97824; color:#FFFFFF; border:none; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Inviter un utilisateur</button>
+            </div>
+
+            <div id="invite-user-box" class="hidden" style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:14px; max-width:520px;">
+              <h3 style="font-size:16px; font-weight:700; color:#1F2925; margin:0;">Inviter un utilisateur</h3>
+              <input id="invite-form-name" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="Nom complet" />
+              <input id="invite-form-email" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="E-mail" />
+              <select id="invite-form-role" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px; background: transparent;">
+                <option>Admin</option>
+                <option>Super Admin</option>
+                <option>Éditeur / Bénévole</option>
+              </select>
+              <input id="invite-form-périmètre" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="Périmètre d'accès (ex : Actualités, Événements)" />
+              <textarea id="invite-form-msg" rows="2" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px; resize:vertical;" placeholder="Message d'invitation (facultatif)"></textarea>
+              <button id="invite-user-submit-btn" style="align-self:flex-start; background:#176B4D; color:#FFFFFF; border:none; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Envoyer l'invitation</button>
+              <div id="invite-success-alert" class="hidden" style="background:rgba(23,107,77,0.08); color:#176B4D; padding:12px 16px; border-radius:10px; font-size:13px; font-weight:700;">✓ Invitation envoyée.</div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; flex-wrap:wrap;">
+              <div style="background:#FFFFFF; border-radius:20px; padding:8px; box-shadow:0 8px 24px rgba(31,41,37,0.05); min-width:0;" id="users-list-container">
+                <!-- Dynamic -->
+              </div>
+
+              <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05); min-width:0;" id="user-detail-box">
+                <!-- Dynamic -->
+              </div>
+            </div>
+
+            <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05); overflow-x:auto;">
+              <h3 style="font-size:16px; font-weight:700; color:#1F2925; margin:0 0 18px;">Matrice de permissions</h3>
+              <div style="min-width:560px;">
+                <div style="display:grid; grid-template-columns:1.6fr 1fr 1fr 1fr; gap:8px; padding-bottom:10px; border-bottom:2px solid rgba(31,41,37,0.08); margin-bottom:8px;">
+                  <div></div>
+                  <div style="font-size:12.5px; font-weight:700; color:#176B4D; text-align:center;">Super Admin</div>
+                  <div style="font-size:12.5px; font-weight:700; color:#E97824; text-align:center;">Admin</div>
+                  <div style="font-size:12.5px; font-weight:700; color:#5a655f; text-align:center;">Éditeur</div>
+                </div>
+                <div id="permission-matrix-rows">
+                  <!-- Dynamic -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CONTENUS ET VALIDATIONS VIEW -->
+        <section id="view-contenus" class="hidden fade-in">
+          <div style="display:flex; flex-direction:column; gap:20px;">
+            <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Contenus et validations</h1>
+            <div style="display:grid; grid-template-columns:1fr 1.2fr; gap:20px; align-items:start; flex-wrap:wrap;">
+              <div style="background:#FFFFFF; border-radius:20px; padding:8px; box-shadow:0 8px 24px rgba(31,41,37,0.05); min-width:0;" id="validations-queue-list">
+                <!-- Dynamic -->
+              </div>
+              <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05); min-width:0;" id="validation-detail-box">
+                <!-- Dynamic -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- DONNEES ET EXPORTS VIEW -->
+        <section id="view-donnees" class="hidden fade-in">
+          <div style="display:flex; flex-direction:column; gap:20px;">
+            <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Données et exports</h1>
+            <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
+              <h3 style="font-size:15.5px; font-weight:700; color:#1F2925; margin:0 0 16px;">Générer un export sécurisé</h3>
+              <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;">
+                <label style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:#1F2925;"><input type="checkbox" checked />Demandes d'adhésion</label>
+                <label style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:#1F2925;"><input type="checkbox" checked />Inscriptions aux événements</label>
+                <label style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:#1F2925;"><input type="checkbox" />Messages de contact</label>
+                <label style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:#1F2925;"><input type="checkbox" />Newsletter</label>
+              </div>
+              <div style="display:flex; gap:14px; flex-wrap:wrap; margin-bottom:16px;">
+                <select style="flex:1; min-width:180px; padding:11px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:13.5px; background: transparent;">
+                  <option>30 derniers jours</option>
+                  <option>3 derniers mois</option>
+                  <option>Cette année</option>
+                </select>
+                <input id="export-reason" style="flex:2; min-width:220px; padding:11px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:13.5px;" placeholder="Raison de l'export (obligatoire)" />
+              </div>
+              <button id="generate-export-btn" style="background:#E97824; color:#FFFFFF; border:none; padding:12px 24px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Générer l'export sécurisé</button>
+              
+              <div id="export-confirm-box" class="hidden" style="margin-top:16px; background:#F8F4EC; border-radius:14px; padding:18px; display:flex; flex-direction:column; gap:10px;">
+                <div style="font-size:13.5px; color:#1F2925; font-weight:600;">Confirmez-vous cet export ? Il sera tracé dans le journal d'activité et limité aux champs strictement nécessaires.</div>
+                <div style="display:flex; gap:10px;">
+                  <button id="confirm-export-action" style="background:#176B4D; color:#FFFFFF; border:none; padding:10px 20px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;">Confirmer l'export</button>
+                  <button id="cancel-export-action" style="background:#FFFFFF; color:#1F2925; border:1px solid rgba(31,41,37,0.15); padding:10px 20px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;">Annuler</button>
+                </div>
+              </div>
+              <div id="export-success-alert" class="hidden" style="margin-top:16px; background:rgba(23,107,77,0.08); color:#176B4D; padding:12px 16px; border-radius:10px; font-size:13px; font-weight:700;">✓ Export généré et tracé dans le journal d'activité.</div>
+            </div>
+
+            <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05); overflow-x:auto;">
+              <h3 style="font-size:15.5px; font-weight:700; color:#1F2925; margin:0 0 16px;">Demandes liées aux données personnelles</h3>
+              <div style="min-width:560px;" id="personal-data-requests-container">
+                <!-- personal data requests lists -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- JOURNAL D'ACTIVITE VIEW -->
+        <section id="view-journal" class="hidden fade-in">
+          <div style="display:flex; flex-direction:column; gap:20px;">
+            <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Journal d'activité</h1>
+            <p style="font-size:13px; color:#5a655f; margin:0;">Journal en lecture seule — chaque action sensible y est enregistrée automatiquement.</p>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;" class="journal-tab-container">
+              <!-- User filters tabs -->
+            </div>
+            <div style="background:#FFFFFF; border-radius:20px; padding:8px; box-shadow:0 8px 24px rgba(31,41,37,0.05);" id="journal-list-container">
+              <!-- Logs items -->
+            </div>
+          </div>
+        </section>
+
+        <!-- REGLAGES DU SITE VIEW -->
+        <section id="view-reglages" class="hidden fade-in">
+          <div style="display:flex; flex-direction:column; gap:20px;">
+            <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Réglages du site</h1>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:20px;">
+              <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
+                <h3 style="font-size:15.5px; font-weight:700; color:#1F2925; margin:0 0 16px;">Identité de l'association</h3>
+                <div style="display:flex; flex-direction:column; gap:14px;">
+                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Nom</label><input value="Association des Nigériens à Bordeaux" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" /><div style="font-size:11.5px; color:#9aa39c; margin-top:4px;">Affiché dans l'en-tête et le pied de page du site.</div></div>
+                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Slogan</label><input value="Ensemble, faire vivre la communauté nigérienne à Bordeaux." style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" /></div>
+                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">E-mail officiel</label><input value="contact@anb-bordeaux.fr" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" /></div>
+                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Téléphone</label><input value="06 00 00 00 00" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" /></div>
+                </div>
+                <button style="margin-top:16px; background:#176B4D; color:#FFFFFF; border:none; padding:10px 20px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;" onclick="alert('Identité sauvegardée !')">Enregistrer</button>
+              </div>
+              <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
+                <h3 style="font-size:15.5px; font-weight:700; color:#1F2925; margin:0 0 16px;">Navigation et pages</h3>
+                <div style="font-size:13px; color:#5a655f; line-height:1.7;">Menus, pied de page, pages principales et redirections du site public.<br/><span style="font-size:11.5px; color:#9aa39c;">Modifiez l'ordre et la visibilité des rubriques du menu.</span></div>
+                <button style="margin-top:16px; background:#F8F4EC; color:#1F2925; border:none; padding:10px 20px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;">Gérer les menus</button>
+              </div>
+              <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
+                <h3 style="font-size:15.5px; font-weight:700; color:#1F2925; margin:0 0 16px;">Référencement</h3>
+                <div style="display:flex; flex-direction:column; gap:14px;">
+                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Titre du site</label><input value="ANB — Association des Nigériens à Bordeaux" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" /></div>
+                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Description SEO</label><textarea rows="2" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px; resize:vertical;">Communauté nigérienne à Bordeaux : événements, entraide et accompagnement.</textarea><div style="font-size:11.5px; color:#9aa39c; margin-top:4px;">Affichée dans les résultats de recherche.</div></div>
+                </div>
+                <button style="margin-top:16px; background:#176B4D; color:#FFFFFF; border:none; padding:10px 20px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;" onclick="alert('Paramètres SEO enregistrés !')">Enregistrer</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- INTEGRATIONS VIEW -->
+        <section id="view-integrations" class="hidden fade-in">
+          <div style="display:flex; flex-direction:column; gap:20px;">
+            <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Intégrations</h1>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:18px;" id="integrations-list-container">
+              <!-- integrations list dynamically rendered -->
+            </div>
+          </div>
+        </section>
+
+        <!-- SECURITE VIEW -->
+        <section id="view-securite" class="hidden fade-in">
+          <div style="display:flex; flex-direction:column; gap:20px;">
+            <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Sécurité</h1>
+            <div style="background:#176B4D; border-radius:20px; padding:24px; color:#FFFFFF; display:flex; align-items:center; gap:14px;">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.6"><path d="M12 3l7 3v6c0 5-3 8-7 9-4-1-7-4-7-9V6z"></path><path d="M9.5 12l1.8 1.8 3.2-3.6"></path></svg>
+              <div style="font-size:16px; font-weight:700;">Votre espace est protégé</div>
+            </div>
+            <div style="background:rgba(233,120,36,0.1); color:#B75E12; padding:14px 18px; border-radius:12px; font-size:13.5px; font-weight:600;">Activez la double authentification pour tous les comptes Admin et Super Admin.</div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:20px;">
+              <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                  <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0;">Double authentification</h3>
+                  <button id="twofa-toggle-btn" style="width:46px; height:26px; border-radius:999px; background:#176B4D; border:none; cursor:pointer; position:relative;">
+                    <span id="twofa-toggle-indicator" style="position:absolute; top:3px; left:23px; width:20px; height:20px; border-radius:50%; background:#FFFFFF; transition:left 0.2s;"></span>
+                  </button>
+                </div>
+                <div id="twofa-status-label" style="font-size:13px; color:#5a655f;">Activée pour votre compte.</div>
+              </div>
+              <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
+                <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0 0 14px;">Politique de mot de passe</h3>
+                <div style="font-size:13px; color:#5a655f; line-height:1.7;">Minimum 12 caractères, renouvellement conseillé tous les 6 mois, aucun mot de passe partagé entre comptes.</div>
+              </div>
+            </div>
+            
+            <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0;">Sessions actives</h3>
+                <button id="disconnect-all-btn" style="background:rgba(177,69,36,0.08); color:#B14524; border:none; padding:9px 18px; border-radius:999px; font-weight:700; font-size:12.5px; cursor:pointer;">Déconnecter toutes les sessions</button>
+              </div>
+              <div id="active-sessions-list">
+                <!-- dynamic sessions -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SAUVEGARDES VIEW -->
+        <section id="view-sauvegardes" class="hidden fade-in">
+          <div style="display:flex; flex-direction:column; gap:20px;">
+            <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Sauvegardes</h1>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px;">
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:12.5px; color:#5a655f; margin-bottom:6px;">Dernière sauvegarde réussie</div><div style="font-size:16px; font-weight:700; color:#176B4D;">12 juillet 2026, 03:00</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:12.5px; color:#5a655f; margin-bottom:6px;">Prochaine sauvegarde</div><div style="font-size:16px; font-weight:700; color:#1F2925;">13 juillet 2026, 03:00</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:12.5px; color:#5a655f; margin-bottom:6px;">Statut</div><span style="background:rgba(23,107,77,0.1); color:#176B4D; padding:4px 12px; border-radius:999px; font-size:12.5px; font-weight:700; width: fit-content; display: inline-block;">Opérationnel</span></div>
+            </div>
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+              <button id="run-backup-btn" style="background:#176B4D; color:#FFFFFF; border:none; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Lancer une sauvegarde maintenant</button>
+              <button id="open-restore-btn" style="background:#FFFFFF; color:#B14524; border:2px solid rgba(177,69,36,0.3); padding:11px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Restaurer</button>
+            </div>
+            
+            <div id="backup-running-alert" class="hidden" style="background:rgba(23,107,77,0.08); color:#176B4D; padding:12px 16px; border-radius:10px; font-size:13px; font-weight:700; max-width: 320px;">✓ Sauvegarde lancée avec succès.</div>
+            
+            <div id="restore-confirm-box" class="hidden" style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:12px; max-width:480px;">
+              <div style="font-size:13.5px; color:#B14524; font-weight:700;">⚠ La restauration remplace le contenu actuel. Vérifiez votre choix avant de continuer.</div>
+              <select style="padding:10px 14px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px; background: transparent;">
+                <option>12 juillet 2026, 03:00</option>
+                <option>11 juillet 2026, 03:00</option>
+                <option>10 juillet 2026, 03:00</option>
+              </select>
+              <div style="display:flex; gap:10px;">
+                <button id="confirm-restore-action" style="background:#B14524; color:#FFFFFF; border:none; padding:10px 20px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;">Confirmer la restauration</button>
+                <button id="cancel-restore-action" style="background:#F8F4EC; color:#1F2925; border:none; padding:10px 20px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;">Annuler</button>
+              </div>
+            </div>
+            
+            <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
+              <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0 0 14px;">Historique des sauvegardes</h3>
+              <div id="backup-history-list">
+                <!-- dynamic history -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- MENTIONS ET CLAUSES VIEW -->
+        <section id="view-mentions" class="hidden fade-in">
+          <div style="display:flex; flex-direction:column; gap:20px; max-width:720px;">
+            <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Mentions légales et confidentialité</h1>
+            <div id="legal-sections-container" style="display:flex; flex-direction:column; gap:16px;">
+              <!-- dynamic legal categories -->
+            </div>
+          </div>
+        </section>
+
+        <!-- STATISTIQUES GLOBAL VIEW -->
+        <section id="view-stats" class="hidden fade-in">
+          <div style="display:flex; flex-direction:column; gap:20px;">
+            <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:14px;">
+              <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Statistiques globales</h1>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;" class="stats-period-container">
+                <!-- Period options -->
+              </div>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px;">
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#176B4D;">4 820</div><div style="font-size:13px; color:#5a655f;">Visites du site</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#E97824;">312</div><div style="font-size:13px; color:#5a655f;">Inscriptions aux événements</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#176B4D;">46</div><div style="font-size:13px; color:#5a655f;">Nouvelles demandes d'adhésion</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#E97824;">+18%</div><div style="font-size:13px; color:#5a655f;">Évolution sur la période</div></div>
+            </div>
+            
+            <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
+              <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0 0 20px;">Visites par semaine</h3>
+              <div style="display:flex; align-items:flex-end; gap:14px; height:160px;" id="visit-bars-container">
+                <!-- Bar chart dynamically generated -->
+              </div>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px;">
+              <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
+                <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0 0 14px;">Pages les plus vues</h3>
+                <div id="top-pages-list"></div>
+              </div>
+              <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
+                <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0 0 14px;">Articles les plus lus</h3>
+                <div id="top-articles-list"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- MON PROFIL VIEW -->
+        <section id="view-profil" class="hidden fade-in">
+          <div style="display:flex; flex-direction:column; gap:20px; max-width:600px;">
+            <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Mon profil</h1>
+            <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:16px;">
+              <div style="display:flex; align-items:center; gap:16px;">
+                <div style="width:56px; height:56px; border-radius:50%; background:linear-gradient(150deg,#176B4D,#E97824);"></div>
+                <div>
+                  <div style="font-size:16px; font-weight:700; color:#1F2925;">Nasser Diallo</div>
+                  <div style="font-size:13px; color:#5a655f;">Super Admin</div>
+                </div>
+              </div>
+              <div>
+                <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Nom complet</label>
+                <input id="profile-form-name" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" value="Nasser Diallo" />
+              </div>
+              <div>
+                <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">E-mail</label>
+                <input id="profile-form-email" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="vous@anb-bordeaux.fr" value="nasser.diallo@anb-bordeaux.fr" />
+              </div>
+              <div>
+                <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Rôle</label>
+                <input readonly style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px; color:#9aa39c;" value="Super Admin" />
+              </div>
+              <div>
+                <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Nouveau mot de passe</label>
+                <input type="password" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="••••••••" />
+              </div>
+              <button style="align-self:flex-start; background:#176B4D; color:#FFFFFF; border:none; padding:12px 24px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;" onclick="alert('Profil enregistré !')">Enregistrer</button>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State management
+    const state = {
+      user: 'super_admin',
+      page: 'overview',
+      userSelectedIdx: 0,
+      inviteOpen: false,
+      validationSelectedIdx: 0,
+      exportConfirmOpen: false,
+      twoFA: true,
+      backupRunning: false,
+      restoreOpen: false,
+      statsPeriod: '30 jours',
+      journalUserFilter: 'Tous',
+    };
+
+    const navigationItems = [
+      { key: 'overview', label: "Vue d'ensemble" },
+      { type: 'header', label: 'Gestion du site' },
+      { key: 'actualites', label: 'Actualités' },
+      { key: 'evenements', label: 'Événements' },
+      { key: 'messages', label: 'Messages' },
+      { type: 'header', label: 'Gouvernance' },
+      { key: 'users', label: 'Utilisateurs & rôles' },
+      { key: 'contenus', label: 'Contenus & validations' },
+      { key: 'donnees', label: 'Données & exports' },
+      { key: 'journal', label: "Journal d'activité" },
+      { key: 'reglages', label: 'Réglages du site' },
+      { key: 'integrations', label: 'Intégrations' },
+      { key: 'securite', label: 'Sécurité' },
+      { key: 'sauvegardes', label: 'Sauvegardes' },
+      { key: 'mentions', label: 'Mentions & RGPD' },
+      { key: 'stats', label: 'Statistiques globales' },
+      { type: 'separator' },
+      { key: 'profil', label: 'Mon profil' }
+    ];
+
+    const svgMap = {
+      overview: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="8" height="8" rx="2"></rect><rect x="13" y="3" width="8" height="8" rx="2"></rect><rect x="3" y="13" width="8" height="8" rx="2"></rect><rect x="13" y="13" width="8" height="8" rx="2"></rect></svg>`,
+      actualites: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="7" y1="9" x2="17" y2="9"></line><line x1="7" y1="13" x2="17" y2="13"></line><line x1="7" y1="17" x2="12" y2="17"></line></svg>`,
+      evenements: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line></svg>`,
+      messages: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 6l9 6 9-6"></path></svg>`,
+      users: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="8" r="3.2"></circle><circle cx="17" cy="9" r="2.4"></circle><path d="M3 20c0-3.4 2.7-5.8 6-5.8s6 2.4 6 5.8"></path></svg>`,
+      contenus: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="9"></circle></svg>`,
+      donnees: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><ellipse cx="12" cy="5.5" rx="8" ry="2.8"></ellipse><path d="M4 5.5V18c0 1.5 3.6 2.8 8 2.8s8-1.3 8-2.8V5.5"></path><path d="M4 12c0 1.5 3.6 2.8 8 2.8s8-1.3 8-2.8"></path></svg>`,
+      journal: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3.5 2"></path></svg>`,
+      reglages: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 13a7.6 7.6 0 000-2l2-1.5-2-3.4-2.3.9a7.6 7.6 0 00-1.7-1L15 3.5h-4l-.4 2.5a7.6 7.6 0 00-1.7 1l-2.3-.9-2 3.4L6.6 11a7.6 7.6 0 000 2l-2 1.5 2 3.4 2.3-.9a7.6 7.6 0 001.7 1l.4 2.5h4l.4-2.5a7.6 7.6 0 001.7-1l2.3.9 2-3.4z"></path></svg>`,
+      integrations: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 3v5M15 3v5M4 8h16l-1.5 11a2 2 0 01-2 1.8H7.5a2 2 0 01-2-1.8z"></path></svg>`,
+      securite: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3l7 3v6c0 5-3 8-7 9-4-1-7-4-7-9V6z"></path><path d="M9.5 12l1.8 1.8 3.2-3.6"></path></svg>`,
+      sauvegardes: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 17a4 4 0 01-1-7.9 5 5 0 019.6-1.7A4.5 4.5 0 0117 17H7z"></path></svg>`,
+      mentions: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3l8 4v5c0 5-3.4 8-8 9-4.6-1-8-4-8-9V7z"></path><line x1="9" y1="11" x2="15" y2="11"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>`,
+      stats: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 20V10M12 20V4M20 20v-7"></path></svg>`,
+      profil: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="3.4"></circle><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"></path></svg>`
+    };
+
+    const attentionItems = [
+      { text: "3 demandes d'adhésion n'ont pas été traitées depuis plus de 7 jours" },
+      { text: "Un événement à venir ne possède pas encore d'image de couverture" },
+      { text: 'Un compte administrateur est inactif depuis 90 jours' },
+      { text: 'La sauvegarde hebdomadaire doit être vérifiée' }
+    ];
+
+    const govActivity = [
+      { text: 'Mariama a publié l\'actualité « Bienvenue aux nouveaux membres »', time: 'Il y a 3 heures' },
+      { text: "Nasser a configuré la double authentification de sécurité", time: 'Ce matin' },
+      { text: 'Export de données des adhésions effectué par Nasser', time: 'Hier' },
+      { text: 'Connexion administrateur établie depuis l\'IP 82.1XX.XX.XX', time: 'Hier' }
+    ];
+
+    const users = [
+      { name: 'Mariama Souley', email: 'mariama.souley@anb-bordeaux.fr', role: 'Admin', roleT: 'o', status: 'Actif', statusT: 'g', last: "Aujourd'hui, 09:12", avatarBg: 'linear-gradient(150deg,#176B4D,#E97824)', permissions: 'Gestion des contenus, événements, médias, messages et demandes. Traitement des inscriptions.' },
+      { name: 'Nasser Diallo', email: 'nasser.diallo@anb-bordeaux.fr', role: 'Super Admin', roleT: 'g', status: 'Actif', statusT: 'g', last: "Aujourd'hui, 08:40", avatarBg: 'linear-gradient(150deg,#1F2925,#176B4D)', permissions: 'Accès complet : utilisateurs et rôles, réglages globaux, exports, sauvegardes, journal d\'activité, sécurité.' },
+      { name: 'Fatou Ibrahim', email: 'fatou.ibrahim@anb-bordeaux.fr', role: 'Éditeur', roleT: 'n', status: 'Actif', statusT: 'g', last: 'Hier, 18:22', avatarBg: 'linear-gradient(150deg,#E8D8BF,#176B4D)', permissions: 'Création d\'articles, événements et ressources en brouillon uniquement.' },
+      { name: 'Aïcha Boubacar', email: 'aicha.boubacar@anb-bordeaux.fr', role: 'Admin', roleT: 'o', status: 'Invitation envoyée', statusT: 'o', last: '—', avatarBg: 'linear-gradient(150deg,#E97824,#1F2925)', permissions: 'Rôle admin en attente de validation.' },
+      { name: 'Ibrahim Moussa', email: 'ibrahim.moussa@anb-bordeaux.fr', role: 'Super Admin', roleT: 'g', status: 'Désactivé', statusT: 'r', last: 'Il y a 92 jours', avatarBg: 'linear-gradient(150deg,#5a655f,#1F2925)', permissions: 'Compte suspendu pour inactivité prolongée.' }
+    ];
+
+    const permissionMatrix = [
+      { label: 'Gestion des contenus (articles, événements, médias)', superadmin: '✓', admin: '✓', editeur: 'Brouillon' },
+      { label: 'Traitement des inscriptions et adhésions', superadmin: '✓', admin: '✓', editeur: '—' },
+      { label: 'Messages et demandes de contact', superadmin: '✓', admin: '✓', editeur: '—' },
+      { label: 'Statistiques de fréquentation', superadmin: '✓', admin: 'Simples', editeur: '—' },
+      { label: 'Gestion des utilisateurs et rôles', superadmin: '✓', admin: '—', editeur: '—' },
+      { label: 'Réglages globaux du site', superadmin: '✓', admin: '—', editeur: '—' },
+      { label: 'Exports de données de la plateforme', superadmin: '✓', admin: '—', editeur: '—' },
+      { label: 'Sécurité et sauvegardes', superadmin: '✓', admin: '—', editeur: '—' }
+    ];
+
+    const validationQueue = [
+      { author: 'Fatou Ibrahim', type: 'Article', date: 'il y a 1 jour', title: "Portrait : parcours d'une étudiante nigérienne", status: 'En attente' },
+      { author: 'Fatou Ibrahim', type: 'Événement', date: 'il y a 2 jours', title: 'Atelier couture traditionnelle', status: 'En attente' },
+      { author: 'Aminata (Bénévole)', type: 'Ressource', date: 'il y a 3 jours', title: 'Guide : renouveler son titre de séjour', status: 'Renvoyé avec commentaire' }
+    ];
+
+    const dataRequests = [
+      { type: "Demande d'accès", requester: 'Aïcha Boubacar', status: 'Reçue', tone: 'o', responsable: 'Nasser D.', deadline: '25 juillet 2026' },
+      { type: 'Demande de suppression', requester: 'Ancien membre', status: 'En cours', tone: 'o', responsable: 'Nasser D.', deadline: '18 juillet 2026' },
+      { type: 'Demande de rectification', requester: 'Ibrahim Moussa', status: 'Traitée', tone: 'g', responsable: 'Mariama S.', deadline: 'Clôturée' }
+    ];
+
+    const journalLogs = [
+      { date: '12 juillet 2026, 14:32', user: 'Mariama', role: 'Admin', roleT: 'o', action: "Publication d'une actualité", detail: 'Bienvenue aux nouveaux membres', ip: '82.1XX.XX.XX' },
+      { date: '12 juillet 2026, 11:18', user: 'Nasser', role: 'Super Admin', roleT: 'g', action: 'Modification du rôle utilisateur', detail: "Fatou passe d'Éditeur à Admin", ip: '90.4XX.XX.XX' },
+      { date: '11 juillet 2026, 16:03', user: 'Nasser', role: 'Super Admin', roleT: 'g', action: 'Export de données', detail: 'Inscriptions à la Journée culturelle', ip: '90.4XX.XX.XX' },
+      { date: '10 juillet 2026, 09:47', user: 'Mariama', role: 'Admin', roleT: 'o', action: "Création d'un événement", detail: 'Tournoi de football amical', ip: '82.1XX.XX.XX' },
+      { date: '9 juillet 2026, 19:05', user: 'Fatou', role: 'Éditeur', roleT: 'n', action: 'Soumission pour validation', detail: "Portrait : parcours d'une étudiante", ip: '78.2XX.XX.XX' },
+      { date: '8 juillet 2026, 08:15', user: 'Nasser', role: 'Super Admin', roleT: 'g', action: 'Connexion administrateur', detail: 'Connexion depuis Bordeaux', ip: '90.4XX.XX.XX' }
+    ];
+
+    const integrations = [
+      { name: 'Google Maps', desc: 'Affiche la carte sur la page Contact', status: 'Connecté', tone: 'g', sync: "Aujourd'hui, 07:00", actionLabel: 'Configurer' },
+      { name: 'Outil newsletter', desc: 'Envoi des actualités par e-mail', status: 'Connecté', tone: 'g', sync: 'Hier, 22:00', actionLabel: 'Configurer' },
+      { name: 'Paiement / adhésion en ligne', desc: 'Paiement de la cotisation en ligne', status: 'Non connecté', tone: 'n', sync: '—', actionLabel: 'Connecter' },
+      { name: 'Analytics', desc: 'Statistiques de fréquentation du site', status: 'Connecté', tone: 'g', sync: "Aujourd'hui, 06:00", actionLabel: 'Configurer' },
+      { name: 'Réseaux sociaux', desc: 'Partage automatique sur Facebook et Instagram', status: 'Connecté', tone: 'g', sync: 'Il y a 3h', actionLabel: 'Configurer' },
+      { name: 'Formulaires', desc: 'Réception des formulaires du site', status: 'Connecté', tone: 'g', sync: "Aujourd'hui, 09:00", actionLabel: 'Configurer' }
+    ];
+
+    const backupHistory = [
+      { date: '12 juillet 2026, 03:00', status: 'Réussie', tone: 'g', size: '482 Mo' },
+      { date: '11 juillet 2026, 03:00', status: 'Réussie', tone: 'g', size: '480 Mo' },
+      { date: '10 juillet 2026, 03:00', status: 'Réussie', tone: 'g', size: '479 Mo' },
+      { date: '09 juillet 2026, 03:00', status: 'Échouée', tone: 'r', size: '—' }
+    ];
+
+    const legalSections = [
+      { title: 'Mentions légales', updated: '12 juillet 2026' },
+      { title: 'Politique de confidentialité', updated: '12 juillet 2026' },
+      { title: 'Gestion des cookies', updated: '5 mars 2026' },
+      { title: 'Durées de conservation des données', updated: '5 mars 2026' },
+      { title: 'Consentements des formulaires', updated: '5 mars 2026' }
+    ];
+
+    // Helper function for badges
+    function getBadgeHtml(label, tone) {
+      const map = {
+        g: { bg: 'rgba(23,107,77,0.12)', color: '#176B4D' },
+        o: { bg: 'rgba(233,120,36,0.16)', color: '#B75E12' },
+        r: { bg: 'rgba(177,69,36,0.13)', color: '#B14524' },
+        n: { bg: 'rgba(31,41,37,0.08)', color: '#5a655f' }
+      };
+      const c = map[tone] || map.n;
+      return `<span style="background:${c.bg}; color:${c.color}; padding:4px 12px; border-radius:999px; font-size:12px; font-weight:700;">${label}</span>`;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      generateNav();
+      goPage('overview');
+
+      document.querySelectorAll('.logout-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          window.location.href = '/connexion';
+        });
+      });
+
+      // Mobile Drawer actions
+      const openDrawerBtn = document.getElementById('open-mobile-drawer');
+      const closeDrawerBtn = document.getElementById('close-mobile-drawer');
+      const mobileDrawer = document.getElementById('mobile-sidebar-drawer');
+
+      openDrawerBtn.addEventListener('click', () => {
+        mobileDrawer.classList.remove('hidden');
+      });
+      closeDrawerBtn.addEventListener('click', () => {
+        mobileDrawer.classList.add('hidden');
+      });
+    });
+
+    function goPage(pageKey) {
+      state.page = pageKey;
+      
+      document.querySelectorAll('.sidebar-link').forEach(link => {
+        if (link.dataset.page === pageKey) {
+          link.classList.add('active-nav-btn');
+        } else {
+          link.classList.remove('active-nav-btn');
+        }
+      });
+
+      const pageTitleMap = {
+        overview: "Vue d'ensemble", users: 'Utilisateurs & rôles', contenus: 'Contenus & validations',
+        donnees: 'Données & exports', journal: "Journal d'activité", reglages: 'Réglages du site',
+        integrations: 'Intégrations', securite: 'Sécurité', sauvegardes: 'Sauvegardes',
+        mentions: 'Mentions & RGPD', stats: 'Statistiques globales', profil: 'Mon profil'
+      };
+
+      document.getElementById('breadcrumb-page-label').textContent = pageTitleMap[pageKey] || '';
+      document.getElementById('title-page-label').textContent = pageTitleMap[pageKey] || '';
+
+      document.querySelectorAll('section[id^="view-"]').forEach(sec => {
+        sec.classList.add('hidden');
+      });
+      
+      const targetView = document.getElementById(`view-${pageKey}`);
+      if (targetView) targetView.classList.remove('hidden');
+
+      document.getElementById('mobile-sidebar-drawer').classList.add('hidden');
+
+      renderPageDetails(pageKey);
+    }
+
+    function generateNav() {
+      const desktopContainer = document.getElementById('desktop-sidebar-nav');
+      const mobileContainer = document.getElementById('mobile-sidebar-nav');
+
+      desktopContainer.innerHTML = '';
+      mobileContainer.innerHTML = '';
+
+      function createLink(item) {
+        const link = document.createElement('a');
+        link.className = 'sidebar-link';
+        link.dataset.page = item.key;
+        link.style.cursor = 'pointer';
+        const svgContent = svgMap[item.key] || '';
+        link.innerHTML = `${svgContent}<span>${item.label}</span>`;
+        link.addEventListener('click', () => {
+          goPage(item.key);
+        });
+        return link;
+      }
+
+      navigationItems.forEach(item => {
+        if (item.type === 'header') {
+          const header = document.createElement('div');
+          header.style.cssText = 'font-size:11px; font-weight:700; color:#9aa39c; text-transform:uppercase; letter-spacing:0.05em; padding:16px 14px 6px;';
+          header.textContent = item.label;
+          desktopContainer.appendChild(header);
+          mobileContainer.appendChild(header.cloneNode(true));
+        } else if (item.type === 'separator') {
+          const sep = document.createElement('div');
+          sep.style.cssText = 'height:1px; background:rgba(31,41,37,0.07); margin:10px 6px;';
+          desktopContainer.appendChild(sep);
+          mobileContainer.appendChild(sep.cloneNode(true));
+        } else {
+          desktopContainer.appendChild(createLink(item));
+          mobileContainer.appendChild(createLink(item));
+        }
+      });
+    }
+
+    function logActivity(user, role, action, detail) {
+      const date = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      const dateStr = `${date.getDate()} juillet 2026, ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+      
+      journalLogs.unshift({
+        date: dateStr,
+        user,
+        role,
+        roleT: 'g',
+        action,
+        detail,
+        ip: '82.1XX.XX.XX'
+      });
+    }
+
+    function renderPageDetails(pageKey) {
+      if (pageKey === 'overview') {
+        renderOverview();
+      } else if (pageKey === 'users') {
+        renderUsers();
+      } else if (pageKey === 'contenus') {
+        renderValidations();
+      } else if (pageKey === 'donnees') {
+        renderDonnees();
+      } else if (pageKey === 'journal') {
+        renderJournal();
+      } else if (pageKey === 'integrations') {
+        renderIntegrations();
+      } else if (pageKey === 'securite') {
+        renderSecurite();
+      } else if (pageKey === 'sauvegardes') {
+        renderSauvegardes();
+      } else if (pageKey === 'mentions') {
+        renderMentions();
+      } else if (pageKey === 'stats') {
+        renderStats();
+      }
+    }
+
+    // 1. Overview
+    function renderOverview() {
+      const attWrapper = document.getElementById('overview-attention-list');
+      attWrapper.innerHTML = '';
+      attentionItems.forEach(a => {
+        const item = document.createElement('div');
+        item.style.cssText = 'display:flex; align-items:center; gap:12px; padding:12px 14px; background:rgba(233,120,36,0.08); border-radius:12px;';
+        item.innerHTML = `
+          <span style="width:8px; height:8px; border-radius:50%; background:#E97824; flex-shrink:0;"></span>
+          <span style="font-size:13.5px; color:#1F2925;">${a.text}</span>
+        `;
+        attWrapper.appendChild(item);
+      });
+
+      const actWrapper = document.getElementById('overview-activity-list');
+      actWrapper.innerHTML = '';
+      govActivity.forEach(a => {
+        const item = document.createElement('div');
+        item.style.cssText = 'display:flex; gap:12px; align-items:flex-start; font-size:14px; color:#3f4a45;';
+        item.innerHTML = `
+          <div style="width:8px; height:8px; border-radius:50%; background:#176B4D; margin-top:7px; flex-shrink:0;"></div>
+          <div>${a.text}<span style="color:#9aa39c; font-size:12.5px; display:block; margin-top:2px;">${a.time}</span></div>
+        `;
+        actWrapper.appendChild(item);
+      });
+    }
+
+    // 2. Users
+    function renderUsers() {
+      const container = document.getElementById('users-list-container');
+      container.innerHTML = '';
+
+      users.forEach((u, i) => {
+        const isSelected = state.userSelectedIdx === i;
+        const item = document.createElement('div');
+        item.style.cssText = `display:flex; align-items:center; gap:14px; padding:14px 16px; border-bottom:1px solid rgba(31,41,37,0.06); cursor:pointer; flex-wrap:wrap; background:${isSelected ? '#F8F4EC' : 'transparent'}; border-left:3px solid ${isSelected ? '#176B4D' : 'transparent'};`;
+        item.innerHTML = `
+          <div style="width:36px; height:36px; border-radius:50%; background:${u.avatarBg}; flex-shrink:0;"></div>
+          <div style="flex:1; min-width:160px;">
+            <div style="font-size:14px; font-weight:700; color:#1F2925;">${u.name}</div>
+            <div style="font-size:12.5px; color:#5a655f;">${u.email}</div>
+          </div>
+          ${getBadgeHtml(u.role, u.roleT)}
+          ${getBadgeHtml(u.status, u.statusT)}
+          <div style="font-size:12px; color:#9aa39c; min-width:120px;">Dernière con. : ${u.last}</div>
+        `;
+        item.addEventListener('click', () => {
+          state.userSelectedIdx = i;
+          renderUsers();
+        });
+        container.appendChild(item);
+      });
+
+      const detailBox = document.getElementById('user-detail-box');
+      const selected = users[state.userSelectedIdx];
+
+      if (!selected) {
+        detailBox.innerHTML = '';
+        return;
+      }
+
+      detailBox.innerHTML = `
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:18px;">
+          <div style="width:48px; height:48px; border-radius:50%; background:${selected.avatarBg};"></div>
+          <div>
+            <div style="font-size:16px; font-weight:700; color:#1F2925;">${selected.name}</div>
+            <div style="font-size:13px; color:#5a655f;">${selected.email}</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; margin-bottom:18px;">
+          ${getBadgeHtml(selected.role, selected.roleT)}
+          ${getBadgeHtml(selected.status, selected.statusT)}
+        </div>
+        <div style="font-size:13px; color:#5a655f; margin-bottom:6px;">Dernière connexion : ${selected.last}</div>
+        <div style="font-size:13px; font-weight:700; color:#1F2925; margin:16px 0 8px;">Permissions détaillées</div>
+        <p style="font-size:13.5px; line-height:1.6; color:#3f4a45; margin:0 0 20px; background: rgba(31,41,37,0.02); padding: 10px; border-radius:8px;">${selected.permissions}</p>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <button id="user-reset-btn" style="background:#F8F4EC; color:#1F2925; border:none; padding:11px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">Réinitialiser l'accès</button>
+          <button id="user-toggle-btn" style="background:#F8F4EC; color:#1F2925; border:none; padding:11px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">${selected.status === 'Actif' ? 'Suspendre le compte' : 'Activer le compte'}</button>
+        </div>
+      `;
+
+      document.getElementById('user-reset-btn').addEventListener('click', () => {
+        alert(`Lien de réinitialisation de mot de passe envoyé à ${selected.email}`);
+      });
+      document.getElementById('user-toggle-btn').addEventListener('click', () => {
+        if (selected.status === 'Actif') {
+          selected.status = 'Désactivé';
+          selected.statusT = 'r';
+        } else {
+          selected.status = 'Actif';
+          selected.statusT = 'g';
+        }
+        logActivity('Nasser', 'Super Admin', 'Modification statut utilisateur', `${selected.name} (${selected.status})`);
+        renderUsers();
+      });
+
+      const matrixWrapper = document.getElementById('permission-matrix-rows');
+      matrixWrapper.innerHTML = '';
+      permissionMatrix.forEach(row => {
+        const tr = document.createElement('div');
+        tr.style.cssText = 'display:grid; grid-template-columns:1.6fr 1fr 1fr 1fr; gap:8px; padding:10px 0; border-bottom:1px solid rgba(31,41,37,0.05); align-items:center;';
+        tr.innerHTML = `
+          <div style="font-size:13px; color:#1F2925;">${row.label}</div>
+          <div style="text-align:center; font-size:15px; font-weight:600; color:#176B4D;">${row.superadmin}</div>
+          <div style="text-align:center; font-size:15px; font-weight:600; color:#E97824;">${row.admin}</div>
+          <div style="text-align:center; font-size:15px; font-weight:600; color:#5a655f;">${row.editeur}</div>
+        `;
+        matrixWrapper.appendChild(tr);
+      });
+    }
+
+    const toggleInviteBtn = document.getElementById('toggle-invite-btn');
+    const inviteBox = document.getElementById('invite-user-box');
+    toggleInviteBtn.addEventListener('click', () => {
+      state.inviteOpen = !state.inviteOpen;
+      if (state.inviteOpen) {
+        inviteBox.classList.remove('hidden');
+      } else {
+        inviteBox.classList.add('hidden');
+      }
+      document.getElementById('invite-success-alert').classList.add('hidden');
+    });
+
+    document.getElementById('invite-user-submit-btn').addEventListener('click', () => {
+      const name = document.getElementById('invite-form-name').value.trim();
+      const email = document.getElementById('invite-form-email').value.trim();
+      const role = document.getElementById('invite-form-role').value;
+
+      if (!name || !email) {
+        alert('Veuillez remplir le nom et le mail.');
+        return;
+      }
+
+      const roleTMap = { Admin: 'o', 'Super Admin': 'g', 'Éditeur / Bénévole': 'n' };
+      const roleMap = { Admin: 'Admin', 'Super Admin': 'Super Admin', 'Éditeur / Bénévole': 'Éditeur' };
+
+      users.push({
+        name,
+        email,
+        role: roleMap[role],
+        roleT: roleTMap[role],
+        status: 'Invitation envoyée',
+        statusT: 'o',
+        last: '—',
+        avatarBg: 'linear-gradient(150deg,#176B4D,#1F2925)',
+        permissions: `Accès configuré en tant que ${role}`
+      });
+
+      logActivity('Nasser', 'Super Admin', 'Invitation utilisateur', `${name} (${role})`);
+
+      document.getElementById('invite-success-alert').classList.remove('hidden');
+      setTimeout(() => {
+        document.getElementById('invite-form-name').value = '';
+        document.getElementById('invite-form-email').value = '';
+        inviteBox.classList.add('hidden');
+        state.inviteOpen = false;
+        renderUsers();
+      }, 1500);
+    });
+
+    // 3. Validations
+    function renderValidations() {
+      const listWrapper = document.getElementById('validations-queue-list');
+      listWrapper.innerHTML = '';
+
+      validationQueue.forEach((c, i) => {
+        const isSelected = state.validationSelectedIdx === i;
+        const item = document.createElement('div');
+        item.style.cssText = `padding:16px; border-bottom:1px solid rgba(31,41,37,0.06); cursor:pointer; background:${isSelected ? '#F8F4EC' : 'transparent'}; border-left:3px solid ${isSelected ? '#176B4D' : 'transparent'};`;
+        item.innerHTML = `
+          <div style="display:flex; justify-content:space-between; gap:8px;">
+            <span style="background:rgba(23,107,77,0.08); color:#176B4D; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700;">${c.type}</span>
+            <span style="font-size:12px; color:#9aa39c;">${c.date}</span>
+          </div>
+          <div style="font-size:14px; font-weight:700; color:#1F2925; margin-top:8px;">${c.title}</div>
+          <div style="font-size:12.5px; color:#5a655f; margin-top:2px;">Par ${c.author} · ${c.status}</div>
+        `;
+        item.addEventListener('click', () => {
+          state.validationSelectedIdx = i;
+          renderValidations();
+        });
+        listWrapper.appendChild(item);
+      });
+
+      const detailBox = document.getElementById('validation-detail-box');
+      const selected = validationQueue[state.validationSelectedIdx] || validationQueue[0];
+
+      if (!selected) {
+        detailBox.innerHTML = '';
+        return;
+      }
+
+      detailBox.innerHTML = `
+        <h3 style="font-size:16px; font-weight:700; color:#1F2925; margin:0 0 6px;">${selected.title}</h3>
+        <div style="font-size:13px; color:#5a655f; margin-bottom:16px;">Par ${selected.author} · ${selected.date}</div>
+        <div style="aspect-ratio:16/9; border-radius:14px; background:linear-gradient(150deg,#E8D8BF,#176B4D); margin-bottom:18px;"></div>
+        <div style="font-size:13px; font-weight:700; color:#1F2925; margin-bottom:8px;">Commentaire pour l'auteur</div>
+        <textarea id="validation-comment-text" rows="2" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:13.5px; resize:vertical; margin-bottom:16px;" placeholder="Optionnel..."></textarea>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button id="validation-approve-btn" style="background:#176B4D; color:#FFFFFF; border:none; padding:11px 20px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">Approuver et publier</button>
+          <button id="validation-return-btn" style="background:#F8F4EC; color:#1F2925; border:none; padding:11px 20px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">Renvoyer avec commentaire</button>
+        </div>
+      `;
+
+      document.getElementById('validation-approve-btn').addEventListener('click', () => {
+        validationQueue.splice(state.validationSelectedIdx, 1);
+        state.validationSelectedIdx = 0;
+        logActivity('Nasser', 'Super Admin', 'Validation de contenu', selected.title);
+        alert(`Le contenu "${selected.title}" a été approuvé et publié !`);
+        renderValidations();
+      });
+
+      document.getElementById('validation-return-btn').addEventListener('click', () => {
+        const comment = document.getElementById('validation-comment-text').value.trim() || 'Des ajustements sont requis.';
+        selected.status = 'Renvoyé avec commentaire';
+        logActivity('Nasser', 'Super Admin', 'Retour de contenu', `${selected.title} : ${comment}`);
+        alert(`Le contenu a été renvoyé avec votre commentaire.`);
+        renderValidations();
+      });
+    }
+
+    // 4. Données
+    function renderDonnees() {
+      const wrapper = document.getElementById('personal-data-requests-container');
+      wrapper.innerHTML = '';
+      
+      dataRequests.forEach(r => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex; align-items:center; gap:16px; padding:14px 0; border-bottom:1px solid rgba(31,41,37,0.06); flex-wrap:wrap;';
+        row.innerHTML = `
+          <div style="flex:1; min-width:180px; font-size:14px; font-weight:700; color:#1F2925;">${r.type}</div>
+          <div style="min-width:140px; font-size:13px; color:#5a655f;">${r.requester}</div>
+          ${getBadgeHtml(r.status, r.tone)}
+          <div style="min-width:140px; font-size:13px; color:#5a655f;">Resp. : ${r.responsable}</div>
+          <div style="min-width:140px; font-size:13px; color:#5a655f;">Échéance : ${r.deadline}</div>
+        `;
+        wrapper.appendChild(row);
+      });
+    }
+
+    const generateExportBtn = document.getElementById('generate-export-btn');
+    const exportConfirmBox = document.getElementById('export-confirm-box');
+    const exportSuccessAlert = document.getElementById('export-success-alert');
+
+    generateExportBtn.addEventListener('click', () => {
+      const reason = document.getElementById('export-reason').value.trim();
+      if (!reason) {
+        alert('Veuillez entrer une raison de sécurité pour justifier cet export.');
+        return;
+      }
+      exportConfirmBox.classList.remove('hidden');
+      exportSuccessAlert.classList.add('hidden');
+    });
+
+    document.getElementById('confirm-export-action').addEventListener('click', () => {
+      const reason = document.getElementById('export-reason').value.trim();
+      exportConfirmBox.classList.add('hidden');
+      exportSuccessAlert.classList.remove('hidden');
+      logActivity('Nasser', 'Super Admin', 'Export de données sécurisé', reason);
+      setTimeout(() => {
+        exportSuccessAlert.classList.add('hidden');
+        document.getElementById('export-reason').value = '';
+      }, 2000);
+    });
+
+    document.getElementById('cancel-export-action').addEventListener('click', () => {
+      exportConfirmBox.classList.add('hidden');
+    });
+
+    // 5. Journal
+    function renderJournal() {
+      const tabsWrapper = document.querySelector('.journal-tab-container');
+      tabsWrapper.innerHTML = '';
+      const filters = ['Tous', 'Mariama', 'Nasser', 'Fatou'];
+
+      filters.forEach(f => {
+        const btn = document.createElement('button');
+        btn.style.cssText = `border:2px solid #176B4D; padding:9px 18px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;`;
+        if (state.journalUserFilter === f) {
+          btn.style.background = '#176B4D';
+          btn.style.color = '#FFFFFF';
+        } else {
+          btn.style.background = 'transparent';
+          btn.style.color = '#176B4D';
+        }
+        btn.textContent = f;
+        btn.addEventListener('click', () => {
+          state.journalUserFilter = f;
+          renderJournal();
+        });
+        tabsWrapper.appendChild(btn);
+      });
+
+      const container = document.getElementById('journal-list-container');
+      container.innerHTML = '';
+
+      const filtered = state.journalUserFilter === 'Tous' ? journalLogs : journalLogs.filter(j => j.user === state.journalUserFilter);
+
+      filtered.forEach(j => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex; gap:16px; padding:16px; border-bottom:1px solid rgba(31,41,37,0.06); flex-wrap:wrap; font-size: 13.5px;';
+        row.innerHTML = `
+          <div style="min-width:170px; color:#5a655f;">${j.date}</div>
+          <div style="min-width:110px; font-weight:700; color:#1F2925;">${j.user}</div>
+          <div style="min-width:120px;">${getBadgeHtml(j.role, j.roleT)}</div>
+          <div style="flex:1; min-width:220px; color:#1F2925;"><strong>${j.action}</strong> — <span style="color:#5a655f;">${j.detail}</span></div>
+          <div style="font-size:11.5px; color:#9aa39c;">IP ${j.ip}</div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    // 6. Intégrations
+    function renderIntegrations() {
+      const container = document.getElementById('integrations-list-container');
+      container.innerHTML = '';
+
+      integrations.forEach(i => {
+        const card = document.createElement('div');
+        card.style.cssText = 'background:#FFFFFF; border-radius:18px; padding:22px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display: flex; flex-direction: column; justify-content: space-between;';
+        card.innerHTML = `
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; gap: 8px;">
+              <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0;">${i.name}</h3>
+              ${getBadgeHtml(i.status, i.tone)}
+            </div>
+            <p style="font-size:13px; color:#5a655f; line-height:1.5; margin:0 0 12px;">${i.desc}</p>
+            <div style="font-size:11.5px; color:#9aa39c; margin-bottom:14px;">Synchro : ${i.sync}</div>
+          </div>
+          <button style="background:#F8F4EC; color:#1F2925; border:none; padding:9px 18px; border-radius:999px; font-weight:700; font-size:12.5px; cursor:pointer;" onclick="alert('Configuration integration : ${i.name}')">${i.actionLabel}</button>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // 7. Sécurité
+    function renderSecurite() {
+      const toggleBtn = document.getElementById('twofa-toggle-btn');
+      const indicator = document.getElementById('twofa-toggle-indicator');
+      const statusLabel = document.getElementById('twofa-status-label');
+
+      const update2FA = () => {
+        if (state.twoFA) {
+          toggleBtn.style.background = '#176B4D';
+          indicator.style.left = '23px';
+          statusLabel.textContent = 'Activée pour votre compte.';
+        } else {
+          toggleBtn.style.background = '#d8d0c0';
+          indicator.style.left = '3px';
+          statusLabel.textContent = 'Désactivée — activation recommandée.';
+        }
+      };
+
+      toggleBtn.replaceWith(toggleBtn.cloneNode(true));
+      document.getElementById('twofa-toggle-btn').addEventListener('click', () => {
+        state.twoFA = !state.twoFA;
+        update2FA();
+        logActivity('Nasser', 'Super Admin', 'Sécurité 2FA modifiée', state.twoFA ? '2FA Activée' : '2FA Désactivée');
+      });
+
+      update2FA();
+
+      const list = document.getElementById('active-sessions-list');
+      list.innerHTML = '';
+      const sessions = [
+        { device: 'Chrome — Windows (Garba)', location: 'Bordeaux, France', time: 'Session active' },
+        { device: 'Safari — iPhone', location: 'Bordeaux, France', time: 'Il y a 1 heure' },
+        { device: 'Chrome — Windows (Test)', location: 'Paris, France', time: 'Il y a 2 jours' }
+      ];
+
+      sessions.forEach(s => {
+        const item = document.createElement('div');
+        item.style.cssText = 'display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid rgba(31,41,37,0.06); font-size:13.5px; flex-wrap:wrap; gap:8px;';
+        item.innerHTML = `
+          <span style="color:#1F2925; font-weight:600;">${s.device}</span>
+          <span style="color:#5a655f;">${s.location}</span>
+          <span style="color:#9aa39c;">${s.time}</span>
+        `;
+        list.appendChild(item);
+      });
+
+      document.getElementById('disconnect-all-btn').onclick = () => {
+        alert('Toutes les autres sessions ont été déconnectées.');
+        logActivity('Nasser', 'Super Admin', 'Déconnexion sessions actives', 'Toutes sessions tierces révoquées');
+      };
+    }
+
+    // 8. Sauvegardes
+    function renderSauvegardes() {
+      const historyList = document.getElementById('backup-history-list');
+      historyList.innerHTML = '';
+
+      backupHistory.forEach(b => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid rgba(31,41,37,0.06); font-size:13.5px; flex-wrap:wrap; gap:8px;';
+        row.innerHTML = `
+          <span style="color:#1F2925;">${b.date}</span>
+          ${getBadgeHtml(b.status, b.tone)}
+          <span style="color:#9aa39c;">${b.size}</span>
+        `;
+        historyList.appendChild(row);
+      });
+    }
+
+    const runBackupBtn = document.getElementById('run-backup-btn');
+    const backupAlert = document.getElementById('backup-running-alert');
+    runBackupBtn.addEventListener('click', () => {
+      backupAlert.classList.remove('hidden');
+      const date = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      const dateStr = `${date.getDate()} juillet 2026, ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+      
+      backupHistory.unshift({
+        date: dateStr,
+        status: 'Réussie',
+        tone: 'g',
+        size: '483 Mo'
+      });
+
+      logActivity('Nasser', 'Super Admin', 'Lancement de sauvegarde', 'Sauvegarde manuelle du système');
+
+      setTimeout(() => {
+        backupAlert.classList.add('hidden');
+        renderSauvegardes();
+      }, 1500);
+    });
+
+    const openRestoreBtn = document.getElementById('open-restore-btn');
+    const restoreBox = document.getElementById('restore-confirm-box');
+
+    openRestoreBtn.addEventListener('click', () => {
+      restoreBox.classList.remove('hidden');
+    });
+    document.getElementById('cancel-restore-action').addEventListener('click', () => {
+      restoreBox.classList.add('hidden');
+    });
+    document.getElementById('confirm-restore-action').addEventListener('click', () => {
+      restoreBox.classList.add('hidden');
+      alert('Restauration système complétée.');
+      logActivity('Nasser', 'Super Admin', 'Restauration système', 'Restauration effectuée avec succès');
+      renderSauvegardes();
+    });
+
+    // 9. Mentions
+    function renderMentions() {
+      const container = document.getElementById('legal-sections-container');
+      container.innerHTML = '';
+
+      legalSections.forEach(ls => {
+        const item = document.createElement('div');
+        item.style.cssText = 'background:#FFFFFF; border-radius:18px; padding:22px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display: flex; justify-content: space-between; align-items: center; gap: 14px;';
+        item.innerHTML = `
+          <div>
+            <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0 0 6px;">${ls.title}</h3>
+            <div style="font-size:12.5px; color:#9aa39c;">Dernière modification : ${ls.updated}</div>
+          </div>
+          <button style="background:#F8F4EC; color:#1F2925; border:none; padding:8px 16px; border-radius:999px; font-weight:700; font-size:12.5px; cursor:pointer;" onclick="alert('Modifier : ${ls.title}')">Modifier</button>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    // 10. Statistiques
+    function renderStats() {
+      const periodsWrapper = document.querySelector('.stats-period-container');
+      periodsWrapper.innerHTML = '';
+      const periodDefs = ['7 jours', '30 jours', '3 mois', '1 an'];
+
+      periodDefs.forEach(p => {
+        const btn = document.createElement('button');
+        btn.style.cssText = `border:2px solid #176B4D; padding:8px 16px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;`;
+        if (state.statsPeriod === p) {
+          btn.style.background = '#176B4D';
+          btn.style.color = '#FFFFFF';
+        } else {
+          btn.style.background = 'transparent';
+          btn.style.color = '#176B4D';
+        }
+        btn.textContent = p;
+        btn.addEventListener('click', () => {
+          state.statsPeriod = p;
+          renderStats();
+        });
+        periodsWrapper.appendChild(btn);
+      });
+
+      const barsWrapper = document.getElementById('visit-bars-container');
+      barsWrapper.innerHTML = '';
+      const visitHeights = {
+        '7 jours': [45, 60, 50, 75, 60, 90, 70],
+        '30 jours': [65, 80, 55, 90, 75, 100, 85],
+        '3 mois': [50, 55, 45, 70, 65, 80, 75],
+        '1 an': [30, 45, 40, 60, 50, 75, 65]
+      };
+      
+      const heights = visitHeights[state.statsPeriod] || visitHeights['30 jours'];
+      const days = ['L','M','M','J','V','S','D'];
+
+      heights.forEach((h, idx) => {
+        const barCol = document.createElement('div');
+        barCol.style.cssText = 'flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; height:100%; justify-content:flex-end;';
+        barCol.innerHTML = `
+          <div style="width:100%; max-width:32px; height:${h}%; background:#176B4D; border-radius:8px 8px 0 0; transition: height 0.3s ease;"></div>
+          <span style="font-size:11px; color:#9aa39c;">${days[idx]}</span>
+        `;
+        barsWrapper.appendChild(barCol);
+      });
+
+      const pagesList = document.getElementById('top-pages-list');
+      pagesList.innerHTML = '';
+      const pData = [
+        { name: 'Accueil', views: state.statsPeriod === '7 jours' ? '410' : '2 140' },
+        { name: 'Événements', views: state.statsPeriod === '7 jours' ? '180' : '980' },
+        { name: "L'association", views: state.statsPeriod === '7 jours' ? '120' : '640' },
+        { name: 'Culture nigérienne', views: state.statsPeriod === '7 jours' ? '82' : '410' }
+      ];
+      pData.forEach(tp => {
+        const item = document.createElement('div');
+        item.style.cssText = 'display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid rgba(31,41,37,0.06); font-size:13.5px;';
+        item.innerHTML = `<span style="color:#1F2925;">${tp.name}</span><span style="font-weight:700; color:#176B4D;">${tp.views}</span>`;
+        pagesList.appendChild(item);
+      });
+
+      const articlesList = document.getElementById('top-articles-list');
+      articlesList.innerHTML = '';
+      const aData = [
+        { name: 'Retour sur notre rencontre', views: state.statsPeriod === '7 jours' ? '92' : '520' },
+        { name: 'Bienvenue aux membres', views: state.statsPeriod === '7 jours' ? '70' : '380' },
+        { name: 'Appel à bénévoles', views: state.statsPeriod === '7 jours' ? '54' : '310' }
+      ];
+      aData.forEach(ta => {
+        const item = document.createElement('div');
+        item.style.cssText = 'display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid rgba(31,41,37,0.06); font-size:13.5px;';
+        item.innerHTML = `<span style="color:#1F2925;">${ta.name}</span><span style="font-weight:700; color:#176B4D;">${ta.views}</span>`;
+        articlesList.appendChild(item);
+      });
+    }
+  </script>
+
+</body>
+</html>

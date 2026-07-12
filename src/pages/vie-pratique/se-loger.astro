@@ -1,0 +1,110 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Se loger à Bordeaux" description="Guide logement pour les Nigériens à Bordeaux : recherche d'appartement, garanties, colocation et quartiers accueillants.">
+  <main style="background:var(--color-cream); min-height:88vh;">
+
+    <div style="background:linear-gradient(135deg,#B85C1A 0%,#8a3f0f 100%); padding:70px clamp(20px,5vw,80px) 80px; position:relative; overflow:hidden;">
+      <div style="position:absolute;inset:0;background:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22400%22><circle cx=%22350%22 cy=%2250%22 r=%22200%22 fill=%22rgba(255,255,255,0.04)%22/></svg>') no-repeat;pointer-events:none;"></div>
+      <div style="max-width:860px;margin:0 auto;position:relative;">
+        <a href="/vie-pratique" style="display:inline-flex;align-items:center;gap:8px;color:rgba(255,255,255,0.7);font-size:13px;font-weight:600;text-decoration:none;margin-bottom:24px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          Vie pratique
+        </a>
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+          <div style="width:54px;height:54px;border-radius:16px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><path d="M4 11l8-7 8 7"/><path d="M6 10v9a1 1 0 001 1h10a1 1 0 001-1v-9"/></svg>
+          </div>
+          <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:0.08em;text-transform:uppercase;">Vie pratique</span>
+        </div>
+        <h1 style="font-family:var(--font-display);font-weight:800;font-size:clamp(2rem,4.5vw,3rem);color:#FFFFFF;margin:0 0 16px;line-height:1.15;">Se loger à Bordeaux</h1>
+        <p style="font-size:17px;line-height:1.7;color:rgba(255,255,255,0.8);margin:0;max-width:640px;">Trouver un logement est souvent le premier défi à Bordeaux. Voici les clés pour chercher efficacement et éviter les pièges.</p>
+      </div>
+    </div>
+
+    <div style="max-width:860px;margin:0 auto;padding:60px clamp(20px,4vw,40px) 80px;">
+      <div style="display:grid;gap:28px;">
+
+        <div style="background:#FFFFFF;border-radius:24px;padding:32px;box-shadow:0 8px 28px rgba(31,41,37,0.06);">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+            <span style="font-size:24px;">🔍</span>
+            <h2 style="font-family:var(--font-display);font-size:20px;font-weight:800;color:var(--color-dark);margin:0;">Où chercher un logement</h2>
+          </div>
+          <div style="display:grid;gap:12px;margin-bottom:16px;">
+            <div style="background:#F8F4EC;border-radius:14px;padding:16px 18px;">
+              <div style="font-weight:700;color:#1F2925;font-size:14.5px;margin-bottom:4px;">Résidences universitaires (CROUS)</div>
+              <div style="color:#5a655f;font-size:14px;">Option la moins chère. Faites la demande dès votre inscription via trouverunlogement.lescrous.fr</div>
+            </div>
+            <div style="background:#F8F4EC;border-radius:14px;padding:16px 18px;">
+              <div style="font-weight:700;color:#1F2925;font-size:14.5px;margin-bottom:4px;">SeLoger, Leboncoin, PAP</div>
+              <div style="color:#5a655f;font-size:14px;">Plateformes généralistes pour trouver studios et appartements à louer entre particuliers.</div>
+            </div>
+            <div style="background:#F8F4EC;border-radius:14px;padding:16px 18px;">
+              <div style="font-weight:700;color:#1F2925;font-size:14.5px;margin-bottom:4px;">Résidences privées étudiantes</div>
+              <div style="color:#5a655f;font-size:14px;">Nexity, Studéa, Kardham… Elles proposent des services inclus mais sont plus chères.</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#FFFFFF;border-radius:24px;padding:32px;box-shadow:0 8px 28px rgba(31,41,37,0.06);">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+            <span style="font-size:24px;">📋</span>
+            <h2 style="font-family:var(--font-display);font-size:20px;font-weight:800;color:var(--color-dark);margin:0;">Dossier de location : les pièces à fournir</h2>
+          </div>
+          <ul style="padding-left:20px;color:#3f4a45;font-size:15px;line-height:1.9;margin:0 0 16px;">
+            <li>Pièce d'identité ou titre de séjour en cours de validité</li>
+            <li>Justificatif d'inscription universitaire ou contrat de travail</li>
+            <li>3 derniers relevés de compte bancaire</li>
+            <li>Justificatif de ressources (bourse, aide familiale, etc.)</li>
+            <li>Garant (personne ou organisme)</li>
+          </ul>
+          <div style="background:rgba(233,120,36,0.08);border-radius:12px;padding:14px 16px;font-size:14px;color:#5a655f;border-left:3px solid var(--color-orange);">
+            <strong style="color:var(--color-dark);">💡 Astuce :</strong> Si vous n'avez pas de garant en France, utilisez <strong>Visale</strong> (garant gratuit de l'État) ou <strong>GarantMe</strong>.
+          </div>
+        </div>
+
+        <div style="background:#FFFFFF;border-radius:24px;padding:32px;box-shadow:0 8px 28px rgba(31,41,37,0.06);">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+            <span style="font-size:24px;">🤝</span>
+            <h2 style="font-family:var(--font-display);font-size:20px;font-weight:800;color:var(--color-dark);margin:0;">Colocation</h2>
+          </div>
+          <p style="font-size:15px;line-height:1.75;color:#3f4a45;margin:0 0 12px;">La colocation est une excellente solution pour réduire les coûts et créer des liens sociaux rapidement.</p>
+          <ul style="padding-left:20px;color:#3f4a45;font-size:15px;line-height:1.9;margin:0;">
+            <li><strong>La Carte des Colocs</strong> et <strong>Appartager</strong> : les plateformes dédiées</li>
+            <li>Groupes Facebook de la communauté nigérienne à Bordeaux</li>
+            <li>L'ANB peut vous orienter vers des membres qui cherchent des colocataires</li>
+          </ul>
+        </div>
+
+        <div style="background:#FFFFFF;border-radius:24px;padding:32px;box-shadow:0 8px 28px rgba(31,41,37,0.06);">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+            <span style="font-size:24px;">🗺️</span>
+            <h2 style="font-family:var(--font-display);font-size:20px;font-weight:800;color:var(--color-dark);margin:0;">Quartiers accueillants à Bordeaux</h2>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
+            <div style="background:#F8F4EC;border-radius:14px;padding:16px;text-align:center;">
+              <div style="font-weight:700;color:#1F2925;font-size:14px;margin-bottom:4px;">Talence / Pessac</div>
+              <div style="color:#5a655f;font-size:13px;">Proches des campus universitaires, nombreux logements étudiants</div>
+            </div>
+            <div style="background:#F8F4EC;border-radius:14px;padding:16px;text-align:center;">
+              <div style="font-weight:700;color:#1F2925;font-size:14px;margin-bottom:4px;">Bordeaux Nord</div>
+              <div style="color:#5a655f;font-size:13px;">Quartiers Grand Parc, Bacalan — loyers plus accessibles</div>
+            </div>
+            <div style="background:#F8F4EC;border-radius:14px;padding:16px;text-align:center;">
+              <div style="font-weight:700;color:#1F2925;font-size:14px;margin-bottom:4px;">Mériadeck</div>
+              <div style="color:#5a655f;font-size:13px;">Centre-ville, bien desservi par le tramway</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="margin-top:48px;background:linear-gradient(135deg,rgba(23,107,77,0.08),rgba(233,120,36,0.06));border-radius:24px;padding:36px;text-align:center;border:1px solid rgba(23,107,77,0.1);">
+        <p style="font-size:16px;font-weight:700;color:var(--color-dark);margin:0 0 8px;">Vous cherchez un logement ou un colocataire ?</p>
+        <p style="font-size:14px;color:var(--color-muted-text);margin:0 0 20px;">Rejoignez la communauté ANB pour être mis en relation avec des membres qui peuvent vous aider.</p>
+        <a href="/adherer" style="display:inline-block;background:var(--color-orange);color:#FFFFFF;text-decoration:none;padding:13px 28px;border-radius:999px;font-weight:700;font-size:14.5px;box-shadow:0 8px 20px rgba(233,120,36,0.25);">Rejoindre la communauté ANB</a>
+      </div>
+    </div>
+  </main>
+</Layout>

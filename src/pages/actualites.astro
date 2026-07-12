@@ -1,6 +1,20 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { newsArticles } from '../lib/demo-data';
+import { env } from "cloudflare:workers";
+
+export const prerender = false;
+
+const db = env.DB;
+let newsArticles = [];
+
+try {
+  if (db) {
+    const { results } = await db.prepare("SELECT * FROM actualites WHERE status = 'Publié' ORDER BY created_at DESC").all();
+    newsArticles = results;
+  }
+} catch (error) {
+  console.error("Erreur de récupération D1 pour les actualités :", error);
+}
 ---
 
 <Layout title="Actualités" description="Ce qui fait vivre la communauté nigérienne de Bordeaux, semaine après semaine.">
@@ -8,19 +22,36 @@ import { newsArticles } from '../lib/demo-data';
     <section style="max-width:1280px; margin:0 auto; padding:70px clamp(20px,4vw,48px) 90px;">
       <div style="font-size:13px; font-weight:700; color:#E97824; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:16px;">Actualités</div>
       <h1 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(2.1rem,4vw,3rem); color:#1F2925; margin:0 0 48px; max-width:760px;">Ce qui fait vivre la communauté, semaine après semaine.</h1>
-      <div data-grid-mobile="1" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:28px;">
-        {newsArticles.map((article) => (
-          <div style="background:#FFFFFF; border-radius:24px; overflow:hidden; box-shadow:0 10px 26px rgba(31,41,37,0.07);">
-            <div style={`aspect-ratio:16/10; background:${article.bg};`}></div>
-            <div style="padding:26px;">
-              <div style="font-size:12px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">{article.category} · {article.date}</div>
-              <h3 style="font-size:18px; font-weight:700; color:#1F2925; margin:0 0 12px; line-height:1.35;">{article.title}</h3>
-              <p style="font-size:14.5px; line-height:1.6; color:#5a655f; margin:0 0 18px;">{article.excerpt}</p>
-              <span style="font-size:14px; font-weight:700; color:#176B4D;">Lire l'article →</span>
+      
+      {newsArticles.length === 0 ? (
+        <div style="text-align:center; padding:50px; color:#5a655f; font-size:1.1rem;">
+          Aucune actualité publiée pour le moment. Revenez bientôt !
+        </div>
+      ) : (
+        <div data-grid-mobile="1" data-reveal-group style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:28px;">
+          {newsArticles.map((article) => (
+            <div style="background:#FFFFFF; border-radius:24px; overflow:hidden; box-shadow:0 10px 26px rgba(31,41,37,0.07); display:flex; flex-direction:column; justify-content:space-between;">
+              <div>
+                {article.bg_gradient.startsWith('/') || article.bg_gradient.startsWith('http') ? (
+                  <div style={`aspect-ratio:16/10; background: url('${article.bg_gradient}') center/cover no-repeat;`}></div>
+                ) : (
+                  <div style={`aspect-ratio:16/10; background: ${article.bg_gradient};`}></div>
+                )}
+                <div style="padding:26px 26px 10px;">
+                  <div style="font-size:12px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">
+                    {article.category} · {article.created_at.split(' ')[0]}
+                  </div>
+                  <h3 style="font-size:18px; font-weight:700; color:#1F2925; margin:0 0 12px; line-height:1.35;">{article.title}</h3>
+                  <p style="font-size:14.5px; line-height:1.6; color:#5a655f; margin:0 0 18px;">{article.excerpt}</p>
+                </div>
+              </div>
+              <div style="padding:0 26px 26px;">
+                <a href={`/actualites/${article.slug}`} style="font-size:14px; font-weight:700; color:#176B4D; text-decoration:none; display:inline-block;">Lire l'article →</a>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </section>
   </main>
 </Layout>

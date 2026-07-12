@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <title>Espace ANB — Connexion</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style is:global>
+    :root {
+      --color-cream: #F8F4EC;
+      --color-green: #176B4D;
+      --color-orange: #E97824;
+      --color-dark: #1F2925;
+      --color-sand: #E8D8BF;
+      --color-body-text: #3f4a45;
+      --font-display: 'Unbounded', sans-serif;
+      --font-body: 'Manrope', sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-body);
+      background: var(--color-cream);
+      color: var(--color-dark);
+      -webkit-font-smoothing: antialiased;
+    }
+    input { font-family: inherit; }
+    
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in { animation: fadeInUp 0.4s ease both; }
+    
+    .role-btn {
+      transition: all 0.2s ease;
+    }
+    .role-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(31, 41, 37, 0.06);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="login-view" class="fade-in" style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; background:radial-gradient(circle at 20% 20%, rgba(233,120,36,0.08), transparent 45%), radial-gradient(circle at 80% 80%, rgba(23,107,77,0.08), transparent 45%), #F8F4EC;">
+    <div style="width:100%; max-width:460px; background:#FFFFFF; border-radius:28px; padding:clamp(28px,4vw,44px); box-shadow:0 30px 60px rgba(31,41,37,0.12);">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:28px;">
+        <div style="width:46px; height:46px; border-radius:13px; background:#176B4D; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <span style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:14px; color:#FFFFFF;">ANB</span>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:16px; color:#176B4D; white-space:nowrap;">Espace ANB</div>
+          <div style="font-size:12px; color:#5a655f; white-space:nowrap;">Administration du site</div>
+        </div>
+      </div>
+      <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0 0 6px;">Connexion</h1>
+      <p style="font-size:14px; color:#5a655f; margin:0 0 24px;">Choisissez un rôle de démonstration pour explorer l'espace correspondant.</p>
+
+      <!-- Role selection options -->
+      <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:22px;">
+        <button id="role-select-super-admin" class="role-btn" style="display:flex; align-items:center; gap:14px; text-align:left; padding:14px 16px; border-radius:16px; border:2px solid #176B4D; background:rgba(23,107,77,0.05); cursor:pointer; width: 100%;">
+          <div style="width:38px; height:38px; border-radius:10px; background:rgba(23,107,77,0.12); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="1.8"><circle cx="12" cy="8" r="3.4"></circle><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"></path></svg>
+          </div>
+          <div>
+            <div style="font-size:14.5px; font-weight:700; color:#1F2925;">Super Admin</div>
+            <div style="font-size:12.5px; color:#5a655f;">Gouvernance, sécurité, utilisateurs et réglages</div>
+          </div>
+        </button>
+        <button id="role-select-admin" class="role-btn" style="display:flex; align-items:center; gap:14px; text-align:left; padding:14px 16px; border-radius:16px; border:2px solid #EDE6D6; background:#FFFFFF; cursor:pointer; width: 100%;">
+          <div style="width:38px; height:38px; border-radius:10px; background:rgba(233,120,36,0.14); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E97824" stroke-width="1.8"><circle cx="12" cy="8" r="3.4"></circle><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"></path></svg>
+          </div>
+          <div>
+            <div style="font-size:14.5px; font-weight:700; color:#1F2925;">Admin</div>
+            <div style="font-size:12.5px; color:#5a655f;">Animation quotidienne du site : contenus et demandes</div>
+          </div>
+        </button>
+        <button id="role-select-editeur" class="role-btn" style="display:flex; align-items:center; gap:14px; text-align:left; padding:14px 16px; border-radius:16px; border:2px solid #EDE6D6; background:#FFFFFF; cursor:pointer; width: 100%;">
+          <div style="width:38px; height:38px; border-radius:10px; background:rgba(31,41,37,0.06); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F2925" stroke-width="1.8"><circle cx="12" cy="8" r="3.4"></circle><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"></path></svg>
+          </div>
+          <div>
+            <div style="font-size:14.5px; font-weight:700; color:#1F2925;">Éditeur / Bénévole</div>
+            <div style="font-size:12.5px; color:#5a655f;">Contribution en brouillon, avec validation</div>
+          </div>
+        </button>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
+        <input id="login-email" type="email" style="width:100%; padding:13px 16px; border-radius:12px; border:1.5px solid #e3dccb; font-size:14.5px;" placeholder="votre.email@anb-bordeaux.fr" />
+        <input id="login-password" type="password" style="width:100%; padding:13px 16px; border-radius:12px; border:1.5px solid #e3dccb; font-size:14.5px;" placeholder="Mot de passe (démo)" value="demo1234" />
+      </div>
+      <button id="login-submit-btn" style="width:100%; background:#E97824; color:#FFFFFF; border:none; padding:15px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer; box-shadow:0 10px 22px rgba(233,120,36,0.28); transition: background 0.2s;" onmouseover="this.style.background='#d06313'" onmouseout="this.style.background='#E97824'">Se connecter — <span id="login-role-label">Super Admin</span></button>
+    </div>
+  </div>
+
+  <script>
+    let activeRole = 'super_admin';
+
+    const usersData = {
+      super_admin: { name: 'Nasser Diallo', firstName: 'nasser' },
+      admin: { name: 'Mariama Souley', firstName: 'mariama' },
+      editeur: { name: 'Fatou Ibrahim', firstName: 'fatou' }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const roleBtns = {
+        super_admin: document.getElementById('role-select-super-admin'),
+        admin: document.getElementById('role-select-admin'),
+        editeur: document.getElementById('role-select-editeur')
+      };
+      
+      const roleLabelText = document.getElementById('login-role-label');
+      const emailInput = document.getElementById('login-email');
+      
+      Object.keys(roleBtns).forEach(r => {
+        roleBtns[r].addEventListener('click', () => {
+          activeRole = r;
+          
+          Object.keys(roleBtns).forEach(k => {
+            const btn = roleBtns[k];
+            if (k === r) {
+              btn.style.border = '2px solid #176B4D';
+              btn.style.background = 'rgba(23,107,77,0.05)';
+            } else {
+              btn.style.border = '2px solid #EDE6D6';
+              btn.style.background = '#FFFFFF';
+            }
+          });
+          
+          const labelMap = {
+            super_admin: 'Super Admin',
+            admin: 'Admin',
+            editeur: 'Éditeur / Bénévole'
+          };
+          roleLabelText.textContent = labelMap[r];
+          emailInput.value = `${usersData[r].firstName}.${usersData[r].name.split(' ')[1].toLowerCase()}@anb-bordeaux.fr`;
+        });
+      });
+      
+      // Default choice
+      roleBtns.super_admin.click();
+
+      // Submit connexion
+      document.getElementById('login-submit-btn').addEventListener('click', () => {
+        if (activeRole === 'super_admin') {
+          window.location.href = '/superadmin';
+        } else if (activeRole === 'admin') {
+          window.location.href = '/admin';
+        } else if (activeRole === 'editeur') {
+          window.location.href = '/editeur';
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

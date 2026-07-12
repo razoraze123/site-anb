@@ -1,0 +1,8 @@
+---
+// Redirige vers /adherer qui est désormais la page principale d'inscription
+export const prerender = false;
+
+export async function GET({ redirect }) {
+  return redirect('/adherer', 301);
+}
+---

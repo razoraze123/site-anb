@@ -1,6 +1,7 @@
 ---
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import Chatbot from '../components/Chatbot.astro';
 import '../styles/global.css';
 
 interface Props {
@@ -34,6 +35,7 @@ const {
       <Header />
       <slot />
       <Footer />
+      <Chatbot />
     </div>
     <script>
       // Drives the orange "shelf-thread" progress bar under each mobile
@@ -62,6 +64,34 @@ const {
         });
       }
       document.addEventListener('DOMContentLoaded', initShelfThreads);
+
+      // Reveal-on-scroll: fades in [data-reveal] elements (and staggers the
+      // children of [data-reveal-group] containers) the first time they
+      // enter the viewport. Pure CSS transition + a single IntersectionObserver
+      // — no animation library.
+      function initReveal() {
+        const targets = document.querySelectorAll<HTMLElement>('[data-reveal], [data-reveal-group]');
+        if (!targets.length) return;
+
+        if (!('IntersectionObserver' in window)) {
+          targets.forEach((el) => el.classList.add('is-visible'));
+          return;
+        }
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+              entry.target.classList.add('is-visible');
+              observer.unobserve(entry.target);
+            });
+          },
+          { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
+        );
+
+        targets.forEach((el) => observer.observe(el));
+      }
+      document.addEventListener('DOMContentLoaded', initReveal);
     </script>
   </body>
 </html>

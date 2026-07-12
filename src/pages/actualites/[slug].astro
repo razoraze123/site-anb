@@ -1,0 +1,67 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { env } from "cloudflare:workers";
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+const db = env.DB;
+let article = null;
+
+try {
+  if (db && slug) {
+    const { results } = await db.prepare("SELECT * FROM actualites WHERE slug = ? AND status = 'Publié'").bind(slug).all();
+    if (results && results.length > 0) {
+      article = results[0];
+    }
+  }
+} catch (error) {
+  console.error("Erreur de récupération de l'article :", error);
+}
+
+if (!article) {
+  return Astro.redirect('/actualites');
+}
+---
+
+<Layout title={article.title} description={article.excerpt}>
+  <main style="background:var(--color-cream); min-height:90vh;">
+    <!-- Cover Header -->
+    {article.bg_gradient.startsWith('/') || article.bg_gradient.startsWith('http') ? (
+      <header style={`background: linear-gradient(rgba(31,41,37,0.3), rgba(31,41,37,0.7)), url('${article.bg_gradient}') center/cover no-repeat; min-height:360px; display:flex; align-items:center; color:#FFFFFF; padding:80px clamp(20px,4vw,48px) 60px; position:relative;`}>
+        <div style="max-width:800px; margin:0 auto; width:100%; display:flex; flex-direction:column; gap:16px;">
+          <a href="/actualites" style="align-self:flex-start; background:rgba(255,255,255,0.15); color:#FFFFFF; padding:8px 18px; border-radius:999px; font-weight:700; font-size:13.5px; text-decoration:none; backdrop-filter:blur(4px); border:1px solid rgba(255,255,255,0.25);">← Retour aux actualités</a>
+          <div style="font-size:12.5px; font-weight:800; color:#E97824; text-transform:uppercase; letter-spacing:0.06em; margin-top:20px;">
+            {article.category} · Publié le {article.created_at.split(' ')[0]}
+          </div>
+          <h1 style="font-family:'Unbounded',sans-serif; font-size:clamp(1.8rem,4.5vw,2.8rem); font-weight:800; line-height:1.25; margin:0; text-shadow:0 2px 8px rgba(0,0,0,0.15);">
+            {article.title}
+          </h1>
+        </div>
+      </header>
+    ) : (
+      <header style={`background:${article.bg_gradient}; min-height:360px; display:flex; align-items:center; color:#FFFFFF; padding:80px clamp(20px,4vw,48px) 60px; position:relative;`}>
+        <div style="max-width:800px; margin:0 auto; width:100%; display:flex; flex-direction:column; gap:16px;">
+          <a href="/actualites" style="align-self:flex-start; background:rgba(255,255,255,0.15); color:#FFFFFF; padding:8px 18px; border-radius:999px; font-weight:700; font-size:13.5px; text-decoration:none; backdrop-filter:blur(4px); border:1px solid rgba(255,255,255,0.25);">← Retour aux actualités</a>
+          <div style="font-size:12.5px; font-weight:800; color:#E97824; text-transform:uppercase; letter-spacing:0.06em; margin-top:20px;">
+            {article.category} · Publié le {article.created_at.split(' ')[0]}
+          </div>
+          <h1 style="font-family:'Unbounded',sans-serif; font-size:clamp(1.8rem,4.5vw,2.8rem); font-weight:800; line-height:1.25; margin:0; text-shadow:0 2px 8px rgba(0,0,0,0.15);">
+            {article.title}
+          </h1>
+        </div>
+      </header>
+    )}
+
+    <!-- Main Content Area -->
+    <article style="max-width:800px; margin:0 auto; padding:60px clamp(20px,4vw,48px) 100px; overflow-wrap: break-word; word-wrap: break-word; word-break: break-word;">
+      <p style="font-size:18px; font-weight:600; line-height:1.6; color:#1F2925; margin-bottom:32px; border-left:4px solid #176B4D; padding-left:18px;">
+        {article.excerpt}
+      </p>
+      
+      <div style="font-size:16px; line-height:1.8; color:#3f4a45; white-space:pre-wrap;">
+        {article.content}
+      </div>
+    </article>
+  </main>
+</Layout>

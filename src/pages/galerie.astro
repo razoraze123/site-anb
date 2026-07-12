@@ -8,7 +8,7 @@ import { fullGallery } from '../lib/demo-data';
     <section style="max-width:1280px; margin:0 auto; padding:70px clamp(20px,4vw,48px) 90px;">
       <div style="font-size:13px; font-weight:700; color:#E97824; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:16px;">Galerie</div>
       <h1 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(2.1rem,4vw,3rem); color:#1F2925; margin:0 0 48px; max-width:760px;">Les moments qui nous rassemblent.</h1>
-      <div data-grid-mobile="2" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); grid-auto-rows:160px; gap:16px;">
+      <div data-grid-mobile="2" data-reveal-group style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); grid-auto-rows:160px; gap:16px;">
         {fullGallery.map((img) => (
           <div style={`grid-row:span ${img.span}; border-radius:20px; background:${img.bg}; position:relative; overflow:hidden; display:flex; align-items:flex-end; padding:14px;`}>
             <span style="color:rgba(255,255,255,0.9); font-size:12px; font-weight:700;">{img.label}</span>

@@ -1,16 +1,25 @@
 ---
 import Layout from '../layouts/Layout.astro';
+
+export const prerender = false;
 ---
 
-<Layout title="Adhérer / Nous soutenir" description="Rejoignez une communauté qui vous ressemble : adhérez à l'ANB Bordeaux.">
-  <main>
-    <section style="max-width:1280px; margin:0 auto; padding:70px clamp(20px,4vw,48px) 90px; display:flex; flex-wrap:wrap; gap:56px;">
-      <div style="flex:1 1 420px; min-width:280px;">
-        <div style="font-size:13px; font-weight:700; color:#E97824; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:16px;">Adhérer / Nous soutenir</div>
-        <h1 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(2rem,3.6vw,2.8rem); color:#1F2925; margin:0 0 24px;">Rejoignez une communauté qui vous ressemble.</h1>
-        <p style="font-size:17px; line-height:1.7; color:#3f4a45; margin:0 0 36px;">Adhérer à l'ANB, c'est intégrer un réseau chaleureux, participer à des événements toute l'année et contribuer à des actions solidaires qui comptent.</p>
+<Layout title="Adhérer / Rejoindre la communauté" description="Rejoignez la communauté ANB Bordeaux. Inscrivez-vous pour recevoir nos actualités, événements et annonces.">
 
-        <div style="display:flex; flex-direction:column; gap:18px; margin-bottom:20px;">
+  <main style="background:var(--color-cream); min-height:88vh; padding:60px clamp(16px,4vw,48px) 80px;">
+    <div style="max-width:1200px; margin:0 auto; display:flex; flex-wrap:wrap; gap:56px; align-items:flex-start;">
+
+      <!-- ====== COLONNE GAUCHE : Avantages ====== -->
+      <div data-reveal style="flex:1 1 320px; min-width:260px; position:sticky; top:80px;">
+
+        <span style="display:inline-block; background:rgba(233,120,36,0.12); color:var(--color-orange); font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; padding:6px 14px; border-radius:999px; margin-bottom:16px;">Adhérer / Nous soutenir</span>
+
+        <h1 style="font-family:var(--font-display); font-weight:800; font-size:clamp(1.8rem,3.4vw,2.6rem); color:var(--color-dark); margin:0 0 20px; line-height:1.2;">Rejoignez une communauté qui vous ressemble.</h1>
+
+        <p style="font-size:15.5px; line-height:1.7; color:#3f4a45; margin:0 0 32px;">Adhérer à l'ANB, c'est intégrer un réseau chaleureux, participer à des événements toute l'année et contribuer à des actions solidaires qui comptent.</p>
+
+        <!-- Avantages -->
+        <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:28px;">
           <div style="display:flex; gap:14px; align-items:flex-start;">
             <div style="width:36px; height:36px; border-radius:10px; background:rgba(23,107,77,0.1); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -29,83 +38,355 @@ import Layout from '../layouts/Layout.astro';
             </div>
             <div style="font-size:15px; color:#3f4a45; padding-top:6px;">La possibilité de participer aux décisions de l'association</div>
           </div>
-        </div>
-
-        <div style="background:#F0E9DA; border-radius:20px; padding:26px; margin-top:24px;">
-          <div style="font-size:14px; font-weight:700; color:#1F2925; margin-bottom:6px;">Une question avant d'adhérer ?</div>
-          <div style="font-size:14px; color:#5a655f;">contact@anb-bordeaux.fr · 06 00 00 00 00</div>
-        </div>
-      </div>
-
-      <div style="flex:1 1 460px; min-width:300px;">
-        <div style="background:#FFFFFF; border-radius:28px; padding:clamp(28px,3vw,40px); box-shadow:0 20px 50px rgba(31,41,37,0.1);">
-          <h3 style="font-size:19px; font-weight:700; color:#1F2925; margin:0 0 22px;">Formulaire d'adhésion</h3>
-          <div style="display:flex; gap:8px; margin-bottom:22px; flex-wrap:wrap;">
-            {['Adhésion', 'Bénévolat', 'Don / Partenariat'].map((t, i) => (
-              <button
-                type="button"
-                class="member-type-btn"
-                data-type={t}
-                aria-pressed={i === 0 ? 'true' : 'false'}
-                style={`flex:1 1 auto; background:${i === 0 ? '#176B4D' : 'transparent'}; color:${i === 0 ? '#FFFFFF' : '#176B4D'}; border:2px solid #176B4D; padding:10px 14px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;`}
-              >
-                {t}
-              </button>
-            ))}
+          <div style="display:flex; gap:14px; align-items:flex-start;">
+            <div style="width:36px; height:36px; border-radius:10px; background:rgba(23,107,77,0.1); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <div style="font-size:15px; color:#3f4a45; padding-top:6px;">Notre lettre d'information pour rester connecté(e)</div>
           </div>
-          <form id="member-form" style="display:flex; flex-direction:column; gap:16px;">
-            <input type="hidden" name="type" value="Adhésion" />
-            <div style="display:flex; gap:14px; flex-wrap:wrap;">
-              <div style="flex:1 1 160px;">
-                <label for="member-prenom" style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Prénom</label>
-                <input id="member-prenom" name="prenom" required style="width:100%; padding:13px 16px; border-radius:12px; border:1.5px solid #d8d0c0; font-size:14.5px; font-family:inherit;" placeholder="Votre prénom" />
-              </div>
-              <div style="flex:1 1 160px;">
-                <label for="member-nom" style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Nom</label>
-                <input id="member-nom" name="nom" required style="width:100%; padding:13px 16px; border-radius:12px; border:1.5px solid #d8d0c0; font-size:14.5px; font-family:inherit;" placeholder="Votre nom" />
-              </div>
-            </div>
-            <div>
-              <label for="member-email" style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Email</label>
-              <input id="member-email" name="email" type="email" required style="width:100%; padding:13px 16px; border-radius:12px; border:1.5px solid #d8d0c0; font-size:14.5px; font-family:inherit;" placeholder="vous@email.fr" />
-            </div>
-            <div>
-              <label for="member-tel" style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Téléphone</label>
-              <input id="member-tel" name="telephone" style="width:100%; padding:13px 16px; border-radius:12px; border:1.5px solid #d8d0c0; font-size:14.5px; font-family:inherit;" placeholder="06 00 00 00 00" />
-            </div>
-            <div>
-              <label for="member-message" style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Message (facultatif)</label>
-              <textarea id="member-message" name="message" rows="3" style="width:100%; padding:13px 16px; border-radius:12px; border:1.5px solid #d8d0c0; font-size:14.5px; font-family:inherit; resize:vertical;" placeholder="Un mot pour nous ?"></textarea>
-            </div>
-            <button type="submit" style="background:#E97824; color:#FFFFFF; border:none; padding:16px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer; margin-top:8px; box-shadow:0 10px 22px rgba(233,120,36,0.28);">Envoyer ma demande</button>
-            <p id="member-form-note" style="display:none; font-size:13.5px; color:#5a655f; text-align:center; margin:4px 0 0;">Ce formulaire sera bientôt connecté (validation et envoi sécurisés en préparation) — merci de nous écrire directement à contact@anb-bordeaux.fr en attendant.</p>
-          </form>
+        </div>
+
+        <!-- Compteur live -->
+        <div style="display:inline-flex; align-items:center; gap:10px; background:#FFFFFF; border-radius:999px; padding:10px 20px; box-shadow:0 4px 16px rgba(31,41,37,0.07); font-size:14px; color:var(--color-muted-text); margin-bottom:24px;">
+          <div style="width:8px; height:8px; border-radius:50%; background:#176B4D; animation:pulse-dot 1.5s ease-in-out infinite;"></div>
+          <span><strong id="counter-number" style="color:var(--color-dark);">...</strong> membres déjà recensés</span>
+        </div>
+
+        <!-- Contact -->
+        <div style="background:#F0E9DA; border-radius:20px; padding:22px 24px;">
+          <div style="font-size:13.5px; font-weight:700; color:#1F2925; margin-bottom:6px;">Une question avant d'adhérer ?</div>
+          <div style="font-size:13.5px; color:#5a655f;">contact@anb-bordeaux.fr · 06 00 00 00 00</div>
         </div>
       </div>
-    </section>
+
+      <!-- ====== COLONNE DROITE : Formulaire ====== -->
+      <div data-reveal style="flex:1 1 440px; min-width:300px;">
+        <div style="background:#FFFFFF; border-radius:28px; box-shadow:0 24px 60px rgba(31,41,37,0.08); border:1px solid rgba(31,41,37,0.04); overflow:hidden;">
+
+          <!-- Barre accent top -->
+          <div style="height:5px; background:linear-gradient(90deg, var(--color-green), var(--color-orange));"></div>
+
+          <!-- STEP INDICATOR -->
+          <div id="step-indicator" style="display:flex; align-items:center; justify-content:center; gap:0; padding:26px 32px 0;">
+            <div id="dot-1" style="width:32px; height:32px; border-radius:50%; background:var(--color-green); color:#fff; font-size:13px; font-weight:800; display:flex; align-items:center; justify-content:center;">1</div>
+            <div style="flex:1; height:3px; background:#E3DCCB; max-width:120px; position:relative; margin:0 -2px;">
+              <div id="progress-line-fill" style="height:100%; width:0%; background:var(--color-green); border-radius:999px; transition:width 0.4s ease;"></div>
+            </div>
+            <div id="dot-2" style="width:32px; height:32px; border-radius:50%; background:#E3DCCB; color:#9aa39c; font-size:13px; font-weight:800; display:flex; align-items:center; justify-content:center; transition:all 0.3s;">2</div>
+          </div>
+          <div style="display:flex; justify-content:space-between; padding:6px 32px 0; max-width:220px; margin:0 auto;">
+            <span style="font-size:11px; font-weight:700; color:var(--color-green);">Identité</span>
+            <span id="label-step-2" style="font-size:11px; font-weight:700; color:#9aa39c; transition:color 0.3s;">Détails</span>
+          </div>
+
+          <div style="padding:24px 32px 36px;">
+
+            <!-- ===== STEP 1 ===== -->
+            <div id="step-1">
+              <h2 style="font-family:var(--font-display); font-size:18px; font-weight:800; color:var(--color-dark); margin:0 0 22px;">Informations personnelles</h2>
+
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:18px;">
+                <div>
+                  <label for="first_name" style="font-size:12.5px; font-weight:700; color:var(--color-dark); display:block; margin-bottom:6px;">Prénom <span style="color:#B14524;">*</span></label>
+                  <input type="text" id="first_name" autocomplete="given-name" required
+                    style="width:100%; padding:13px 14px; border-radius:12px; border:1.5px solid #E3DCCB; font-size:14px; outline:none; transition:border-color 0.2s; box-sizing:border-box;"
+                    placeholder="Ex: Fatou" />
+                </div>
+                <div>
+                  <label for="last_name" style="font-size:12.5px; font-weight:700; color:var(--color-dark); display:block; margin-bottom:6px;">Nom <span style="color:#B14524;">*</span></label>
+                  <input type="text" id="last_name" autocomplete="family-name" required
+                    style="width:100%; padding:13px 14px; border-radius:12px; border:1.5px solid #E3DCCB; font-size:14px; outline:none; transition:border-color 0.2s; box-sizing:border-box;"
+                    placeholder="Ex: Ibrahim" />
+                </div>
+              </div>
+
+              <!-- Statut -->
+              <div style="margin-bottom:18px;">
+                <label style="font-size:12.5px; font-weight:700; color:var(--color-dark); display:block; margin-bottom:10px;">Statut actuel <span style="color:#B14524;">*</span></label>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                  <label style="cursor:pointer;">
+                    <input type="radio" name="status" value="Étudiant" checked style="position:absolute; opacity:0; width:0; height:0;" />
+                    <div class="status-box" style="border:2px solid var(--color-green); background:rgba(23,107,77,0.05); border-radius:14px; padding:14px 12px; text-align:center; font-weight:700; font-size:13.5px; color:var(--color-green); display:flex; flex-direction:column; align-items:center; gap:6px; transition:all 0.2s;">
+                      <span style="font-size:22px;">🎓</span><span>Étudiant(e)</span>
+                    </div>
+                  </label>
+                  <label style="cursor:pointer;">
+                    <input type="radio" name="status" value="Employé" style="position:absolute; opacity:0; width:0; height:0;" />
+                    <div class="status-box" style="border:2px solid #E3DCCB; background:#FFFFFF; border-radius:14px; padding:14px 12px; text-align:center; font-weight:700; font-size:13.5px; color:var(--color-muted-text); display:flex; flex-direction:column; align-items:center; gap:6px; transition:all 0.2s;">
+                      <span style="font-size:22px;">💼</span><span>Employé(e)</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div style="margin-bottom:18px;">
+                <label for="email" style="font-size:12.5px; font-weight:700; color:var(--color-dark); display:block; margin-bottom:6px;">Adresse e-mail <span style="color:#B14524;">*</span></label>
+                <input type="email" id="email" autocomplete="email" required
+                  style="width:100%; padding:13px 14px; border-radius:12px; border:1.5px solid #E3DCCB; font-size:14px; outline:none; transition:border-color 0.2s; box-sizing:border-box;"
+                  placeholder="nom@exemple.com" />
+              </div>
+              <div style="margin-bottom:24px;">
+                <label for="phone" style="font-size:12.5px; font-weight:700; color:var(--color-dark); display:block; margin-bottom:6px;">Numéro de téléphone <span style="color:#B14524;">*</span></label>
+                <input type="tel" id="phone" autocomplete="tel"
+                  style="width:100%; padding:13px 14px; border-radius:12px; border:1.5px solid #E3DCCB; font-size:14px; outline:none; transition:border-color 0.2s; box-sizing:border-box;"
+                  placeholder="06 12 34 56 78" />
+              </div>
+
+              <div id="error-step1" class="form-error hidden"></div>
+
+              <button type="button" id="btn-next"
+                style="width:100%; background:var(--color-orange); color:#FFFFFF; border:none; padding:15px; border-radius:14px; font-size:15px; font-weight:700; cursor:pointer; transition:all 0.2s; box-shadow:0 10px 24px rgba(233,120,36,0.25);">
+                Continuer →
+              </button>
+            </div>
+
+            <!-- ===== STEP 2 ===== -->
+            <div id="step-2" class="hidden">
+              <h2 style="font-family:var(--font-display); font-size:18px; font-weight:800; color:var(--color-dark); margin:0 0 6px;">Quelques détails supplémentaires</h2>
+              <p style="font-size:13px; color:var(--color-muted-text); margin:0 0 22px;">Ces informations sont optionnelles mais nous aident à mieux vous connaître.</p>
+
+              <div style="margin-bottom:18px;">
+                <label for="domaine" style="font-size:12.5px; font-weight:700; color:var(--color-dark); display:block; margin-bottom:6px;">Domaine d'études / de travail</label>
+                <select id="domaine"
+                  style="width:100%; padding:13px 14px; border-radius:12px; border:1.5px solid #E3DCCB; font-size:14px; outline:none; background:#FFFFFF; color:var(--color-dark); box-sizing:border-box; cursor:pointer;">
+                  <option value="">-- Sélectionner --</option>
+                  <option>Informatique / Tech</option>
+                  <option>Santé / Médecine</option>
+                  <option>Droit / Sciences politiques</option>
+                  <option>Sciences économiques / Commerce</option>
+                  <option>Sciences de l'ingénieur</option>
+                  <option>Arts / Culture / Communication</option>
+                  <option>Éducation / Formation</option>
+                  <option>BTP / Architecture</option>
+                  <option>Agriculture / Environnement</option>
+                  <option>Restauration / Hôtellerie</option>
+                  <option>Autre</option>
+                </select>
+              </div>
+
+              <!-- Bénévolat toggle -->
+              <div id="benevole-row" style="background:rgba(23,107,77,0.04); border:1.5px solid rgba(23,107,77,0.12); border-radius:14px; padding:16px 18px; margin-bottom:18px; display:flex; align-items:center; gap:14px; cursor:pointer;">
+                <div style="position:relative; flex-shrink:0;">
+                  <input type="checkbox" id="benevole" style="position:absolute; opacity:0; width:0; height:0;" />
+                  <div id="benevole-toggle" style="width:44px; height:24px; border-radius:999px; background:#E3DCCB; transition:background 0.2s; position:relative; cursor:pointer;">
+                    <div id="benevole-knob" style="position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#FFFFFF; box-shadow:0 2px 4px rgba(0,0,0,0.15); transition:transform 0.2s;"></div>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size:14px; font-weight:700; color:var(--color-dark);">Je souhaite devenir bénévole 🤝</div>
+                  <div style="font-size:12.5px; color:var(--color-muted-text); margin-top:2px;">Participez à l'organisation de nos événements et actions.</div>
+                </div>
+              </div>
+
+              <!-- Notice liste de diffusion -->
+              <div style="background:rgba(23,107,77,0.04); border:1.5px solid rgba(23,107,77,0.1); border-radius:14px; padding:14px 16px; margin-bottom:14px; display:flex; align-items:flex-start; gap:12px;">
+                <span style="font-size:18px; flex-shrink:0;">📧</span>
+                <p style="font-size:12.5px; color:var(--color-muted-text); line-height:1.6; margin:0;">
+                  <strong style="color:var(--color-dark);">Liste de diffusion ANB</strong><br>
+                  Vos coordonnées seront utilisées pour vous tenir informé(e) des <strong>actualités, événements et annonces</strong> de l'ANB Bordeaux. Vous pouvez vous désinscrire à tout moment.
+                </p>
+              </div>
+
+              <!-- RGPD -->
+              <div style="background:rgba(31,41,37,0.03); border-radius:12px; padding:14px 16px; margin-bottom:20px; display:flex; align-items:flex-start; gap:12px;">
+                <input type="checkbox" id="rgpd" required style="margin-top:3px; flex-shrink:0; width:16px; height:16px; accent-color:var(--color-green); cursor:pointer;" />
+                <label for="rgpd" style="font-size:12.5px; color:var(--color-muted-text); line-height:1.5; cursor:pointer;">
+                  J'accepte que mes informations soient enregistrées par l'ANB Bordeaux et utilisées pour l'envoi de <strong style="color:var(--color-dark);">listes de diffusion</strong> (actualités, événements, annonces). Ces données ne seront ni vendues ni transmises à des tiers. <a href="/confidentialite" style="color:var(--color-green); font-weight:700; text-decoration:none;">Politique de confidentialité →</a>
+                </label>
+              </div>
+
+              <div id="error-step2" class="form-error hidden"></div>
+
+              <div style="display:flex; gap:12px;">
+                <button type="button" id="btn-back"
+                  style="flex:0 0 auto; background:transparent; color:var(--color-dark); border:1.5px solid #E3DCCB; padding:14px 20px; border-radius:14px; font-size:14px; font-weight:700; cursor:pointer; transition:all 0.2s;">
+                  ← Retour
+                </button>
+                <button type="button" id="btn-submit"
+                  style="flex:1; background:var(--color-orange); color:#FFFFFF; border:none; padding:15px; border-radius:14px; font-size:15px; font-weight:700; cursor:pointer; transition:all 0.2s; box-shadow:0 10px 24px rgba(233,120,36,0.25); display:flex; align-items:center; justify-content:center; gap:8px;">
+                  <span id="submit-label">Valider mon adhésion ✓</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- ===== SUCCESS ===== -->
+            <div id="success-state" class="hidden" style="text-align:center; padding:16px 0 8px; display:flex; flex-direction:column; align-items:center; gap:18px;">
+              <div style="width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg, var(--color-green), #22a06b); display:flex; align-items:center; justify-content:center; font-size:38px; color:#fff; box-shadow:0 12px 32px rgba(23,107,77,0.25); animation:popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) both;">✓</div>
+              <div>
+                <h3 style="font-family:var(--font-display); font-size:22px; font-weight:800; color:var(--color-dark); margin:0 0 10px;">Bienvenue dans la communauté !</h3>
+                <p style="font-size:14px; color:var(--color-muted-text); line-height:1.65; margin:0;">
+                  Votre adhésion a bien été enregistrée. Vous recevrez nos actualités et invitations aux prochains événements de l'ANB Bordeaux.
+                </p>
+              </div>
+              <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-top:6px;">
+                <a href="/evenements" style="background:var(--color-green); color:#FFFFFF; text-decoration:none; padding:12px 22px; border-radius:999px; font-size:14px; font-weight:700; box-shadow:0 8px 20px rgba(23,107,77,0.2);">Voir les événements</a>
+                <a href="/" style="background:#F8F4EC; color:var(--color-dark); text-decoration:none; padding:12px 22px; border-radius:999px; font-size:14px; font-weight:700;">Accueil</a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
   </main>
 
-  <script>
-    const typeButtons = document.querySelectorAll<HTMLButtonElement>('.member-type-btn');
-    const typeInput = document.querySelector<HTMLInputElement>('#member-form input[name="type"]');
-
-    typeButtons.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        typeButtons.forEach((b) => {
-          const active = b === btn;
-          b.setAttribute('aria-pressed', String(active));
-          b.style.background = active ? '#176B4D' : 'transparent';
-          b.style.color = active ? '#FFFFFF' : '#176B4D';
-        });
-        if (typeInput) typeInput.value = btn.dataset.type ?? '';
-      });
-    });
-
-    const form = document.querySelector<HTMLFormElement>('#member-form');
-    const note = document.querySelector<HTMLElement>('#member-form-note');
-    form?.addEventListener('submit', (e) => {
-      e.preventDefault();
-      if (note) note.style.display = 'block';
-    });
-  </script>
 </Layout>
+
+<style>
+  input:focus, select:focus {
+    border-color: var(--color-orange) !important;
+    box-shadow: 0 0 0 3px rgba(233,120,36,0.12);
+  }
+  .form-error {
+    background: rgba(177,69,36,0.09);
+    color: #B14524;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border-left: 3px solid #B14524;
+    margin-bottom: 16px;
+  }
+  .hidden { display: none !important; }
+
+  @keyframes pulse-dot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.5); opacity: 0.6; }
+  }
+  @keyframes popIn {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+</style>
+
+<script>
+  // Live counter
+  fetch('/api/recensement-count')
+    .then(r => r.json())
+    .then(d => {
+      const el = document.getElementById('counter-number');
+      if (el) el.textContent = d.count || 0;
+    })
+    .catch(() => {
+      const el = document.getElementById('counter-number');
+      if (el) el.textContent = '0';
+    });
+
+  // Status radio UI
+  document.querySelectorAll('input[name="status"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      document.querySelectorAll('.status-box').forEach(box => {
+        box.style.borderColor = '#E3DCCB';
+        box.style.background = '#FFFFFF';
+        box.style.color = 'var(--color-muted-text)';
+      });
+      const activeBox = radio.nextElementSibling;
+      if (activeBox) {
+        activeBox.style.borderColor = 'var(--color-green)';
+        activeBox.style.background = 'rgba(23,107,77,0.05)';
+        activeBox.style.color = 'var(--color-green)';
+      }
+    });
+  });
+
+  // Bénévolat toggle
+  const benevoleCheckbox = document.getElementById('benevole');
+  const benevoleToggle = document.getElementById('benevole-toggle');
+  const benevoleKnob = document.getElementById('benevole-knob');
+  const benevoleRow = document.getElementById('benevole-row');
+
+  function updateBenevoleUI(checked) {
+    benevoleToggle.style.background = checked ? 'var(--color-green)' : '#E3DCCB';
+    benevoleKnob.style.transform = checked ? 'translateX(20px)' : 'translateX(0)';
+  }
+  benevoleRow.addEventListener('click', e => {
+    if (e.target !== benevoleCheckbox) benevoleCheckbox.checked = !benevoleCheckbox.checked;
+    updateBenevoleUI(benevoleCheckbox.checked);
+  });
+  benevoleCheckbox.addEventListener('change', () => updateBenevoleUI(benevoleCheckbox.checked));
+
+  // Steps
+  const step1 = document.getElementById('step-1');
+  const step2 = document.getElementById('step-2');
+  const progressFill = document.getElementById('progress-line-fill');
+  const dot2 = document.getElementById('dot-2');
+  const labelStep2 = document.getElementById('label-step-2');
+  const successState = document.getElementById('success-state');
+
+  function showError(elId, msg) {
+    const el = document.getElementById(elId);
+    el.textContent = msg;
+    el.classList.remove('hidden');
+    setTimeout(() => el.classList.add('hidden'), 6000);
+  }
+
+  document.getElementById('btn-next').addEventListener('click', () => {
+    const firstName = document.getElementById('first_name').value.trim();
+    const lastName = document.getElementById('last_name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+
+    if (!firstName || !lastName) return showError('error-step1', 'Veuillez renseigner votre prénom et votre nom.');
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showError('error-step1', 'Veuillez entrer une adresse e-mail valide.');
+    if (!phone) return showError('error-step1', 'Veuillez renseigner votre numéro de téléphone.');
+
+    step1.classList.add('hidden');
+    step2.classList.remove('hidden');
+    progressFill.style.width = '100%';
+    dot2.style.background = 'var(--color-green)';
+    dot2.style.color = '#FFFFFF';
+    labelStep2.style.color = 'var(--color-green)';
+  });
+
+  document.getElementById('btn-back').addEventListener('click', () => {
+    step2.classList.add('hidden');
+    step1.classList.remove('hidden');
+    progressFill.style.width = '0%';
+    dot2.style.background = '#E3DCCB';
+    dot2.style.color = '#9aa39c';
+    labelStep2.style.color = '#9aa39c';
+  });
+
+  document.getElementById('btn-submit').addEventListener('click', async () => {
+    if (!document.getElementById('rgpd').checked) {
+      return showError('error-step2', 'Vous devez accepter la politique de confidentialité pour continuer.');
+    }
+    const btn = document.getElementById('btn-submit');
+    const lbl = document.getElementById('submit-label');
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    lbl.textContent = 'Enregistrement…';
+
+    const status = document.querySelector('input[name="status"]:checked')?.value || 'Étudiant';
+    const payload = {
+      first_name: document.getElementById('first_name').value.trim(),
+      last_name: document.getElementById('last_name').value.trim(),
+      status,
+      email: document.getElementById('email').value.trim(),
+      phone: document.getElementById('phone').value.trim(),
+      domaine: document.getElementById('domaine').value,
+      benevole: document.getElementById('benevole').checked,
+      rgpd_consent: true
+    };
+
+    try {
+      const res = await fetch('/api/recensement', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Une erreur est survenue.');
+
+      step2.classList.add('hidden');
+      document.getElementById('step-indicator').style.opacity = '0.3';
+      successState.classList.remove('hidden');
+    } catch (err) {
+      showError('error-step2', err.message);
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      lbl.textContent = 'Valider mon adhésion ✓';
+    }
+  });
+</script>
