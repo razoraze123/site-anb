@@ -1,17 +1,223 @@
 ---
-
+import Layout from '../layouts/Layout.astro';
+import { homeGallery, newsArticles, nextEvent } from '../lib/demo-data';
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout title="Accueil">
+  <main>
+    <!-- HERO -->
+    <section style="position:relative; max-width:1280px; margin:0 auto; padding:clamp(40px,7vw,90px) clamp(20px,4vw,48px) clamp(60px,8vw,110px); display:flex; flex-wrap:wrap; align-items:center; gap:56px; overflow:hidden;">
+      <div style="position:absolute; top:-60px; right:-80px; width:340px; height:340px; border-radius:50%; background:radial-gradient(circle, rgba(233,120,36,0.14), transparent 70%); pointer-events:none;"></div>
+      <div style="position:absolute; bottom:-40px; left:10%; width:260px; height:260px; border-radius:50%; background:radial-gradient(circle, rgba(23,107,77,0.10), transparent 70%); pointer-events:none;"></div>
+
+      <div style="flex:1 1 460px; min-width:300px; position:relative; z-index:1; animation:fadeInUp 0.8s ease both;">
+        <div style="display:inline-block; background:rgba(23,107,77,0.1); color:#176B4D; font-size:13px; font-weight:700; letter-spacing:0.03em; padding:9px 18px; border-radius:999px; margin-bottom:24px;">Association des Nigériens à Bordeaux</div>
+        <h1 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(2.4rem,4.8vw,3.8rem); line-height:1.08; color:#1F2925; margin:0 0 24px; text-wrap:balance;">Ensemble, faire vivre la communauté nigérienne à Bordeaux.</h1>
+        <p style="font-size:18px; line-height:1.7; color:#3f4a45; max-width:520px; margin:0 0 36px;">L'ANB rassemble, accompagne et valorise les Nigériens et les amis du Niger dans la métropole bordelaise.</p>
+        <div style="display:flex; gap:16px; flex-wrap:wrap;">
+          <a href="/association" style="background:#176B4D; color:#FFFFFF; border:none; padding:17px 32px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer; box-shadow:0 10px 24px rgba(23,107,77,0.25); display:inline-block;">Découvrir l'association</a>
+          <a href="/evenements" style="background:transparent; color:#176B4D; border:2px solid #176B4D; padding:15px 30px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer; display:inline-block;">Voir les événements</a>
+        </div>
+      </div>
+
+      <div style="flex:1 1 420px; min-width:300px; position:relative; z-index:1;">
+        <div style="position:relative; border-radius:32px; overflow:hidden; aspect-ratio:4/5; background:linear-gradient(155deg, #E97824 0%, #E97824 35%, #176B4D 100%); box-shadow:0 30px 60px rgba(31,41,37,0.18);">
+          <div style="position:absolute; inset:0; opacity:0.5; background-image:repeating-linear-gradient(135deg, rgba(255,255,255,0.12) 0px, rgba(255,255,255,0.12) 2px, transparent 2px, transparent 26px);"></div>
+          <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; color:#FFFFFF;">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.3" opacity="0.85"><circle cx="9" cy="8" r="3.2"></circle><circle cx="16.5" cy="9" r="2.4"></circle><path d="M3.5 19c0-3.3 2.6-5.6 5.9-5.6s5.9 2.3 5.9 5.6"></path><path d="M14.5 13.7c2.6 0.2 4.3 2.2 4.3 5"></path></svg>
+            <span style="font-size:13px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; opacity:0.85;">Photo — moment communautaire</span>
+          </div>
+        </div>
+        <div style="position:absolute; bottom:-24px; left:-20px; background:#FFFFFF; border-radius:20px; padding:20px 24px; box-shadow:0 20px 40px rgba(31,41,37,0.15); display:flex; align-items:center; gap:14px; max-width:300px; animation:floatSlow 5s ease-in-out infinite;">
+          <div style="width:44px; height:44px; border-radius:12px; background:#E97824; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line></svg>
+          </div>
+          <div>
+            <div style="font-size:11px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em;">Prochain rendez-vous</div>
+            <div style="font-size:14px; font-weight:700; color:#1F2925; margin-top:2px;">{nextEvent.title} — Bordeaux</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BANDEAU DE CONFIANCE -->
+    <section style="max-width:1280px; margin:0 auto; padding:20px clamp(20px,4vw,48px) 70px;">
+      <div style="display:flex; flex-wrap:wrap; gap:28px; border-top:1px solid rgba(31,41,37,0.1); padding-top:44px;">
+        <div style="flex:1 1 260px; display:flex; align-items:center; gap:16px;">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="1.5"><circle cx="9" cy="8" r="3.2"></circle><circle cx="16.5" cy="9" r="2.4"></circle><path d="M3.5 19c0-3.3 2.6-5.6 5.9-5.6s5.9 2.3 5.9 5.6"></path><path d="M14.5 13.7c2.6 0.2 4.3 2.2 4.3 5"></path></svg>
+          <span style="font-size:16px; font-weight:700; color:#1F2925;">Une communauté unie</span>
+        </div>
+        <div style="flex:1 1 260px; display:flex; align-items:center; gap:16px;">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#E97824" stroke-width="1.5"><path d="M12 3l2.5 5 5.5 0.8-4 3.9 0.9 5.5-4.9-2.6-4.9 2.6 0.9-5.5-4-3.9 5.5-0.8z"></path></svg>
+          <span style="font-size:16px; font-weight:700; color:#1F2925;">Culture et transmission</span>
+        </div>
+        <div style="flex:1 1 260px; display:flex; align-items:center; gap:16px;">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="1.5"><path d="M12 20.5s-7.5-4.6-7.5-10.2C4.5 7 6.5 5 9 5c1.5 0 2.6 0.8 3 2 0.4-1.2 1.5-2 3-2 2.5 0 4.5 2 4.5 5.3 0 5.6-7.5 10.2-7.5 10.2z"></path></svg>
+          <span style="font-size:16px; font-weight:700; color:#1F2925;">Entraide au quotidien</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- MISSION -->
+    <section style="max-width:1280px; margin:0 auto; padding:20px clamp(20px,4vw,48px) 100px; display:flex; flex-wrap:wrap; gap:56px; align-items:center;">
+      <div style="flex:1 1 380px; min-width:280px; order:2;">
+        <div style="border-radius:28px; overflow:hidden; aspect-ratio:3/4; background:linear-gradient(165deg,#E8D8BF,#176B4D); position:relative; box-shadow:0 24px 50px rgba(31,41,37,0.14);">
+          <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px; color:#FFFFFF;">
+            <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.3" opacity="0.9"><path d="M12 21s-7-4.35-7-10A5 5 0 0112 6a5 5 0 017 5c0 5.65-7 10-7 10z"></path></svg>
+            <span style="font-size:12px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; opacity:0.85; text-align:center; padding:0 20px;">Photo — accompagnement &amp; transmission</span>
+          </div>
+        </div>
+      </div>
+      <div style="flex:1 1 460px; min-width:300px; order:1;">
+        <div style="font-size:13px; font-weight:700; color:#E97824; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:16px;">Notre mission</div>
+        <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.9rem,3.4vw,2.6rem); line-height:1.15; color:#1F2925; margin:0 0 24px; text-wrap:balance;">Bien plus qu'une association : une famille, un repère, une énergie collective.</h2>
+        <p style="font-size:17px; line-height:1.75; color:#3f4a45; margin:0 0 16px;">L'ANB accueille chaque nouvel arrivant avec chaleur et l'accompagne dans ses premiers pas à Bordeaux. Tout au long de l'année, nous organisons des événements, des temps d'entraide, des actions culturelles et des projets solidaires qui renforcent nos liens et font rayonner nos racines.</p>
+        <p style="font-size:17px; line-height:1.75; color:#3f4a45; margin:0 0 32px;">Étudiants, familles, actifs ou amis du Niger : chacun trouve à l'ANB une place, un soutien et une communauté prête à l'accueillir.</p>
+        <a href="/association" style="background:#176B4D; color:#FFFFFF; border:none; padding:16px 30px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer; display:inline-block;">En savoir plus sur l'ANB</a>
+      </div>
+    </section>
+
+    <!-- PROCHAIN EVENEMENT -->
+    <section style="background:#176B4D; padding:90px 0;">
+      <div style="max-width:1280px; margin:0 auto; padding:0 clamp(20px,4vw,48px);">
+        <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.8rem,3.4vw,2.5rem); color:#FFFFFF; margin:0 0 44px; text-align:center;">Le prochain rendez-vous de la communauté</h2>
+        <div style="background:#FFFFFF; border-radius:28px; overflow:hidden; display:flex; flex-wrap:wrap; box-shadow:0 30px 60px rgba(0,0,0,0.2);">
+          <div style="flex:1 1 420px; min-width:280px; aspect-ratio:16/11; background:linear-gradient(150deg,#E97824,#1F2925); position:relative;">
+            <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#FFFFFF;">
+              <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.3" opacity="0.85"><path d="M12 3l2.5 5 5.5 0.8-4 3.9 0.9 5.5-4.9-2.6-4.9 2.6 0.9-5.5-4-3.9 5.5-0.8z"></path></svg>
+            </div>
+          </div>
+          <div style="flex:1 1 420px; min-width:280px; padding:clamp(28px,3.5vw,48px); display:flex; flex-direction:column; justify-content:center;">
+            <div style="font-size:13px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">{nextEvent.date}</div>
+            <h3 style="font-family:'Unbounded',sans-serif; font-size:clamp(1.4rem,2.2vw,1.9rem); font-weight:700; color:#1F2925; margin:0 0 10px;">{nextEvent.title}</h3>
+            <div style="display:flex; align-items:center; gap:8px; color:#3f4a45; font-size:14px; font-weight:600; margin-bottom:18px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f4a45" stroke-width="1.8"><path d="M12 21s-7-4.35-7-10A5 5 0 0112 6a5 5 0 017 5c0 5.65-7 10-7 10z"></path><circle cx="12" cy="11" r="1.6"></circle></svg>
+              {nextEvent.place}
+            </div>
+            <p style="font-size:16px; line-height:1.7; color:#3f4a45; margin:0 0 28px;">{nextEvent.description}</p>
+            <a href="/evenements" style="align-self:flex-start; background:#E97824; color:#FFFFFF; border:none; padding:16px 32px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer; display:inline-block;">Je participe</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NOS ACTIONS -->
+    <section style="max-width:1280px; margin:0 auto; padding:100px clamp(20px,4vw,48px);">
+      <div style="text-align:center; max-width:640px; margin:0 auto 56px;">
+        <div style="font-size:13px; font-weight:700; color:#E97824; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:16px;">Nos actions</div>
+        <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.9rem,3.2vw,2.5rem); color:#1F2925; margin:0;">Ce que nous faisons ensemble, toute l'année</h2>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:24px;">
+        <div style="background:#FFFFFF; border-radius:24px; padding:32px; box-shadow:0 10px 30px rgba(31,41,37,0.06);">
+          <div style="width:52px; height:52px; border-radius:14px; background:rgba(23,107,77,0.1); display:flex; align-items:center; justify-content:center; margin-bottom:20px;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="1.6"><circle cx="12" cy="12" r="9"></circle><path d="M12 3v3M12 18v3M3 12h3M18 12h3"></path><path d="M9 12l2 2 4-4"></path></svg>
+          </div>
+          <h3 style="font-size:19px; font-weight:700; color:#1F2925; margin:0 0 10px;">Accueillir et orienter</h3>
+          <p style="font-size:15px; line-height:1.65; color:#5a655f; margin:0;">Aider les nouveaux arrivants à trouver leurs repères à Bordeaux, dès les premiers jours.</p>
+        </div>
+        <div style="background:#FFFFFF; border-radius:24px; padding:32px; box-shadow:0 10px 30px rgba(31,41,37,0.06);">
+          <div style="width:52px; height:52px; border-radius:14px; background:rgba(233,120,36,0.12); display:flex; align-items:center; justify-content:center; margin-bottom:20px;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#E97824" stroke-width="1.6"><circle cx="7" cy="12" r="3.2"></circle><circle cx="17" cy="12" r="3.2"></circle><path d="M9.8 12h4.4"></path></svg>
+          </div>
+          <h3 style="font-size:19px; font-weight:700; color:#1F2925; margin:0 0 10px;">Créer du lien</h3>
+          <p style="font-size:15px; line-height:1.65; color:#5a655f; margin:0;">Rencontres, repas, sport et activités communautaires tout au long de l'année.</p>
+        </div>
+        <div style="background:#FFFFFF; border-radius:24px; padding:32px; box-shadow:0 10px 30px rgba(31,41,37,0.06);">
+          <div style="width:52px; height:52px; border-radius:14px; background:rgba(23,107,77,0.1); display:flex; align-items:center; justify-content:center; margin-bottom:20px;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="1.6"><path d="M12 3l2.5 5 5.5 0.8-4 3.9 0.9 5.5-4.9-2.6-4.9 2.6 0.9-5.5-4-3.9 5.5-0.8z"></path></svg>
+          </div>
+          <h3 style="font-size:19px; font-weight:700; color:#1F2925; margin:0 0 10px;">Faire rayonner la culture</h3>
+          <p style="font-size:15px; line-height:1.65; color:#5a655f; margin:0;">Traditions, gastronomie, musique et transmission auprès de toutes les générations.</p>
+        </div>
+        <div style="background:#FFFFFF; border-radius:24px; padding:32px; box-shadow:0 10px 30px rgba(31,41,37,0.06);">
+          <div style="width:52px; height:52px; border-radius:14px; background:rgba(233,120,36,0.12); display:flex; align-items:center; justify-content:center; margin-bottom:20px;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#E97824" stroke-width="1.6"><circle cx="12" cy="12" r="8.5"></circle><path d="M3.5 12h17M12 3.5c2.4 2.4 3.6 5.4 3.6 8.5s-1.2 6.1-3.6 8.5c-2.4-2.4-3.6-5.4-3.6-8.5s1.2-6.1 3.6-8.5z"></path></svg>
+          </div>
+          <h3 style="font-size:19px; font-weight:700; color:#1F2925; margin:0 0 10px;">Agir ensemble</h3>
+          <p style="font-size:15px; line-height:1.65; color:#5a655f; margin:0;">Solidarité, bénévolat et projets pour soutenir des initiatives au Niger.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- NOUVEL ARRIVANT -->
+    <section style="background:#E8D8BF; background-image:repeating-linear-gradient(135deg, rgba(23,107,77,0.05) 0px, rgba(23,107,77,0.05) 2px, transparent 2px, transparent 28px); padding:100px 0;">
+      <div style="max-width:1280px; margin:0 auto; padding:0 clamp(20px,4vw,48px);">
+        <div style="max-width:680px; margin:0 auto 56px; text-align:center;">
+          <div style="font-size:13px; font-weight:700; color:#E97824; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:16px;">Pour les nouveaux arrivants</div>
+          <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.9rem,3.4vw,2.6rem); color:#1F2925; margin:0 0 20px; text-wrap:balance;">Nouveau à Bordeaux ? Vous n'êtes pas seul.</h2>
+          <p style="font-size:17px; line-height:1.7; color:#3f4a45; margin:0;">L'ANB peut vous orienter, vous mettre en relation et vous aider à découvrir la communauté nigérienne de la métropole bordelaise.</p>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:24px; margin-bottom:48px;">
+          <div style="background:#FFFFFF; border-radius:22px; padding:30px; box-shadow:0 10px 26px rgba(31,41,37,0.07);">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="1.6" style="margin-bottom:16px;"><path d="M22 10L12 5 2 10l10 5 10-5z"></path><path d="M6 12.5V17c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"></path></svg>
+            <h3 style="font-size:17px; font-weight:700; color:#1F2925; margin:0 0 8px;">Études et vie étudiante</h3>
+            <p style="font-size:14.5px; line-height:1.6; color:#5a655f; margin:0;">Orientation, inscriptions, bourses et vie sur les campus bordelais.</p>
+          </div>
+          <div style="background:#FFFFFF; border-radius:22px; padding:30px; box-shadow:0 10px 26px rgba(31,41,37,0.07);">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#E97824" stroke-width="1.6" style="margin-bottom:16px;"><rect x="4" y="4" width="16" height="17" rx="2"></rect><line x1="4" y1="9.5" x2="20" y2="9.5"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="16" y1="2" x2="16" y2="6"></line></svg>
+            <h3 style="font-size:17px; font-weight:700; color:#1F2925; margin:0 0 8px;">Démarches et installation</h3>
+            <p style="font-size:14.5px; line-height:1.6; color:#5a655f; margin:0;">Logement, titre de séjour, banque et premiers repères pratiques.</p>
+          </div>
+          <div style="background:#FFFFFF; border-radius:22px; padding:30px; box-shadow:0 10px 26px rgba(31,41,37,0.07);">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="1.6" style="margin-bottom:16px;"><circle cx="8" cy="9" r="3"></circle><circle cx="17" cy="10" r="2.3"></circle><path d="M2.5 20c0-3.3 2.5-5.6 5.5-5.6s5.5 2.3 5.5 5.6"></path><path d="M14 15c2.5 0.2 4 2.1 4 4.6"></path></svg>
+            <h3 style="font-size:17px; font-weight:700; color:#1F2925; margin:0 0 8px;">Rencontrer la communauté</h3>
+            <p style="font-size:14.5px; line-height:1.6; color:#5a655f; margin:0;">Événements, groupes d'entraide et premiers contacts chaleureux.</p>
+          </div>
+        </div>
+        <div style="text-align:center;">
+          <a href="/vie-pratique" style="background:#176B4D; color:#FFFFFF; border:none; padding:17px 34px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer; display:inline-block;">Trouver des repères</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- GALERIE -->
+    <section style="max-width:1280px; margin:0 auto; padding:100px clamp(20px,4vw,48px);">
+      <div style="display:flex; flex-wrap:wrap; align-items:end; justify-content:space-between; gap:20px; margin-bottom:40px;">
+        <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.9rem,3.2vw,2.5rem); color:#1F2925; margin:0;">Les moments qui nous rassemblent</h2>
+        <a href="/galerie" style="background:transparent; border:2px solid #176B4D; color:#176B4D; padding:13px 26px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer; white-space:nowrap; display:inline-block;">Voir toute la galerie</a>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); grid-auto-rows:140px; gap:16px;">
+        {homeGallery.map((img) => (
+          <div style={`grid-row:span ${img.span}; border-radius:20px; background:${img.bg}; position:relative; overflow:hidden; display:flex; align-items:flex-end; padding:14px;`}>
+            <span style="color:rgba(255,255,255,0.9); font-size:12px; font-weight:700;">{img.label}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- ACTUALITES -->
+    <section style="background:#FFFFFF; padding:100px 0;">
+      <div style="max-width:1280px; margin:0 auto; padding:0 clamp(20px,4vw,48px);">
+        <div style="display:flex; flex-wrap:wrap; align-items:end; justify-content:space-between; gap:20px; margin-bottom:44px;">
+          <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.9rem,3.2vw,2.5rem); color:#1F2925; margin:0;">Actualités de l'ANB</h2>
+          <a href="/actualites" style="background:transparent; border:2px solid #176B4D; color:#176B4D; padding:13px 26px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer; white-space:nowrap; display:inline-block;">Toutes les actualités</a>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:28px;">
+          {newsArticles.map((article) => (
+            <div style="background:#F8F4EC; border-radius:24px; overflow:hidden;">
+              <div style={`aspect-ratio:16/10; background:${article.bg};`}></div>
+              <div style="padding:26px;">
+                <div style="font-size:12px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">{article.category} · {article.date}</div>
+                <h3 style="font-size:18px; font-weight:700; color:#1F2925; margin:0 0 12px; line-height:1.35;">{article.title}</h3>
+                <p style="font-size:14.5px; line-height:1.6; color:#5a655f; margin:0 0 18px;">{article.excerpt}</p>
+                <a href="/actualites" style="font-size:14px; font-weight:700; color:#176B4D; cursor:pointer;">Lire l'article →</a>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA ADHESION -->
+    <section style="background:#E97824; padding:100px 0;">
+      <div style="max-width:840px; margin:0 auto; padding:0 clamp(20px,4vw,48px); text-align:center;">
+        <h2 style="font-family:'Unbounded',sans-serif; font-weight:800; font-size:clamp(2rem,3.6vw,2.8rem); color:#1F2925; margin:0 0 18px;">L'ANB grandit avec vous.</h2>
+        <p style="font-size:18px; line-height:1.6; color:#1F2925; opacity:0.85; margin:0 0 40px;">Devenez membre, proposez votre aide ou soutenez nos actions.</p>
+        <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+          <a href="/adherer" style="background:#1F2925; color:#FFFFFF; border:none; padding:17px 34px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer; display:inline-block;">Adhérer maintenant</a>
+          <a href="/adherer" style="background:#FFFFFF; color:#1F2925; border:none; padding:17px 34px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer; display:inline-block;">Devenir bénévole</a>
+        </div>
+      </div>
+    </section>
+  </main>
+</Layout>

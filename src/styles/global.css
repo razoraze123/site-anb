@@ -1,0 +1,71 @@
+:root {
+  --color-cream: #F8F4EC;
+  --color-green: #176B4D;
+  --color-orange: #E97824;
+  --color-dark: #1F2925;
+  --color-sand: #E8D8BF;
+  --color-body-text: #3f4a45;
+  --color-muted-text: #5a655f;
+  --font-display: 'Unbounded', sans-serif;
+  --font-body: 'Manrope', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--color-cream);
+  color: var(--color-dark);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+::selection {
+  background: var(--color-orange);
+  color: #FFFFFF;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-14px); }
+}
+
+/* breakpoint mirrors the original mockup's isMobile threshold (<1180px) */
+.nav-desktop-only {
+  display: flex;
+}
+.nav-mobile-only {
+  display: none;
+}
+@media (max-width: 1179px) {
+  .nav-desktop-only {
+    display: none;
+  }
+  .nav-mobile-only {
+    display: flex;
+  }
+}
+
+.mobile-drawer.is-hidden {
+  display: none;
+}

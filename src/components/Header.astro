@@ -1,0 +1,70 @@
+---
+import { navItems } from '../lib/demo-data';
+
+const currentPath = Astro.url.pathname;
+---
+
+<header style="position:sticky; top:0; z-index:100; background:rgba(248,244,236,0.92); backdrop-filter:blur(10px); border-bottom:1px solid rgba(31,41,37,0.08);">
+  <div style="max-width:1280px; margin:0 auto; padding:16px clamp(20px,4vw,48px); display:flex; align-items:center; justify-content:space-between; gap:24px;">
+    <a href="/" style="display:flex; align-items:center; gap:12px; cursor:pointer;">
+      <div style="width:46px; height:46px; border-radius:13px; background:#176B4D; display:flex; align-items:center; justify-content:center; position:relative; flex-shrink:0;">
+        <span style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:14px; color:#FFFFFF; letter-spacing:0.02em;">ANB</span>
+        <div style="position:absolute; top:-4px; right:-4px; width:12px; height:12px; border-radius:50%; background:#E97824; border:2px solid #F8F4EC;"></div>
+      </div>
+      <div style="display:flex; flex-direction:column; line-height:1.15;">
+        <span style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:17px; color:#176B4D;">ANB</span>
+        <span style="font-size:10px; font-weight:700; letter-spacing:0.12em; color:#E97824; text-transform:uppercase;">Bordeaux</span>
+      </div>
+    </a>
+
+    <button id="mobile-menu-btn" aria-label="Menu" class="nav-mobile-only" style="width:44px; height:44px; border-radius:12px; background:#FFFFFF; border:1px solid rgba(31,41,37,0.1); align-items:center; justify-content:center; cursor:pointer;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F2925" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+    </button>
+
+    <nav class="nav-desktop-only" style="align-items:center; gap:clamp(14px,2vw,30px); flex-wrap:wrap;">
+      {navItems.map((item) => {
+        const active = currentPath === item.href;
+        return (
+          <a
+            href={item.href}
+            style={`font-size:15px; font-weight:600; color:${active ? '#176B4D' : '#1F2925'}; cursor:pointer; padding-bottom:4px; border-bottom:2px solid ${active ? '#E97824' : 'transparent'}; white-space:nowrap;`}
+          >
+            {item.label}
+          </a>
+        );
+      })}
+    </nav>
+
+    <a href="/adherer" class="nav-desktop-only" style="align-items:center; background:#E97824; color:#FFFFFF; border:none; padding:14px 28px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer; white-space:nowrap; box-shadow:0 8px 20px rgba(233,120,36,0.28);">Adhérer à l'ANB</a>
+  </div>
+</header>
+
+<div id="mobile-drawer" class="mobile-drawer is-hidden" style="position:fixed; inset:0; background:#F8F4EC; z-index:200; padding:96px 24px 24px; flex-direction:column; gap:6px; overflow-y:auto;">
+  <button id="mobile-menu-close" aria-label="Fermer" style="position:absolute; top:16px; right:20px; width:44px; height:44px; border-radius:12px; background:#FFFFFF; border:1px solid rgba(31,41,37,0.1); display:flex; align-items:center; justify-content:center; cursor:pointer;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F2925" stroke-width="2" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"></line><line x1="19" y1="5" x2="5" y2="19"></line></svg>
+  </button>
+  {navItems.map((item) => (
+    <a href={item.href} style="font-size:19px; font-weight:700; color:#1F2925; padding:16px 8px; border-bottom:1px solid rgba(31,41,37,0.08); cursor:pointer;">
+      {item.label}
+    </a>
+  ))}
+  <a href="/adherer" style="margin-top:20px; background:#E97824; color:#FFFFFF; border:none; padding:16px 28px; border-radius:999px; font-weight:700; font-size:16px; cursor:pointer; text-align:center;">Adhérer à l'ANB</a>
+</div>
+
+<style>
+  .mobile-drawer:not(.is-hidden) {
+    display: flex;
+  }
+</style>
+
+<script>
+  const openBtn = document.getElementById('mobile-menu-btn');
+  const closeBtn = document.getElementById('mobile-menu-close');
+  const drawer = document.getElementById('mobile-drawer');
+
+  openBtn?.addEventListener('click', () => drawer?.classList.remove('is-hidden'));
+  closeBtn?.addEventListener('click', () => drawer?.classList.add('is-hidden'));
+  drawer?.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', () => drawer.classList.add('is-hidden'));
+  });
+</script>
