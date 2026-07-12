@@ -1,0 +1,23 @@
+{
+  "name": "anb-bordeaux",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "generate-types": "wrangler types"
+  },
+  "dependencies": {
+    "astro": "6.4.8"
+  },
+  "devDependencies": {
+    "@astrojs/cloudflare": "^13.7.0",
+    "@types/node": "^26.1.1",
+    "wrangler": "^4.110.0"
+  }
+}

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body { font-family: 'Manrope', sans-serif; background: #F8F4EC; -webkit-font-smoothing: antialiased; }
+    a { text-decoration: none; }
+    button { font-family: inherit; }
+    input, textarea, select { font-family: inherit; }
+    ::selection { background: #E97824; color: #FFFFFF; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-thumb { background: rgba(31,41,37,0.15); border-radius: 8px; }
+  </style>
+</helmet>
+
+<div style="width:100%; min-height:100vh; background:#F8F4EC; color:#1F2925;">
+
+<!-- ============ LOGIN ============ -->
+<sc-if value="{{ isLoggedOut }}" hint-placeholder-val="{{ true }}">
+  <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; background:radial-gradient(circle at 20% 20%, rgba(233,120,36,0.08), transparent 45%), radial-gradient(circle at 80% 80%, rgba(23,107,77,0.08), transparent 45%), #F8F4EC;">
+    <div style="width:100%; max-width:440px; background:#FFFFFF; border-radius:28px; padding:clamp(28px,4vw,44px); box-shadow:0 30px 60px rgba(31,41,37,0.12);">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:28px;">
+        <div style="width:46px; height:46px; border-radius:13px; background:#176B4D; display:flex; align-items:center; justify-content:center;">
+          <span style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:14px; color:#FFFFFF;">ANB</span>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:16px; color:#176B4D; white-space:nowrap;">Espace ANB</div>
+          <div style="font-size:12px; color:#5a655f; white-space:nowrap;">Administration du site</div>
+        </div>
+      </div>
+      <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0 0 6px;">Connexion</h1>
+      <p style="font-size:14px; color:#5a655f; margin:0 0 24px;">Choisissez un rôle de démonstration pour explorer l'espace correspondant.</p>
+
+      <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:22px;">
+        <sc-for list="{{ roleOptions }}" as="opt" hint-placeholder-count="3">
+          <button onClick="{{ opt.onClick }}" style="display:flex; align-items:center; gap:14px; text-align:left; padding:14px 16px; border-radius:16px; border:2px solid {{ opt.border }}; background:{{ opt.bg }}; cursor:pointer;">
+            <div style="width:38px; height:38px; border-radius:10px; background:{{ opt.iconBg }}; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{ opt.iconColor }}" stroke-width="1.8"><circle cx="12" cy="8" r="3.4"></circle><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"></path></svg>
+            </div>
+            <div>
+              <div style="font-size:14.5px; font-weight:700; color:#1F2925;">{{ opt.label }}</div>
+              <div style="font-size:12.5px; color:#5a655f;">{{ opt.desc }}</div>
+            </div>
+          </button>
+        </sc-for>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
+        <input value="{{ loginEmail }}" onChange="{{ onLoginEmail }}" style="width:100%; padding:13px 16px; border-radius:12px; border:1.5px solid #e3dccb; font-size:14.5px;" placeholder="votre.email@anb-bordeaux.fr"></input>
+        <input type="password" value="{{ loginPass }}" onChange="{{ onLoginPass }}" style="width:100%; padding:13px 16px; border-radius:12px; border:1.5px solid #e3dccb; font-size:14.5px;" placeholder="Mot de passe (démo)"></input>
+      </div>
+      <button onClick="{{ doLogin }}" style="width:100%; background:#E97824; color:#FFFFFF; border:none; padding:15px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer; box-shadow:0 10px 22px rgba(233,120,36,0.28);">Se connecter — {{ selectedRoleLabel }}</button>
+    </div>
+  </div>
+</sc-if>
+
+<!-- ============ APP SHELL ============ -->
+<sc-if value="{{ isLoggedIn }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex; min-height:100vh;">
+
+    <!-- SIDEBAR DESKTOP -->
+    <sc-if value="{{ isNotMobile }}" hint-placeholder-val="{{ true }}">
+      <aside style="width:260px; flex-shrink:0; background:#FFFFFF; border-right:1px solid rgba(31,41,37,0.08); display:flex; flex-direction:column; height:100vh; position:sticky; top:0;">
+        <div style="padding:22px 20px; display:flex; align-items:center; gap:12px; border-bottom:1px solid rgba(31,41,37,0.06);">
+          <div style="width:38px; height:38px; border-radius:11px; background:#176B4D; display:flex; align-items:center; justify-content:center;">
+            <span style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:12px; color:#FFFFFF;">ANB</span>
+          </div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:14.5px; color:#176B4D; white-space:nowrap;">Espace ANB</div>
+            <div style="font-size:11px; color:#5a655f; white-space:nowrap;">{{ roleLabel }}</div>
+          </div>
+        </div>
+        <nav style="flex:1; overflow-y:auto; padding:16px 12px;">
+          <dc-import name="SidebarNav" role="{{ role }}" nav-style="{{ navStyle }}" nav="{{ nav }}" hint-size="100%,600px"></dc-import>
+        </nav>
+        <div style="padding:16px; border-top:1px solid rgba(31,41,37,0.06); display:flex; align-items:center; gap:12px;">
+          <div style="width:38px; height:38px; border-radius:50%; background:linear-gradient(150deg,#176B4D,#E97824); flex-shrink:0;"></div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:13.5px; font-weight:700; color:#1F2925; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ currentUserName }}</div>
+            <div style="font-size:11.5px; color:#5a655f;">{{ roleLabel }}</div>
+          </div>
+          <button onClick="{{ logout }}" aria-label="Déconnexion" style="width:34px; height:34px; border-radius:10px; background:#F8F4EC; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1F2925" stroke-width="1.8"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>
+          </button>
+        </div>
+      </aside>
+    </sc-if>
+
+    <!-- MOBILE DRAWER -->
+    <sc-if value="{{ sidebarOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed; inset:0; z-index:300; background:#FFFFFF; display:flex; flex-direction:column; overflow-y:auto;">
+        <div style="padding:20px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(31,41,37,0.06);">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="width:38px; height:38px; border-radius:11px; background:#176B4D; display:flex; align-items:center; justify-content:center;">
+              <span style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:12px; color:#FFFFFF;">ANB</span>
+            </div>
+            <div style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:14.5px; color:#176B4D; white-space:nowrap;">Espace ANB</div>
+          </div>
+          <button onClick="{{ toggleSidebar }}" aria-label="Fermer" style="width:40px; height:40px; border-radius:10px; background:#F8F4EC; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F2925" stroke-width="2"><line x1="5" y1="5" x2="19" y2="19"></line><line x1="19" y1="5" x2="5" y2="19"></line></svg>
+          </button>
+        </div>
+        <nav style="flex:1; padding:16px;">
+          <dc-import name="SidebarNav" role="{{ role }}" nav-style="{{ navStyle }}" nav="{{ navMobile }}" hint-size="100%,600px"></dc-import>
+        </nav>
+        <div style="padding:16px; border-top:1px solid rgba(31,41,37,0.06);">
+          <button onClick="{{ logout }}" style="width:100%; background:#F8F4EC; border:none; padding:14px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer; color:#1F2925;">Se déconnecter</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- MAIN COLUMN -->
+    <div style="flex:1; min-width:0; display:flex; flex-direction:column;">
+
+      <!-- TOP BAR -->
+      <div style="position:sticky; top:0; z-index:50; background:rgba(248,244,236,0.92); backdrop-filter:blur(8px); border-bottom:1px solid rgba(31,41,37,0.08); padding:16px clamp(16px,3vw,32px); display:flex; align-items:center; gap:16px;">
+        <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ toggleSidebar }}" aria-label="Menu" style="width:40px; height:40px; border-radius:10px; background:#FFFFFF; border:1px solid rgba(31,41,37,0.1); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F2925" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </button>
+        </sc-if>
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:12px; color:#5a655f; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Espace ANB / {{ pageLabel }}</div>
+          <div style="font-size:17px; font-weight:800; color:#1F2925; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ pageLabel }}</div>
+        </div>
+        <sc-if value="{{ isNotMobile }}" hint-placeholder-val="{{ true }}">
+          <div style="flex:1; max-width:340px; position:relative;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5a655f" stroke-width="1.8" style="position:absolute; left:14px; top:50%; transform:translateY(-50%);"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
+            <input value="{{ searchQuery }}" onChange="{{ onSearch }}" placeholder="Recherche globale…" style="width:100%; padding:11px 16px 11px 40px; border-radius:999px; border:1.5px solid #e3dccb; background:#FFFFFF; font-size:13.5px;"></input>
+          </div>
+        </sc-if>
+        <button aria-label="Notifications" style="position:relative; width:40px; height:40px; border-radius:10px; background:#FFFFFF; border:1px solid rgba(31,41,37,0.08); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F2925" stroke-width="1.7"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 01-3.4 0"></path></svg>
+          <span style="position:absolute; top:6px; right:7px; width:8px; height:8px; border-radius:50%; background:#E97824; border:1.5px solid #FFFFFF;"></span>
+        </button>
+        <sc-if value="{{ isNotMobile }}" hint-placeholder-val="{{ true }}">
+          <button aria-label="Aide" style="width:40px; height:40px; border-radius:10px; background:#FFFFFF; border:1px solid rgba(31,41,37,0.08); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F2925" stroke-width="1.7"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9.5a2.5 2.5 0 014.9.8c0 1.7-2.4 1.8-2.4 3.7"></path><circle cx="12" cy="17.2" r="0.4" fill="#1F2925"></circle></svg>
+          </button>
+        </sc-if>
+        <div style="width:38px; height:38px; border-radius:50%; background:linear-gradient(150deg,#176B4D,#E97824); flex-shrink:0;"></div>
+      </div>
+
+      <!-- CONTENT AREA -->
+      <div style="flex:1; padding:clamp(18px,3vw,32px);">
+        <dc-import name="AdminPages" page="{{ page }}" role="{{ role }}" data="{{ pageData }}" nav="{{ nav }}" hint-size="100%,800px"></dc-import>
+      </div>
+    </div>
+
+    <!-- FLOATING CREATE BUTTON (mobile) -->
+    <sc-if value="{{ showFab }}" hint-placeholder-val="{{ false }}">
+      <button onClick="{{ nav.toActualitesNew }}" aria-label="Créer" style="position:fixed; bottom:26px; right:22px; z-index:120; width:60px; height:60px; border-radius:50%; background:#E97824; border:none; color:#FFFFFF; font-size:28px; font-weight:700; cursor:pointer; box-shadow:0 14px 30px rgba(233,120,36,0.4); display:flex; align-items:center; justify-content:center;">+</button>
+    </sc-if>
+  </div>
+</sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    role: null,
+    loginRole: 'admin',
+    loginEmail: '',
+    loginPass: '',
+    page: 'dashboard',
+    isMobile: false,
+    sidebarOpen: false,
+    searchQuery: ''
+  };
+
+  componentDidMount() {
+    this.checkMobile = () => this.setState({ isMobile: window.innerWidth < 980 });
+    this.checkMobile();
+    window.addEventListener('resize', this.checkMobile);
+  }
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.checkMobile);
+  }
+
+  goPage(key) {
+    this.setState({ page: key, sidebarOpen: false });
+    window.scrollTo(0, 0);
+  }
+
+  login(role) {
+    const startPage = role === 'super_admin' ? 'overview' : (role === 'editeur' ? 'edash' : 'dashboard');
+    this.setState({ role, page: startPage });
+  }
+
+  logout() {
+    this.setState({ role: null, page: 'dashboard', sidebarOpen: false });
+  }
+
+  renderVals() {
+    const s = this.state;
+
+    const roleOptions = [
+      { key: 'super_admin', label: 'Super Admin', desc: 'Gouvernance, sécurité, utilisateurs et réglages', iconBg: 'rgba(23,107,77,0.12)', iconColor: '#176B4D' },
+      { key: 'admin', label: 'Admin', desc: "Animation quotidienne du site : contenus et demandes", iconBg: 'rgba(233,120,36,0.14)', iconColor: '#E97824' },
+      { key: 'editeur', label: 'Éditeur / Bénévole', desc: 'Contribution en brouillon, avec validation', iconBg: 'rgba(31,41,37,0.06)', iconColor: '#1F2925' }
+    ].map(o => ({
+      ...o,
+      onClick: () => this.setState({ loginRole: o.key }),
+      border: s.loginRole === o.key ? '#176B4D' : '#EDE6D6',
+      bg: s.loginRole === o.key ? 'rgba(23,107,77,0.05)' : '#FFFFFF'
+    }));
+    const roleLabelMap = { super_admin: 'Super Admin', admin: 'Admin', editeur: 'Éditeur / Bénévole' };
+
+    const pageLabels = {
+      dashboard: 'Tableau de bord', actualites: 'Actualités', 'actualites-new': 'Nouvelle actualité',
+      evenements: 'Événements', 'evenements-new': 'Créer un événement', galerie: 'Galerie médias',
+      viepratique: 'Vie pratique', inscriptions: 'Inscriptions', adhesions: 'Adhésions',
+      messages: 'Messages', pages: 'Pages du site', stats: 'Statistiques', profil: 'Mon profil',
+      overview: "Vue d'ensemble", users: 'Utilisateurs et rôles', contenus: 'Contenus et validations',
+      donnees: 'Données et exports', journal: "Journal d'activité", reglages: 'Réglages du site',
+      integrations: 'Intégrations', securite: 'Sécurité', sauvegardes: 'Sauvegardes',
+      mentions: 'Mentions légales et confidentialité', statsglobales: 'Statistiques globales',
+      edash: 'Tableau de bord', econtenus: 'Mes contenus'
+    };
+
+    const navKeysAdmin = ['dashboard','actualites','evenements','galerie','viepratique','inscriptions','adhesions','messages','pages','stats','profil'];
+    const navKeysSuperGov = ['overview','users','contenus','donnees','journal','reglages','integrations','securite','sauvegardes','mentions','statsglobales','profil'];
+    const navKeysEditeur = ['edash','econtenus','profil'];
+
+    const navStyle = {};
+    [...navKeysAdmin, ...navKeysSuperGov, ...navKeysEditeur].forEach(k => {
+      const active = s.page === k || (k === 'actualites' && s.page === 'actualites-new') || (k === 'evenements' && s.page === 'evenements-new');
+      navStyle[k] = {
+        color: active ? '#176B4D' : '#3f4a45',
+        bg: active ? 'rgba(23,107,77,0.09)' : 'transparent',
+        weight: active ? '700' : '600'
+      };
+    });
+
+    const nav = {};
+    Object.keys(pageLabels).forEach(k => { nav['to_' + k] = () => this.goPage(k); });
+    nav.toActualitesNew = () => this.goPage('actualites-new');
+    nav.toEvenementsNew = () => this.goPage('evenements-new');
+
+    return {
+      isLoggedOut: !s.role,
+      isLoggedIn: !!s.role,
+      role: s.role,
+      roleLabel: roleLabelMap[s.role] || '',
+      roleOptions,
+      selectedRoleLabel: roleLabelMap[s.loginRole],
+      loginEmail: s.loginEmail,
+      loginPass: s.loginPass,
+      onLoginEmail: (e) => this.setState({ loginEmail: e.target.value }),
+      onLoginPass: (e) => this.setState({ loginPass: e.target.value }),
+      doLogin: () => this.login(s.loginRole),
+
+      isMobile: s.isMobile,
+      isNotMobile: !s.isMobile,
+      sidebarOpen: s.sidebarOpen,
+      toggleSidebar: () => this.setState(st => ({ sidebarOpen: !st.sidebarOpen })),
+      logout: () => this.logout(),
+
+      currentUserName: s.role === 'super_admin' ? 'Nasser Diallo' : (s.role === 'editeur' ? 'Fatou Ibrahim' : 'Mariama Souley'),
+      page: s.page,
+      pageLabel: pageLabels[s.page] || '',
+      navStyle,
+      nav,
+      navMobile: nav,
+
+      searchQuery: s.searchQuery,
+      onSearch: (e) => this.setState({ searchQuery: e.target.value }),
+
+      showFab: !s.isMobile ? false : (s.role === 'admin'),
+      pageData: { userName: s.role === 'super_admin' ? 'Nasser' : (s.role === 'editeur' ? 'Fatou' : 'Mariama') }
+    };
+  }
+}
+
+</script>
+</body>
+</html>

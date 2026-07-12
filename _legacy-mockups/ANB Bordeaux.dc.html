@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body { font-family: 'Manrope', sans-serif; background: #F8F4EC; -webkit-font-smoothing: antialiased; }
+    a { text-decoration: none; }
+    button { font-family: inherit; }
+    ::selection { background: #E97824; color: #FFFFFF; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes floatSlow { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-14px); } }
+  </style>
+</helmet>
+
+<div style="width:100%; min-height:100vh; background:#F8F4EC; color:#1F2925; overflow-x:hidden; position:relative;">
+
+  <!-- ============ HEADER ============ -->
+  <header style="position:sticky; top:0; z-index:100; background:rgba(248,244,236,0.92); backdrop-filter:blur(10px); border-bottom:1px solid rgba(31,41,37,0.08);">
+    <div style="max-width:1280px; margin:0 auto; padding:16px clamp(20px,4vw,48px); display:flex; align-items:center; justify-content:space-between; gap:24px;">
+      <div onClick="{{ goHome }}" style="display:flex; align-items:center; gap:12px; cursor:pointer;" data-screen-label="logo">
+        <div style="width:46px; height:46px; border-radius:13px; background:#176B4D; display:flex; align-items:center; justify-content:center; position:relative; flex-shrink:0;">
+          <span style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:14px; color:#FFFFFF; letter-spacing:0.02em;">ANB</span>
+          <div style="position:absolute; top:-4px; right:-4px; width:12px; height:12px; border-radius:50%; background:#E97824; border:2px solid #F8F4EC;"></div>
+        </div>
+        <div style="display:flex; flex-direction:column; line-height:1.15;">
+          <span style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:17px; color:#176B4D;">ANB</span>
+          <span style="font-size:10px; font-weight:700; letter-spacing:0.12em; color:#E97824; text-transform:uppercase;">Bordeaux</span>
+        </div>
+      </div>
+
+      <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ toggleMobileMenu }}" aria-label="Menu" style="width:44px; height:44px; border-radius:12px; background:#FFFFFF; border:1px solid rgba(31,41,37,0.1); display:flex; align-items:center; justify-content:center; cursor:pointer;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1F2925" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+      </sc-if>
+
+      <sc-if value="{{ isNotMobile }}" hint-placeholder-val="{{ true }}">
+        <nav style="display:flex; align-items:center; gap:clamp(14px,2vw,30px); flex-wrap:wrap;">
+          <sc-for list="{{ navItems }}" as="item" hint-placeholder-count="7">
+            <a onClick="{{ item.onClick }}" style="font-size:15px; font-weight:600; color:{{ item.color }}; cursor:pointer; padding-bottom:4px; border-bottom:2px solid {{ item.underline }}; white-space:nowrap;">{{ item.label }}</a>
+          </sc-for>
+        </nav>
+      </sc-if>
+
+      <sc-if value="{{ isNotMobile }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ goAdherer }}" style="background:#E97824; color:#FFFFFF; border:none; padding:14px 28px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer; white-space:nowrap; box-shadow:0 8px 20px rgba(233,120,36,0.28);">Adhérer à l'ANB</button>
+      </sc-if>
+    </div>
+
+  </header>
+
+  <sc-if value="{{ mobileOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; inset:0; background:#F8F4EC; z-index:200; padding:96px 24px 24px; display:flex; flex-direction:column; gap:6px; overflow-y:auto;">
+      <button onClick="{{ toggleMobileMenu }}" aria-label="Fermer" style="position:absolute; top:16px; right:20px; width:44px; height:44px; border-radius:12px; background:#FFFFFF; border:1px solid rgba(31,41,37,0.1); display:flex; align-items:center; justify-content:center; cursor:pointer;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F2925" stroke-width="2" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"></line><line x1="19" y1="5" x2="5" y2="19"></line></svg>
+      </button>
+      <sc-for list="{{ navItems }}" as="item" hint-placeholder-count="7">
+        <a onClick="{{ item.onClick }}" style="font-size:19px; font-weight:700; color:#1F2925; padding:16px 8px; border-bottom:1px solid rgba(31,41,37,0.08); cursor:pointer;">{{ item.label }}</a>
+      </sc-for>
+      <button onClick="{{ goAdherer }}" style="margin-top:20px; background:#E97824; color:#FFFFFF; border:none; padding:16px 28px; border-radius:999px; font-weight:700; font-size:16px; cursor:pointer;">Adhérer à l'ANB</button>
+    </div>
+  </sc-if>
+
+  <!-- ============ PAGE: HOME ============ -->
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+    <main data-screen-label="Accueil">
+
+      <!-- HERO -->
+      <section style="position:relative; max-width:1280px; margin:0 auto; padding:clamp(40px,7vw,90px) clamp(20px,4vw,48px) clamp(60px,8vw,110px); display:flex; flex-wrap:wrap; align-items:center; gap:56px; overflow:hidden;">
+        <div style="position:absolute; top:-60px; right:-80px; width:340px; height:340px; border-radius:50%; background:radial-gradient(circle, rgba(233,120,36,0.14), transparent 70%); pointer-events:none;"></div>
+        <div style="position:absolute; bottom:-40px; left:10%; width:260px; height:260px; border-radius:50%; background:radial-gradient(circle, rgba(23,107,77,0.10), transparent 70%); pointer-events:none;"></div>
+
+        <div style="flex:1 1 460px; min-width:300px; position:relative; z-index:1; animation:fadeInUp 0.8s ease both;">
+          <div style="display:inline-block; background:rgba(23,107,77,0.1); color:#176B4D; font-size:13px; font-weight:700; letter-spacing:0.03em; padding:9px 18px; border-radius:999px; margin-bottom:24px;">Association des Nigériens à Bordeaux</div>
+          <h1 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(2.4rem,4.8vw,3.8rem); line-height:1.08; color:#1F2925; margin:0 0 24px; text-wrap:balance;">Ensemble, faire vivre la communauté nigérienne à Bordeaux.</h1>
+          <p style="font-size:18px; line-height:1.7; color:#3f4a45; max-width:520px; margin:0 0 36px;">L'ANB rassemble, accompagne et valorise les Nigériens et les amis du Niger dans la métropole bordelaise.</p>
+          <div style="display:flex; gap:16px; flex-wrap:wrap;">
+            <button onClick="{{ goAssociation }}" style="background:#176B4D; color:#FFFFFF; border:none; padding:17px 32px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer; box-shadow:0 10px 24px rgba(23,107,77,0.25);">Découvrir l'association</button>
+            <button onClick="{{ goEvenements }}" style="background:transparent; color:#176B4D; border:2px solid #176B4D; padding:15px 30px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer;">Voir les événements</button>
+          </div>
+        </div>
+
+        <div style="flex:1 1 420px; min-width:300px; position:relative; z-index:1;">
+          <div style="position:relative; border-radius:32px; overflow:hidden; aspect-ratio:4/5; background:linear-gradient(155deg, #E97824 0%, #E97824 35%, #176B4D 100%); box-shadow:0 30px 60px rgba(31,41,37,0.18);">
+            <div style="position:absolute; inset:0; opacity:0.5; background-image:repeating-linear-gradient(135deg, rgba(255,255,255,0.12) 0px, rgba(255,255,255,0.12) 2px, transparent 2px, transparent 26px);"></div>
+            <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; color:#FFFFFF;">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.3" opacity="0.85"><circle cx="9" cy="8" r="3.2"></circle><circle cx="16.5" cy="9" r="2.4"></circle><path d="M3.5 19c0-3.3 2.6-5.6 5.9-5.6s5.9 2.3 5.9 5.6"></path><path d="M14.5 13.7c2.6 0.2 4.3 2.2 4.3 5"></path></svg>
+              <span style="font-size:13px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; opacity:0.85;">Photo — moment communautaire</span>
+            </div>
+          </div>
+          <div style="position:absolute; bottom:-24px; left:-20px; background:#FFFFFF; border-radius:20px; padding:20px 24px; box-shadow:0 20px 40px rgba(31,41,37,0.15); display:flex; align-items:center; gap:14px; max-width:300px; animation:floatSlow 5s ease-in-out infinite;">
+            <div style="width:44px; height:44px; border-radius:12px; background:#E97824; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line></svg>
+            </div>
+            <div>
+              <div style="font-size:11px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em;">Prochain rendez-vous</div>
+              <div style="font-size:14px; font-weight:700; color:#1F2925; margin-top:2px;">Journée culturelle nigérienne — Bordeaux</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BANDEAU DE CONFIANCE -->
+      <section style="max-width:1280px; margin:0 auto; padding:20px clamp(20px,4vw,48px) 70px;">
+        <div style="display:flex; flex-wrap:wrap; gap:28px; border-top:1px solid rgba(31,41,37,0.1); padding-top:44px;">
+          <div style="flex:1 1 260px; display:flex; align-items:center; gap:16px;">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="1.5"><circle cx="9" cy="8" r="3.2"></circle><circle cx="16.5" cy="9" r="2.4"></circle><path d="M3.5 19c0-3.3 2.6-5.6 5.9-5.6s5.9 2.3 5.9 5.6"></path><path d="M14.5 13.7c2.6 0.2 4.3 2.2 4.3 5"></path></svg>
+            <span style="font-size:16px; font-weight:700; color:#1F2925;">Une communauté unie</span>
+          </div>
+          <div style="flex:1 1 260px; display:flex; align-items:center; gap:16px;">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#E97824" stroke-width="1.5"><path d="M12 3l2.5 5 5.5 0.8-4 3.9 0.9 5.5-4.9-2.6-4.9 2.6 0.9-5.5-4-3.9 5.5-0.8z"></path></svg>
+            <span style="font-size:16px; font-weight:700; color:#1F2925;">Culture et transmission</span>
+          </div>
+          <div style="flex:1 1 260px; display:flex; align-items:center; gap:16px;">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="1.5"><path d="M12 20.5s-7.5-4.6-7.5-10.2C4.5 7 6.5 5 9 5c1.5 0 2.6 0.8 3 2 0.4-1.2 1.5-2 3-2 2.5 0 4.5 2 4.5 5.3 0 5.6-7.5 10.2-7.5 10.2z"></path></svg>
+            <span style="font-size:16px; font-weight:700; color:#1F2925;">Entraide au quotidien</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- MISSION -->
+      <section style="max-width:1280px; margin:0 auto; padding:20px clamp(20px,4vw,48px) 100px; display:flex; flex-wrap:wrap; gap:56px; align-items:center;">
+        <div style="flex:1 1 380px; min-width:280px; order:2;">
+          <div style="border-radius:28px; overflow:hidden; aspect-ratio:3/4; background:linear-gradient(165deg,#E8D8BF,#176B4D); position:relative; box-shadow:0 24px 50px rgba(31,41,37,0.14);">
+            <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px; color:#FFFFFF;">
+              <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.3" opacity="0.9"><path d="M12 21s-7-4.35-7-10A5 5 0 0112 6a5 5 0 017 5c0 5.65-7 10-7 10z"></path></svg>
+              <span style="font-size:12px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; opacity:0.85; text-align:center; padding:0 20px;">Photo — accompagnement &amp; transmission</span>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1 1 460px; min-width:300px; order:1;">
+          <div style="font-size:13px; font-weight:700; color:#E97824; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:16px;">Notre mission</div>
+          <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.9rem,3.4vw,2.6rem); line-height:1.15; color:#1F2925; margin:0 0 24px; text-wrap:balance;">Bien plus qu'une association : une famille, un repère, une énergie collective.</h2>
+          <p style="font-size:17px; line-height:1.75; color:#3f4a45; margin:0 0 16px;">L'ANB accueille chaque nouvel arrivant avec chaleur et l'accompagne dans ses premiers pas à Bordeaux. Tout au long de l'année, nous organisons des événements, des temps d'entraide, des actions culturelles et des projets solidaires qui renforcent nos liens et font rayonner nos racines.</p>
+          <p style="font-size:17px; line-height:1.75; color:#3f4a45; margin:0 0 32px;">Étudiants, familles, actifs ou amis du Niger : chacun trouve à l'ANB une place, un soutien et une communauté prête à l'accueillir.</p>
+          <button onClick="{{ goAssociation }}" style="background:#176B4D; color:#FFFFFF; border:none; padding:16px 30px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer;">En savoir plus sur l'ANB</button>
+        </div>
+      </section>
+
+      <!-- PROCHAIN EVENEMENT -->
+      <section style="background:#176B4D; padding:90px 0;">
+        <div style="max-width:1280px; margin:0 auto; padding:0 clamp(20px,4vw,48px);">
+          <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.8rem,3.4vw,2.5rem); color:#FFFFFF; margin:0 0 44px; text-align:center;">Le prochain rendez-vous de la communauté</h2>
+          <div style="background:#FFFFFF; border-radius:28px; overflow:hidden; display:flex; flex-wrap:wrap; box-shadow:0 30px 60px rgba(0,0,0,0.2);">
+            <div style="flex:1 1 420px; min-width:280px; aspect-ratio:16/11; background:linear-gradient(150deg,#E97824,#1F2925); position:relative;">
+              <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#FFFFFF;">
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.3" opacity="0.85"><path d="M12 3l2.5 5 5.5 0.8-4 3.9 0.9 5.5-4.9-2.6-4.9 2.6 0.9-5.5-4-3.9 5.5-0.8z"></path></svg>
+              </div>
+            </div>
+            <div style="flex:1 1 420px; min-width:280px; padding:clamp(28px,3.5vw,48px); display:flex; flex-direction:column; justify-content:center;">
+              <div style="font-size:13px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">Samedi 20 septembre</div>
+              <h3 style="font-family:'Unbounded',sans-serif; font-size:clamp(1.4rem,2.2vw,1.9rem); font-weight:700; color:#1F2925; margin:0 0 10px;">Journée culturelle nigérienne</h3>
+              <div style="display:flex; align-items:center; gap:8px; color:#3f4a45; font-size:14px; font-weight:600; margin-bottom:18px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f4a45" stroke-width="1.8"><path d="M12 21s-7-4.35-7-10A5 5 0 0112 6a5 5 0 017 5c0 5.65-7 10-7 10z"></path><circle cx="12" cy="11" r="1.6"></circle></svg>
+                Bordeaux Métropole
+              </div>
+              <p style="font-size:16px; line-height:1.7; color:#3f4a45; margin:0 0 28px;">Musique, danses, gastronomie et rencontres : une journée pour célébrer nos traditions et partager la richesse de notre culture avec toute la métropole.</p>
+              <button onClick="{{ goEvenements }}" style="align-self:flex-start; background:#E97824; color:#FFFFFF; border:none; padding:16px 32px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer; box-shadow:0 10px 24px rgba(233,120,36,0.3);">Je participe</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- NOS ACTIONS -->
+      <section style="max-width:1280px; margin:0 auto; padding:100px clamp(20px,4vw,48px);">
+        <div style="text-align:center; max-width:640px; margin:0 auto 56px;">
+          <div style="font-size:13px; font-weight:700; color:#E97824; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:16px;">Nos actions</div>
+          <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.9rem,3.2vw,2.5rem); color:#1F2925; margin:0;">Ce que nous faisons ensemble, toute l'année</h2>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:24px;">
+          <div style="background:#FFFFFF; border-radius:24px; padding:32px; box-shadow:0 10px 30px rgba(31,41,37,0.06); transition:transform 0.25s ease, box-shadow 0.25s ease; cursor:default;" style-hover="transform:translateY(-6px); box-shadow:0 20px 40px rgba(31,41,37,0.12);">
+            <div style="width:52px; height:52px; border-radius:14px; background:rgba(23,107,77,0.1); display:flex; align-items:center; justify-content:center; margin-bottom:20px;">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="1.6"><circle cx="12" cy="12" r="9"></circle><path d="M12 3v3M12 18v3M3 12h3M18 12h3"></path><path d="M9 12l2 2 4-4"></path></svg>
+            </div>
+            <h3 style="font-size:19px; font-weight:700; color:#1F2925; margin:0 0 10px;">Accueillir et orienter</h3>
+            <p style="font-size:15px; line-height:1.65; color:#5a655f; margin:0;">Aider les nouveaux arrivants à trouver leurs repères à Bordeaux, dès les premiers jours.</p>
+          </div>
+          <div style="background:#FFFFFF; border-radius:24px; padding:32px; box-shadow:0 10px 30px rgba(31,41,37,0.06);" style-hover="transform:translateY(-6px); box-shadow:0 20px 40px rgba(31,41,37,0.12);">
+            <div style="width:52px; height:52px; border-radius:14px; background:rgba(233,120,36,0.12); display:flex; align-items:center; justify-content:center; margin-bottom:20px;">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#E97824" stroke-width="1.6"><circle cx="7" cy="12" r="3.2"></circle><circle cx="17" cy="12" r="3.2"></circle><path d="M9.8 12h4.4"></path></svg>
+            </div>
+            <h3 style="font-size:19px; font-weight:700; color:#1F2925; margin:0 0 10px;">Créer du lien</h3>
+            <p style="font-size:15px; line-height:1.65; color:#5a655f; margin:0;">Rencontres, repas, sport et activités communautaires tout au long de l'année.</p>
+          </div>
+          <div style="background:#FFFFFF; border-radius:24px; padding:32px; box-shadow:0 10px 30px rgba(31,41,37,0.06);" style-hover="transform:translateY(-6px); box-shadow:0 20px 40px rgba(31,41,37,0.12);">
+            <div style="width:52px; height:52px; border-radius:14px; background:rgba(23,107,77,0.1); display:flex; align-items:center; justify-content:center; margin-bottom:20px;">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="1.6"><path d="M12 3l2.5 5 5.5 0.8-4 3.9 0.9 5.5-4.9-2.6-4.9 2.6 0.9-5.5-4-3.9 5.5-0.8z"></path></svg>
+            </div>
+            <h3 style="font-size:19px; font-weight:700; color:#1F2925; margin:0 0 10px;">Faire rayonner la culture</h3>
+            <p style="font-size:15px; line-height:1.65; color:#5a655f; margin:0;">Traditions, gastronomie, musique et transmission auprès de toutes les générations.</p>
+          </div>
+          <div style="background:#FFFFFF; border-radius:24px; padding:32px; box-shadow:0 10px 30px rgba(31,41,37,0.06);" style-hover="transform:translateY(-6px); box-shadow:0 20px 40px rgba(31,41,37,0.12);">
+            <div style="width:52px; height:52px; border-radius:14px; background:rgba(233,120,36,0.12); display:flex; align-items:center; justify-content:center; margin-bottom:20px;">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#E97824" stroke-width="1.6"><circle cx="12" cy="12" r="8.5"></circle><path d="M3.5 12h17M12 3.5c2.4 2.4 3.6 5.4 3.6 8.5s-1.2 6.1-3.6 8.5c-2.4-2.4-3.6-5.4-3.6-8.5s1.2-6.1 3.6-8.5z"></path></svg>
+            </div>
+            <h3 style="font-size:19px; font-weight:700; color:#1F2925; margin:0 0 10px;">Agir ensemble</h3>
+            <p style="font-size:15px; line-height:1.65; color:#5a655f; margin:0;">Solidarité, bénévolat et projets pour soutenir des initiatives au Niger.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- NOUVEL ARRIVANT -->
+      <section style="background:#E8D8BF; background-image:repeating-linear-gradient(135deg, rgba(23,107,77,0.05) 0px, rgba(23,107,77,0.05) 2px, transparent 2px, transparent 28px); padding:100px 0;">
+        <div style="max-width:1280px; margin:0 auto; padding:0 clamp(20px,4vw,48px);">
+          <div style="max-width:680px; margin:0 auto 56px; text-align:center;">
+            <div style="font-size:13px; font-weight:700; color:#E97824; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:16px;">Pour les nouveaux arrivants</div>
+            <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.9rem,3.4vw,2.6rem); color:#1F2925; margin:0 0 20px; text-wrap:balance;">Nouveau à Bordeaux ? Vous n'êtes pas seul.</h2>
+            <p style="font-size:17px; line-height:1.7; color:#3f4a45; margin:0;">L'ANB peut vous orienter, vous mettre en relation et vous aider à découvrir la communauté nigérienne de la métropole bordelaise.</p>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:24px; margin-bottom:48px;">
+            <div style="background:#FFFFFF; border-radius:22px; padding:30px; box-shadow:0 10px 26px rgba(31,41,37,0.07);">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="1.6" style="margin-bottom:16px;"><path d="M22 10L12 5 2 10l10 5 10-5z"></path><path d="M6 12.5V17c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"></path></svg>
+              <h3 style="font-size:17px; font-weight:700; color:#1F2925; margin:0 0 8px;">Études et vie étudiante</h3>
+              <p style="font-size:14.5px; line-height:1.6; color:#5a655f; margin:0;">Orientation, inscriptions, bourses et vie sur les campus bordelais.</p>
+            </div>
+            <div style="background:#FFFFFF; border-radius:22px; padding:30px; box-shadow:0 10px 26px rgba(31,41,37,0.07);">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#E97824" stroke-width="1.6" style="margin-bottom:16px;"><rect x="4" y="4" width="16" height="17" rx="2"></rect><line x1="4" y1="9.5" x2="20" y2="9.5"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="16" y1="2" x2="16" y2="6"></line></svg>
+              <h3 style="font-size:17px; font-weight:700; color:#1F2925; margin:0 0 8px;">Démarches et installation</h3>
+              <p style="font-size:14.5px; line-height:1.6; color:#5a655f; margin:0;">Logement, titre de séjour, banque et premiers repères pratiques.</p>
+            </div>
+            <div style="background:#FFFFFF; border-radius:22px; padding:30px; box-shadow:0 10px 26px rgba(31,41,37,0.07);">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="1.6" style="margin-bottom:16px;"><circle cx="8" cy="9" r="3"></circle><circle cx="17" cy="10" r="2.3"></circle><path d="M2.5 20c0-3.3 2.5-5.6 5.5-5.6s5.5 2.3 5.5 5.6"></path><path d="M14 15c2.5 0.2 4 2.1 4 4.6"></path></svg>
+              <h3 style="font-size:17px; font-weight:700; color:#1F2925; margin:0 0 8px;">Rencontrer la communauté</h3>
+              <p style="font-size:14.5px; line-height:1.6; color:#5a655f; margin:0;">Événements, groupes d'entraide et premiers contacts chaleureux.</p>
+            </div>
+          </div>
+          <div style="text-align:center;">
+            <button onClick="{{ goViePratique }}" style="background:#176B4D; color:#FFFFFF; border:none; padding:17px 34px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer;">Trouver des repères</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- GALERIE -->
+      <section style="max-width:1280px; margin:0 auto; padding:100px clamp(20px,4vw,48px);">
+        <div style="display:flex; flex-wrap:wrap; align-items:end; justify-content:space-between; gap:20px; margin-bottom:40px;">
+          <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.9rem,3.2vw,2.5rem); color:#1F2925; margin:0;">Les moments qui nous rassemblent</h2>
+          <button onClick="{{ goGalerie }}" style="background:transparent; border:2px solid #176B4D; color:#176B4D; padding:13px 26px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer; white-space:nowrap;">Voir toute la galerie</button>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); grid-auto-rows:140px; gap:16px;">
+          <sc-for list="{{ homeGallery }}" as="img" hint-placeholder-count="8">
+            <div style="grid-row:span {{ img.span }}; border-radius:20px; background:{{ img.bg }}; position:relative; overflow:hidden; display:flex; align-items:flex-end; padding:14px;">
+              <span style="color:rgba(255,255,255,0.9); font-size:12px; font-weight:700;">{{ img.label }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <!-- ACTUALITES -->
+      <section style="background:#FFFFFF; padding:100px 0;">
+        <div style="max-width:1280px; margin:0 auto; padding:0 clamp(20px,4vw,48px);">
+          <div style="display:flex; flex-wrap:wrap; align-items:end; justify-content:space-between; gap:20px; margin-bottom:44px;">
+            <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.9rem,3.2vw,2.5rem); color:#1F2925; margin:0;">Actualités de l'ANB</h2>
+            <button onClick="{{ goActualites }}" style="background:transparent; border:2px solid #176B4D; color:#176B4D; padding:13px 26px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer; white-space:nowrap;">Toutes les actualités</button>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:28px;">
+            <sc-for list="{{ newsArticles }}" as="article" hint-placeholder-count="3">
+              <div style="background:#F8F4EC; border-radius:24px; overflow:hidden;">
+                <div style="aspect-ratio:16/10; background:{{ article.bg }};"></div>
+                <div style="padding:26px;">
+                  <div style="font-size:12px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">{{ article.category }} · {{ article.date }}</div>
+                  <h3 style="font-size:18px; font-weight:700; color:#1F2925; margin:0 0 12px; line-height:1.35;">{{ article.title }}</h3>
+                  <p style="font-size:14.5px; line-height:1.6; color:#5a655f; margin:0 0 18px;">{{ article.excerpt }}</p>
+                  <a onClick="{{ goActualites }}" style="font-size:14px; font-weight:700; color:#176B4D; cursor:pointer;">Lire l'article →</a>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA ADHESION -->
+      <section style="background:#E97824; padding:100px 0;">
+        <div style="max-width:840px; margin:0 auto; padding:0 clamp(20px,4vw,48px); text-align:center;">
+          <h2 style="font-family:'Unbounded',sans-serif; font-weight:800; font-size:clamp(2rem,3.6vw,2.8rem); color:#1F2925; margin:0 0 18px;">L'ANB grandit avec vous.</h2>
+          <p style="font-size:18px; line-height:1.6; color:#1F2925; opacity:0.85; margin:0 0 40px;">Devenez membre, proposez votre aide ou soutenez nos actions.</p>
+          <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+            <button onClick="{{ goAdherer }}" style="background:#1F2925; color:#FFFFFF; border:none; padding:17px 34px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer;">Adhérer maintenant</button>
+            <button onClick="{{ goAdherer }}" style="background:#FFFFFF; color:#1F2925; border:none; padding:17px 34px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer;">Devenir bénévole</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </sc-if>
+
+  <!-- ============ PAGE: ASSOCIATION ============ -->
+  <sc-if value="{{ isAssociation }}" hint-placeholder-val="{{ false }}">
+    <main data-screen-label="L'association">
+      <section style="max-width:1280px; margin:0 auto; padding:70px clamp(20px,4vw,48px) 20px;">
+        <div style="font-size:13px; font-weight:700; color:#E97824; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:16px;">L'association</div>
+        <h1 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(2.1rem,4vw,3.2rem); color:#1F2925; margin:0 0 24px; max-width:760px; text-wrap:balance;">Une communauté née de la solidarité, portée par ses membres.</h1>
+        <p style="font-size:18px; line-height:1.75; color:#3f4a45; max-width:680px; margin:0;">L'ANB est une association loi 1901 qui rassemble les Nigériens et les amis du Niger vivant à Bordeaux et dans sa métropole. Nous œuvrons pour l'accueil, l'entraide, la transmission culturelle et le lien entre nos membres.</p>
+      </section>
+
+      <section style="max-width:1280px; margin:0 auto; padding:60px clamp(20px,4vw,48px); display:flex; flex-wrap:wrap; gap:24px;">
+        <div style="flex:1 1 220px; background:#FFFFFF; border-radius:22px; padding:30px; box-shadow:0 10px 26px rgba(31,41,37,0.06);">
+          <h3 style="font-size:17px; font-weight:700; color:#176B4D; margin:0 0 10px;">Notre mission</h3>
+          <p style="font-size:14.5px; line-height:1.6; color:#5a655f; margin:0;">Accueillir, accompagner et fédérer la communauté nigérienne de la métropole bordelaise.</p>
+        </div>
+        <div style="flex:1 1 220px; background:#FFFFFF; border-radius:22px; padding:30px; box-shadow:0 10px 26px rgba(31,41,37,0.06);">
+          <h3 style="font-size:17px; font-weight:700; color:#176B4D; margin:0 0 10px;">Nos valeurs</h3>
+          <p style="font-size:14.5px; line-height:1.6; color:#5a655f; margin:0;">Solidarité, transmission, respect et ouverture à toutes et tous.</p>
+        </div>
+        <div style="flex:1 1 220px; background:#FFFFFF; border-radius:22px; padding:30px; box-shadow:0 10px 26px rgba(31,41,37,0.06);">
+          <h3 style="font-size:17px; font-weight:700; color:#176B4D; margin:0 0 10px;">Notre ambition</h3>
+          <p style="font-size:14.5px; line-height:1.6; color:#5a655f; margin:0;">Faire de Bordeaux un lieu où nos racines nigériennes s'épanouissent.</p>
+        </div>
+      </section>
+
+      <!-- MOT DU PRESIDENT -->
+      <section style="background:#F0E9DA; padding:80px 0;">
+        <div style="max-width:1280px; margin:0 auto; padding:0 clamp(20px,4vw,48px); display:flex; flex-wrap:wrap; gap:48px; align-items:center;">
+          <div style="flex:0 1 260px; min-width:200px;">
+            <div style="border-radius:24px; aspect-ratio:1/1; background:linear-gradient(160deg,#176B4D,#1F2925); box-shadow:0 20px 40px rgba(31,41,37,0.14);"></div>
+          </div>
+          <div style="flex:1 1 460px; min-width:280px;">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="#E97824"><path d="M7 8c-2.5 0-4 2-4 4.5S4.5 17 7 17c0-3 1.5-5 4-5.5V8H7zm10 0c-2.5 0-4 2-4 4.5s1.5 4.5 4 4.5c0-3 1.5-5 4-5.5V8h-4z"></path></svg>
+            <p style="font-size:19px; line-height:1.7; color:#1F2925; font-style:italic; margin:18px 0 24px; max-width:600px;">« L'ANB est le fruit de l'engagement de celles et ceux qui ont voulu, un jour, que personne ne se sente seul à Bordeaux. Chaque événement, chaque geste d'entraide, fait grandir cette famille que nous construisons ensemble. »</p>
+            <div style="font-weight:700; color:#1F2925; font-size:15px;">Prénom Nom</div>
+            <div style="font-size:14px; color:#5a655f;">Président de l'ANB</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TIMELINE -->
+      <section style="max-width:900px; margin:0 auto; padding:90px clamp(20px,4vw,48px);">
+        <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.7rem,2.8vw,2.2rem); color:#1F2925; margin:0 0 48px; text-align:center;">Notre parcours</h2>
+        <div style="display:flex; flex-direction:column; gap:0;">
+          <sc-for list="{{ timeline }}" as="step" hint-placeholder-count="4">
+            <div style="display:flex; gap:24px; padding-bottom:36px; position:relative;">
+              <div style="display:flex; flex-direction:column; align-items:center; flex-shrink:0;">
+                <div style="width:14px; height:14px; border-radius:50%; background:#E97824;"></div>
+                <div style="width:2px; flex:1; background:rgba(31,41,37,0.12); margin-top:4px;"></div>
+              </div>
+              <div style="padding-bottom:6px;">
+                <div style="font-size:13px; font-weight:700; color:#176B4D; margin-bottom:6px;">{{ step.year }}</div>
+                <div style="font-size:15.5px; line-height:1.6; color:#3f4a45;">{{ step.text }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <!-- EQUIPE -->
+      <section style="background:#FFFFFF; padding:90px 0;">
+        <div style="max-width:1280px; margin:0 auto; padding:0 clamp(20px,4vw,48px);">
+          <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.7rem,2.8vw,2.2rem); color:#1F2925; margin:0 0 44px; text-align:center;">Le bureau de l'ANB</h2>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:24px;">
+            <sc-for list="{{ teamMembers }}" as="member" hint-placeholder-count="6">
+              <div style="text-align:center;">
+                <div style="border-radius:18px; aspect-ratio:1/1; background:{{ member.bg }}; margin-bottom:14px;"></div>
+                <div style="font-weight:700; color:#1F2925; font-size:15px;">{{ member.name }}</div>
+                <div style="font-size:13px; color:#E97824; font-weight:600;">{{ member.role }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </section>
+
+      <!-- POURQUOI REJOINDRE -->
+      <section style="background:#176B4D; padding:90px 0;">
+        <div style="max-width:1280px; margin:0 auto; padding:0 clamp(20px,4vw,48px); text-align:center;">
+          <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.8rem,3vw,2.4rem); color:#FFFFFF; margin:0 0 40px;">Pourquoi rejoindre l'ANB ?</h2>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:20px; margin-bottom:44px;">
+            <div style="background:rgba(255,255,255,0.08); border-radius:20px; padding:26px; color:#FFFFFF;">Un réseau chaleureux dès votre arrivée</div>
+            <div style="background:rgba(255,255,255,0.08); border-radius:20px; padding:26px; color:#FFFFFF;">Des événements toute l'année</div>
+            <div style="background:rgba(255,255,255,0.08); border-radius:20px; padding:26px; color:#FFFFFF;">Un lien vivant avec vos racines</div>
+          </div>
+          <button onClick="{{ goAdherer }}" style="background:#E97824; color:#FFFFFF; border:none; padding:17px 34px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer;">Adhérer à l'ANB</button>
+        </div>
+      </section>
+    </main>
+  </sc-if>
+
+  <!-- ============ PAGE: EVENEMENTS ============ -->
+  <sc-if value="{{ isEvenements }}" hint-placeholder-val="{{ false }}">
+    <main data-screen-label="Événements">
+      <section style="max-width:1280px; margin:0 auto; padding:70px clamp(20px,4vw,48px) 20px;">
+        <div style="font-size:13px; font-weight:700; color:#E97824; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:16px;">Événements</div>
+        <h1 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(2.1rem,4vw,3rem); color:#1F2925; margin:0 0 40px; max-width:760px;">Se retrouver, célébrer et partager toute l'année.</h1>
+
+        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:48px;">
+          <sc-for list="{{ eventFilters }}" as="f" hint-placeholder-count="5">
+            <button onClick="{{ f.onClick }}" style="background:{{ f.bg }}; color:{{ f.color }}; border:2px solid {{ f.border }}; padding:11px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">{{ f.label }}</button>
+          </sc-for>
+        </div>
+
+        <!-- NEXT EVENT LARGE -->
+        <div style="background:#176B4D; border-radius:28px; overflow:hidden; display:flex; flex-wrap:wrap; margin-bottom:64px; box-shadow:0 24px 50px rgba(31,41,37,0.15);">
+          <div style="flex:1 1 380px; min-width:260px; aspect-ratio:16/11; background:linear-gradient(150deg,#E97824,#1F2925);"></div>
+          <div style="flex:1 1 380px; min-width:260px; padding:clamp(28px,3.5vw,44px); display:flex; flex-direction:column; justify-content:center;">
+            <div style="display:inline-block; align-self:flex-start; background:rgba(233,120,36,0.2); color:#E97824; font-size:12px; font-weight:700; padding:6px 14px; border-radius:999px; margin-bottom:16px;">Prochain événement · Culture</div>
+            <div style="font-size:14px; font-weight:700; color:#F8F4EC; opacity:0.8; margin-bottom:8px;">Samedi 20 septembre 2026</div>
+            <h3 style="font-family:'Unbounded',sans-serif; font-size:clamp(1.4rem,2.2vw,1.9rem); font-weight:700; color:#FFFFFF; margin:0 0 12px;">Journée culturelle nigérienne</h3>
+            <p style="font-size:15.5px; line-height:1.7; color:#F8F4EC; opacity:0.85; margin:0 0 26px;">Musique, danses, gastronomie et rencontres — une journée pour célébrer nos traditions, ouverte à tous.</p>
+            <button style="align-self:flex-start; background:#E97824; color:#FFFFFF; border:none; padding:15px 30px; border-radius:999px; font-weight:700; font-size:14.5px; cursor:pointer;">Je participe</button>
+          </div>
+        </div>
+
+        <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.5rem,2.4vw,1.9rem); color:#1F2925; margin:0 0 32px;">Tous les événements</h2>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:26px; margin-bottom:60px;">
+          <sc-for list="{{ filteredEvents }}" as="ev" hint-placeholder-count="4">
+            <div style="background:#FFFFFF; border-radius:22px; overflow:hidden; box-shadow:0 10px 26px rgba(31,41,37,0.07);">
+              <div style="aspect-ratio:16/10; background:{{ ev.color }}; position:relative;">
+                <sc-if value="{{ ev.isPast }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute; top:14px; left:14px; background:rgba(31,41,37,0.7); color:#FFFFFF; font-size:11px; font-weight:700; padding:6px 12px; border-radius:999px;">Événement passé</div>
+                </sc-if>
+              </div>
+              <div style="padding:24px;">
+                <div style="font-size:12px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;">{{ ev.category }} · {{ ev.date }}</div>
+                <h3 style="font-size:17px; font-weight:700; color:#1F2925; margin:0 0 8px;">{{ ev.title }}</h3>
+                <p style="font-size:14px; color:#5a655f; margin:0 0 6px;">{{ ev.place }}</p>
+                <p style="font-size:14px; line-height:1.6; color:#5a655f; margin:0;">{{ ev.desc }}</p>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </main>
+  </sc-if>
+
+  <!-- ============ PAGE: ACTUALITES ============ -->
+  <sc-if value="{{ isActualites }}" hint-placeholder-val="{{ false }}">
+    <main data-screen-label="Actualités">
+      <section style="max-width:1280px; margin:0 auto; padding:70px clamp(20px,4vw,48px) 90px;">
+        <div style="font-size:13px; font-weight:700; color:#E97824; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:16px;">Actualités</div>
+        <h1 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(2.1rem,4vw,3rem); color:#1F2925; margin:0 0 48px; max-width:760px;">Ce qui fait vivre la communauté, semaine après semaine.</h1>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:28px;">
+          <sc-for list="{{ newsArticles }}" as="article" hint-placeholder-count="3">
+            <div style="background:#FFFFFF; border-radius:24px; overflow:hidden; box-shadow:0 10px 26px rgba(31,41,37,0.07);">
+              <div style="aspect-ratio:16/10; background:{{ article.bg }};"></div>
+              <div style="padding:26px;">
+                <div style="font-size:12px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">{{ article.category }} · {{ article.date }}</div>
+                <h3 style="font-size:18px; font-weight:700; color:#1F2925; margin:0 0 12px; line-height:1.35;">{{ article.title }}</h3>
+                <p style="font-size:14.5px; line-height:1.6; color:#5a655f; margin:0 0 18px;">{{ article.excerpt }}</p>
+                <a style="font-size:14px; font-weight:700; color:#176B4D; cursor:pointer;">Lire l'article →</a>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </main>
+  </sc-if>
+
+  <!-- ============ PAGE: VIE PRATIQUE ============ -->
+  <sc-if value="{{ isViePratique }}" hint-placeholder-val="{{ false }}">
+    <main data-screen-label="Vie pratique">
+      <section style="max-width:1280px; margin:0 auto; padding:70px clamp(20px,4vw,48px) 90px;">
+        <div style="font-size:13px; font-weight:700; color:#E97824; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:16px;">Vie pratique</div>
+        <h1 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(2.1rem,4vw,3rem); color:#1F2925; margin:0 0 20px; max-width:760px;">Tout ce qu'il faut savoir pour bien s'installer à Bordeaux.</h1>
+        <p style="font-size:17px; line-height:1.7; color:#3f4a45; max-width:680px; margin:0 0 56px;">Des repères simples et concrets pour avancer sereinement dans vos démarches, vos études, votre logement et votre quotidien.</p>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:24px;">
+          <div style="background:#FFFFFF; border-radius:24px; padding:32px; box-shadow:0 10px 26px rgba(31,41,37,0.06);">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="1.6" style="margin-bottom:18px;"><path d="M22 10L12 5 2 10l10 5 10-5z"></path><path d="M6 12.5V17c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"></path></svg>
+            <h3 style="font-size:18px; font-weight:700; color:#1F2925; margin:0 0 12px;">Étudier</h3>
+            <p style="font-size:14.5px; line-height:1.7; color:#5a655f; margin:0;">Inscriptions universitaires, bourses, CROUS, tutorat et vie de campus à Bordeaux.</p>
+          </div>
+          <div style="background:#FFFFFF; border-radius:24px; padding:32px; box-shadow:0 10px 26px rgba(31,41,37,0.06);">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#E97824" stroke-width="1.6" style="margin-bottom:18px;"><path d="M4 11l8-7 8 7"></path><path d="M6 10v9a1 1 0 001 1h10a1 1 0 001-1v-9"></path></svg>
+            <h3 style="font-size:18px; font-weight:700; color:#1F2925; margin:0 0 12px;">Se loger</h3>
+            <p style="font-size:14.5px; line-height:1.7; color:#5a655f; margin:0;">Recherche de logement, garanties, colocation et quartiers accueillants.</p>
+          </div>
+          <div style="background:#FFFFFF; border-radius:24px; padding:32px; box-shadow:0 10px 26px rgba(31,41,37,0.06);">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="1.6" style="margin-bottom:18px;"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>
+            <h3 style="font-size:18px; font-weight:700; color:#1F2925; margin:0 0 12px;">Travailler</h3>
+            <p style="font-size:14.5px; line-height:1.7; color:#5a655f; margin:0;">Recherche d'emploi, alternance, autorisation de travail et réseau professionnel.</p>
+          </div>
+          <div style="background:#FFFFFF; border-radius:24px; padding:32px; box-shadow:0 10px 26px rgba(31,41,37,0.06);">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#E97824" stroke-width="1.6" style="margin-bottom:18px;"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v10M7 12h10"></path></svg>
+            <h3 style="font-size:18px; font-weight:700; color:#1F2925; margin:0 0 12px;">Santé</h3>
+            <p style="font-size:14.5px; line-height:1.7; color:#5a655f; margin:0;">Sécurité sociale, mutuelle, médecins et centres de soins accessibles.</p>
+          </div>
+          <div style="background:#FFFFFF; border-radius:24px; padding:32px; box-shadow:0 10px 26px rgba(31,41,37,0.06);">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="1.6" style="margin-bottom:18px;"><rect x="5" y="3" width="14" height="18" rx="2"></rect><line x1="8.5" y1="8" x2="15.5" y2="8"></line><line x1="8.5" y1="12" x2="15.5" y2="12"></line><line x1="8.5" y1="16" x2="12.5" y2="16"></line></svg>
+            <h3 style="font-size:18px; font-weight:700; color:#1F2925; margin:0 0 12px;">Démarches</h3>
+            <p style="font-size:14.5px; line-height:1.7; color:#5a655f; margin:0;">Titre de séjour, préfecture, banque et administration au quotidien.</p>
+          </div>
+          <div style="background:#FFFFFF; border-radius:24px; padding:32px; box-shadow:0 10px 26px rgba(31,41,37,0.06);">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#E97824" stroke-width="1.6" style="margin-bottom:18px;"><path d="M6 3a2 2 0 00-2 2c0 9 7 16 16 16a2 2 0 002-2v-2.5a1 1 0 00-.8-1L17 14.2a1 1 0 00-1 .25l-1.3 1.3a12 12 0 01-5.4-5.4l1.3-1.3a1 1 0 00.25-1L9.5 3.8a1 1 0 00-1-.8H6z"></path></svg>
+            <h3 style="font-size:18px; font-weight:700; color:#1F2925; margin:0 0 12px;">Contacts utiles</h3>
+            <p style="font-size:14.5px; line-height:1.7; color:#5a655f; margin:0;">Numéros et adresses utiles pour toutes vos démarches à Bordeaux.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </sc-if>
+
+  <!-- ============ PAGE: CULTURE ============ -->
+  <sc-if value="{{ isCulture }}" hint-placeholder-val="{{ false }}">
+    <main data-screen-label="Culture nigérienne">
+      <section style="max-width:1280px; margin:0 auto; padding:70px clamp(20px,4vw,48px) 20px;">
+        <div style="font-size:13px; font-weight:700; color:#E97824; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:16px;">Culture nigérienne</div>
+        <h1 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(2.1rem,4vw,3.2rem); color:#1F2925; margin:0 0 24px; max-width:760px;">Nos racines, notre richesse, notre fierté.</h1>
+        <p style="font-size:18px; line-height:1.75; color:#3f4a45; max-width:680px; margin:0 0 60px;">Le Niger est un pays de diversité et de traditions vivantes. À travers cette page, nous partageons un aperçu de nos langues, nos fêtes, notre gastronomie et nos arts.</p>
+      </section>
+
+      <section style="background:linear-gradient(120deg,#176B4D,#1F2925); padding:70px 0;">
+        <div style="max-width:1280px; margin:0 auto; padding:0 clamp(20px,4vw,48px); display:flex; flex-wrap:wrap; gap:44px; align-items:center;">
+          <div style="flex:1 1 380px; min-width:260px; aspect-ratio:16/11; border-radius:24px; background:rgba(255,255,255,0.08);"></div>
+          <div style="flex:1 1 380px; min-width:260px; color:#FFFFFF;">
+            <h2 style="font-family:'Unbounded',sans-serif; font-size:clamp(1.5rem,2.4vw,2rem); font-weight:700; margin:0 0 16px;">Le Niger</h2>
+            <p style="font-size:15.5px; line-height:1.75; opacity:0.9; margin:0;">Un pays sahélien au cœur de l'Afrique de l'Ouest, riche de la diversité de ses peuples — Haoussa, Zarma-Songhaï, Touareg, Peul, Kanouri et bien d'autres — unis par une histoire et des traditions partagées.</p>
+          </div>
+        </div>
+      </section>
+
+      <section style="max-width:1280px; margin:0 auto; padding:80px clamp(20px,4vw,48px); display:flex; flex-direction:column; gap:70px;">
+        <div style="display:flex; flex-wrap:wrap; gap:44px; align-items:center;">
+          <div style="flex:1 1 380px; min-width:260px;">
+            <h2 style="font-family:'Unbounded',sans-serif; font-size:clamp(1.4rem,2.2vw,1.8rem); font-weight:700; color:#1F2925; margin:0 0 16px;">Langues</h2>
+            <p style="font-size:15.5px; line-height:1.75; color:#3f4a45; margin:0;">Le français est la langue officielle, aux côtés de langues nationales comme le haoussa, le zarma, le tamasheq, le peul, le kanouri et bien d'autres, parlées avec fierté au quotidien.</p>
+          </div>
+          <div style="flex:1 1 300px; min-width:220px; aspect-ratio:4/3; border-radius:22px; background:linear-gradient(150deg,#E8D8BF,#E97824);"></div>
+        </div>
+        <div style="display:flex; flex-wrap:wrap-reverse; gap:44px; align-items:center;">
+          <div style="flex:1 1 300px; min-width:220px; aspect-ratio:4/3; border-radius:22px; background:linear-gradient(150deg,#176B4D,#E8D8BF);"></div>
+          <div style="flex:1 1 380px; min-width:260px;">
+            <h2 style="font-family:'Unbounded',sans-serif; font-size:clamp(1.4rem,2.2vw,1.8rem); font-weight:700; color:#1F2925; margin:0 0 16px;">Traditions et fêtes</h2>
+            <p style="font-size:15.5px; line-height:1.75; color:#3f4a45; margin:0;">Cérémonies, mariages, fêtes religieuses et rites de passage rythment la vie sociale nigérienne, célébrés avec musique, habits traditionnels et générosité.</p>
+          </div>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:44px; align-items:center;">
+          <div style="flex:1 1 380px; min-width:260px;">
+            <h2 style="font-family:'Unbounded',sans-serif; font-size:clamp(1.4rem,2.2vw,1.8rem); font-weight:700; color:#1F2925; margin:0 0 16px;">Gastronomie</h2>
+            <p style="font-size:15.5px; line-height:1.75; color:#3f4a45; margin:0;">Riz au gras, tô, sauces d'arachide ou de gombo, brochettes et thé partagé : la cuisine nigérienne est faite pour être partagée en communauté.</p>
+          </div>
+          <div style="flex:1 1 300px; min-width:220px; aspect-ratio:4/3; border-radius:22px; background:linear-gradient(150deg,#E97824,#1F2925);"></div>
+        </div>
+        <div style="display:flex; flex-wrap:wrap-reverse; gap:44px; align-items:center;">
+          <div style="flex:1 1 300px; min-width:220px; aspect-ratio:4/3; border-radius:22px; background:linear-gradient(150deg,#E8D8BF,#176B4D);"></div>
+          <div style="flex:1 1 380px; min-width:260px;">
+            <h2 style="font-family:'Unbounded',sans-serif; font-size:clamp(1.4rem,2.2vw,1.8rem); font-weight:700; color:#1F2925; margin:0 0 16px;">Musique et danse</h2>
+            <p style="font-size:15.5px; line-height:1.75; color:#3f4a45; margin:0;">Du takamba touareg aux rythmes haoussa, la musique nigérienne accompagne chaque grand moment de la vie communautaire.</p>
+          </div>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:44px; align-items:center;">
+          <div style="flex:1 1 380px; min-width:260px;">
+            <h2 style="font-family:'Unbounded',sans-serif; font-size:clamp(1.4rem,2.2vw,1.8rem); font-weight:700; color:#1F2925; margin:0 0 16px;">Artisanat</h2>
+            <p style="font-size:15.5px; line-height:1.75; color:#3f4a45; margin:0;">Maroquinerie touareg, poteries, tissages et bijoux témoignent d'un savoir-faire transmis de génération en génération.</p>
+          </div>
+          <div style="flex:1 1 300px; min-width:220px; aspect-ratio:4/3; border-radius:22px; background:linear-gradient(150deg,#1F2925,#E97824);"></div>
+        </div>
+      </section>
+    </main>
+  </sc-if>
+
+  <!-- ============ PAGE: GALERIE ============ -->
+  <sc-if value="{{ isGalerie }}" hint-placeholder-val="{{ false }}">
+    <main data-screen-label="Galerie">
+      <section style="max-width:1280px; margin:0 auto; padding:70px clamp(20px,4vw,48px) 90px;">
+        <div style="font-size:13px; font-weight:700; color:#E97824; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:16px;">Galerie</div>
+        <h1 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(2.1rem,4vw,3rem); color:#1F2925; margin:0 0 48px; max-width:760px;">Les moments qui nous rassemblent.</h1>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); grid-auto-rows:160px; gap:16px;">
+          <sc-for list="{{ fullGallery }}" as="img" hint-placeholder-count="16">
+            <div style="grid-row:span {{ img.span }}; border-radius:20px; background:{{ img.bg }}; position:relative; overflow:hidden; display:flex; align-items:flex-end; padding:14px;">
+              <span style="color:rgba(255,255,255,0.9); font-size:12px; font-weight:700;">{{ img.label }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </main>
+  </sc-if>
+
+  <!-- ============ PAGE: ADHERER ============ -->
+  <sc-if value="{{ isAdherer }}" hint-placeholder-val="{{ false }}">
+    <main data-screen-label="Adhérer / Nous soutenir">
+      <section style="max-width:1280px; margin:0 auto; padding:70px clamp(20px,4vw,48px) 90px; display:flex; flex-wrap:wrap; gap:56px;">
+        <div style="flex:1 1 420px; min-width:280px;">
+          <div style="font-size:13px; font-weight:700; color:#E97824; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:16px;">Adhérer / Nous soutenir</div>
+          <h1 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(2rem,3.6vw,2.8rem); color:#1F2925; margin:0 0 24px;">Rejoignez une communauté qui vous ressemble.</h1>
+          <p style="font-size:17px; line-height:1.7; color:#3f4a45; margin:0 0 36px;">Adhérer à l'ANB, c'est intégrer un réseau chaleureux, participer à des événements toute l'année et contribuer à des actions solidaires qui comptent.</p>
+
+          <div style="display:flex; flex-direction:column; gap:18px; margin-bottom:20px;">
+            <div style="display:flex; gap:14px; align-items:flex-start;">
+              <div style="width:36px; height:36px; border-radius:10px; background:rgba(23,107,77,0.1); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+              <div style="font-size:15px; color:#3f4a45; padding-top:6px;">Accès prioritaire à tous nos événements</div>
+            </div>
+            <div style="display:flex; gap:14px; align-items:flex-start;">
+              <div style="width:36px; height:36px; border-radius:10px; background:rgba(23,107,77,0.1); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+              <div style="font-size:15px; color:#3f4a45; padding-top:6px;">Un réseau d'entraide dès votre arrivée à Bordeaux</div>
+            </div>
+            <div style="display:flex; gap:14px; align-items:flex-start;">
+              <div style="width:36px; height:36px; border-radius:10px; background:rgba(23,107,77,0.1); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+              <div style="font-size:15px; color:#3f4a45; padding-top:6px;">La possibilité de participer aux décisions de l'association</div>
+            </div>
+          </div>
+
+          <div style="background:#F0E9DA; border-radius:20px; padding:26px; margin-top:24px;">
+            <div style="font-size:14px; font-weight:700; color:#1F2925; margin-bottom:6px;">Une question avant d'adhérer ?</div>
+            <div style="font-size:14px; color:#5a655f;">contact@anb-bordeaux.fr · 06 00 00 00 00</div>
+          </div>
+        </div>
+
+        <div style="flex:1 1 460px; min-width:300px;">
+          <div style="background:#FFFFFF; border-radius:28px; padding:clamp(28px,3vw,40px); box-shadow:0 20px 50px rgba(31,41,37,0.1);">
+            <sc-if value="{{ memberSubmitted }}" hint-placeholder-val="{{ false }}">
+              <div style="text-align:center; padding:40px 10px;">
+                <div style="width:60px; height:60px; border-radius:50%; background:rgba(23,107,77,0.1); display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+                <h3 style="font-size:20px; font-weight:700; color:#1F2925; margin:0 0 10px;">Merci pour votre demande !</h3>
+                <p style="font-size:15px; color:#5a655f; line-height:1.6; margin:0 0 24px;">Nous revenons vers vous très rapidement par email pour finaliser votre adhésion.</p>
+                <button onClick="{{ resetMemberForm }}" style="background:#176B4D; color:#FFFFFF; border:none; padding:14px 26px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Envoyer une nouvelle demande</button>
+              </div>
+            </sc-if>
+            <sc-if value="{{ memberFormVisible }}" hint-placeholder-val="{{ true }}">
+              <h3 style="font-size:19px; font-weight:700; color:#1F2925; margin:0 0 22px;">Formulaire d'adhésion</h3>
+              <div style="display:flex; gap:8px; margin-bottom:22px; flex-wrap:wrap;">
+                <sc-for list="{{ memberTypes }}" as="t" hint-placeholder-count="3">
+                  <button onClick="{{ t.onClick }}" style="flex:1 1 auto; background:{{ t.bg }}; color:{{ t.color }}; border:2px solid {{ t.border }}; padding:10px 14px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;">{{ t.label }}</button>
+                </sc-for>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:16px;">
+                <div style="display:flex; gap:14px; flex-wrap:wrap;">
+                  <div style="flex:1 1 160px;">
+                    <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Prénom</label>
+                    <input value="{{ memberForm.prenom }}" onChange="{{ onMemberPrenom }}" style="width:100%; padding:13px 16px; border-radius:12px; border:1.5px solid {{ memberErrors.prenom }}; font-size:14.5px; font-family:inherit;" placeholder="Votre prénom"></input>
+                  </div>
+                  <div style="flex:1 1 160px;">
+                    <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Nom</label>
+                    <input value="{{ memberForm.nom }}" onChange="{{ onMemberNom }}" style="width:100%; padding:13px 16px; border-radius:12px; border:1.5px solid {{ memberErrors.nom }}; font-size:14.5px; font-family:inherit;" placeholder="Votre nom"></input>
+                  </div>
+                </div>
+                <div>
+                  <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Email</label>
+                  <input value="{{ memberForm.email }}" onChange="{{ onMemberEmail }}" style="width:100%; padding:13px 16px; border-radius:12px; border:1.5px solid {{ memberErrors.email }}; font-size:14.5px; font-family:inherit;" placeholder="vous@email.fr"></input>
+                </div>
+                <div>
+                  <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Téléphone</label>
+                  <input value="{{ memberForm.telephone }}" onChange="{{ onMemberTel }}" style="width:100%; padding:13px 16px; border-radius:12px; border:1.5px solid #d8d0c0; font-size:14.5px; font-family:inherit;" placeholder="06 00 00 00 00"></input>
+                </div>
+                <div>
+                  <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Message (facultatif)</label>
+                  <textarea value="{{ memberForm.message }}" onChange="{{ onMemberMessage }}" rows="3" style="width:100%; padding:13px 16px; border-radius:12px; border:1.5px solid #d8d0c0; font-size:14.5px; font-family:inherit; resize:vertical;" placeholder="Un mot pour nous ?"></textarea>
+                </div>
+                <button onClick="{{ submitMemberForm }}" style="background:#E97824; color:#FFFFFF; border:none; padding:16px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer; margin-top:8px; box-shadow:0 10px 22px rgba(233,120,36,0.28);">Envoyer ma demande</button>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </section>
+    </main>
+  </sc-if>
+
+  <!-- ============ PAGE: CONTACT ============ -->
+  <sc-if value="{{ isContact }}" hint-placeholder-val="{{ false }}">
+    <main data-screen-label="Contact">
+      <section style="max-width:1280px; margin:0 auto; padding:70px clamp(20px,4vw,48px) 90px; display:flex; flex-wrap:wrap; gap:56px;">
+        <div style="flex:1 1 380px; min-width:280px;">
+          <div style="font-size:13px; font-weight:700; color:#E97824; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:16px;">Contact</div>
+          <h1 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(2rem,3.6vw,2.8rem); color:#1F2925; margin:0 0 24px;">Parlons-nous.</h1>
+          <p style="font-size:17px; line-height:1.7; color:#3f4a45; margin:0 0 40px;">Une question, une idée, besoin d'aide ? Notre équipe vous répond avec plaisir.</p>
+
+          <div style="display:flex; flex-direction:column; gap:22px;">
+            <div style="display:flex; gap:16px; align-items:center;">
+              <div style="width:44px; height:44px; border-radius:12px; background:rgba(23,107,77,0.1); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="1.7"><path d="M4 4h16v16H4z" opacity="0"></path><path d="M3 6l9 6 9-6"></path><rect x="3" y="5" width="18" height="14" rx="2"></rect></svg>
+              </div>
+              <div>
+                <div style="font-size:13px; color:#5a655f;">Email</div>
+                <div style="font-size:15px; font-weight:700; color:#1F2925;">contact@anb-bordeaux.fr</div>
+              </div>
+            </div>
+            <div style="display:flex; gap:16px; align-items:center;">
+              <div style="width:44px; height:44px; border-radius:12px; background:rgba(233,120,36,0.12); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E97824" stroke-width="1.7"><path d="M6 3a2 2 0 00-2 2c0 9 7 16 16 16a2 2 0 002-2v-2.5a1 1 0 00-.8-1L17 14.2a1 1 0 00-1 .25l-1.3 1.3a12 12 0 01-5.4-5.4l1.3-1.3a1 1 0 00.25-1L9.5 3.8a1 1 0 00-1-.8H6z"></path></svg>
+              </div>
+              <div>
+                <div style="font-size:13px; color:#5a655f;">Téléphone</div>
+                <div style="font-size:15px; font-weight:700; color:#1F2925;">06 00 00 00 00</div>
+              </div>
+            </div>
+            <div style="display:flex; gap:16px; align-items:center;">
+              <div style="width:44px; height:44px; border-radius:12px; background:rgba(23,107,77,0.1); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="1.7"><path d="M12 21s-7-4.35-7-10A5 5 0 0112 6a5 5 0 017 5c0 5.65-7 10-7 10z"></path><circle cx="12" cy="11" r="1.6"></circle></svg>
+              </div>
+              <div>
+                <div style="font-size:13px; color:#5a655f;">Adresse</div>
+                <div style="font-size:15px; font-weight:700; color:#1F2925;">Bordeaux Métropole</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="border-radius:22px; aspect-ratio:16/9; background:linear-gradient(150deg,#E8D8BF,#176B4D); margin-top:36px;"></div>
+        </div>
+
+        <div style="flex:1 1 420px; min-width:300px;">
+          <div style="background:#FFFFFF; border-radius:28px; padding:clamp(28px,3vw,40px); box-shadow:0 20px 50px rgba(31,41,37,0.1);">
+            <sc-if value="{{ contactSubmitted }}" hint-placeholder-val="{{ false }}">
+              <div style="text-align:center; padding:40px 10px;">
+                <div style="width:60px; height:60px; border-radius:50%; background:rgba(23,107,77,0.1); display:flex; align-items:center; justify-content:center; margin:0 auto 20px;">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#176B4D" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+                <h3 style="font-size:20px; font-weight:700; color:#1F2925; margin:0 0 10px;">Message envoyé !</h3>
+                <p style="font-size:15px; color:#5a655f; line-height:1.6; margin:0 0 24px;">Merci, nous vous répondons dans les meilleurs délais.</p>
+                <button onClick="{{ resetContactForm }}" style="background:#176B4D; color:#FFFFFF; border:none; padding:14px 26px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Envoyer un autre message</button>
+              </div>
+            </sc-if>
+            <sc-if value="{{ contactFormVisible }}" hint-placeholder-val="{{ true }}">
+              <h3 style="font-size:19px; font-weight:700; color:#1F2925; margin:0 0 22px;">Envoyez-nous un message</h3>
+              <div style="display:flex; flex-direction:column; gap:16px;">
+                <div>
+                  <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Nom complet</label>
+                  <input value="{{ contactForm.nom }}" onChange="{{ onContactNom }}" style="width:100%; padding:13px 16px; border-radius:12px; border:1.5px solid {{ contactErrors.nom }}; font-size:14.5px; font-family:inherit;" placeholder="Votre nom"></input>
+                </div>
+                <div>
+                  <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Email</label>
+                  <input value="{{ contactForm.email }}" onChange="{{ onContactEmail }}" style="width:100%; padding:13px 16px; border-radius:12px; border:1.5px solid {{ contactErrors.email }}; font-size:14.5px; font-family:inherit;" placeholder="vous@email.fr"></input>
+                </div>
+                <div>
+                  <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Sujet</label>
+                  <input value="{{ contactForm.sujet }}" onChange="{{ onContactSujet }}" style="width:100%; padding:13px 16px; border-radius:12px; border:1.5px solid #d8d0c0; font-size:14.5px; font-family:inherit;" placeholder="Objet de votre message"></input>
+                </div>
+                <div>
+                  <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Message</label>
+                  <textarea value="{{ contactForm.message }}" onChange="{{ onContactMessage }}" rows="4" style="width:100%; padding:13px 16px; border-radius:12px; border:1.5px solid {{ contactErrors.message }}; font-size:14.5px; font-family:inherit; resize:vertical;" placeholder="Votre message"></textarea>
+                </div>
+                <button onClick="{{ submitContactForm }}" style="background:#E97824; color:#FFFFFF; border:none; padding:16px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer; margin-top:8px; box-shadow:0 10px 22px rgba(233,120,36,0.28);">Envoyer le message</button>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </section>
+    </main>
+  </sc-if>
+
+  <!-- ============ FOOTER ============ -->
+  <footer style="background:#1F2925; padding:70px 0 30px;">
+    <div style="max-width:1280px; margin:0 auto; padding:0 clamp(20px,4vw,48px);">
+      <div style="display:flex; flex-wrap:wrap; gap:48px; padding-bottom:48px; border-bottom:1px solid rgba(255,255,255,0.1);">
+        <div style="flex:2 1 280px; min-width:240px;">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+            <div style="width:44px; height:44px; border-radius:12px; background:#176B4D; display:flex; align-items:center; justify-content:center;">
+              <span style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:13px; color:#FFFFFF;">ANB</span>
+            </div>
+            <span style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:16px; color:#FFFFFF;">ANB Bordeaux</span>
+          </div>
+          <p style="font-size:15px; line-height:1.65; color:rgba(248,244,236,0.7); max-width:320px; margin:0;">Ensemble, faire vivre la communauté nigérienne à Bordeaux.</p>
+        </div>
+        <div style="flex:1 1 160px; min-width:150px;">
+          <div style="font-size:13px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:18px;">Liens rapides</div>
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <a onClick="{{ goAssociation }}" style="color:rgba(248,244,236,0.75); font-size:14.5px; cursor:pointer;">L'association</a>
+            <a onClick="{{ goEvenements }}" style="color:rgba(248,244,236,0.75); font-size:14.5px; cursor:pointer;">Événements</a>
+            <a onClick="{{ goGalerie }}" style="color:rgba(248,244,236,0.75); font-size:14.5px; cursor:pointer;">Galerie</a>
+            <a onClick="{{ goAdherer }}" style="color:rgba(248,244,236,0.75); font-size:14.5px; cursor:pointer;">Adhérer / Nous soutenir</a>
+          </div>
+        </div>
+        <div style="flex:1 1 160px; min-width:150px;">
+          <div style="font-size:13px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:18px;">Contact</div>
+          <div style="display:flex; flex-direction:column; gap:12px; color:rgba(248,244,236,0.75); font-size:14.5px;">
+            <div>Bordeaux Métropole</div>
+            <div>contact@anb-bordeaux.fr</div>
+            <div>06 00 00 00 00</div>
+          </div>
+        </div>
+        <div style="flex:1 1 160px; min-width:150px;">
+          <div style="font-size:13px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:18px;">Suivez-nous</div>
+          <div style="display:flex; gap:12px;">
+            <div style="width:38px; height:38px; border-radius:10px; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#F8F4EC"><path d="M14 8.5h2.5V5.2C16 5.2 14.8 5 13.5 5 10.7 5 9 6.7 9 9.7v2.3H6v3.7h3V22h3.7v-6.3h3l0.5-3.7h-3.5V10c0-1 .3-1.5 1.3-1.5z"></path></svg>
+            </div>
+            <div style="width:38px; height:38px; border-radius:10px; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F8F4EC" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="3.8"></circle><circle cx="17.2" cy="6.8" r="1"></circle></svg>
+            </div>
+            <div style="width:38px; height:38px; border-radius:10px; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#F8F4EC"><path d="M12 2a10 10 0 00-8.5 15.2L2 22l4.9-1.4A10 10 0 1012 2zm0 18a8 8 0 01-4.1-1.1l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1112 20zm4.4-5.9c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1-.2.2-.6.8-.8 1-.1.2-.3.2-.5.1-.7-.3-1.4-.7-2-1.3-.5-.5-1-1.1-1.4-1.7-.1-.2 0-.4.1-.5l.4-.5c.1-.2.2-.3.1-.5-.1-.2-.5-1.3-.7-1.7-.2-.5-.4-.4-.5-.4h-.5c-.2 0-.4.1-.6.3-.7.7-1 1.5-1 2.4.1 1 .5 2 1.2 2.9 1.2 1.7 2.7 3 4.6 3.7.6.2 1.1.4 1.7.5.7.1 1.3.1 1.9-.1.6-.2 1.4-.9 1.6-1.5.2-.6.2-1.1.1-1.2-.1-.1-.2-.1-.4-.2z"></path></svg>
+            </div>
+            <div style="width:38px; height:38px; border-radius:10px; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#F8F4EC"><path d="M4 3.5h4.2v17H4v-17zm2.1 0a2.4 2.4 0 110 4.8 2.4 2.4 0 010-4.8zM10.6 8.5h4v2c0.6-1.1 2-2.3 4.1-2.3 4.4 0 5.2 2.7 5.2 6.3v8h-4.2v-7.1c0-1.7 0-3.9-2.4-3.9-2.4 0-2.8 1.9-2.8 3.8v7.2h-4.2v-14z"></path></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; flex-wrap:wrap; gap:16px; justify-content:space-between; padding-top:26px;">
+        <div style="font-size:13px; color:rgba(248,244,236,0.5);">© 2026 ANB — Association des Nigériens à Bordeaux</div>
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+          <span style="font-size:13px; color:rgba(248,244,236,0.5); cursor:pointer;">Mentions légales</span>
+          <span style="font-size:13px; color:rgba(248,244,236,0.5); cursor:pointer;">Politique de confidentialité</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    page: 'home',
+    mobileOpen: false,
+    isMobile: false,
+    eventFilter: 'Tous',
+    memberForm: { type: 'Adhésion', prenom: '', nom: '', email: '', telephone: '', message: '' },
+    memberErrors: {},
+    memberSubmitted: false,
+    contactForm: { nom: '', email: '', sujet: '', message: '' },
+    contactErrors: {},
+    contactSubmitted: false
+  };
+
+  componentDidMount() {
+    this.checkMobile = () => this.setState({ isMobile: window.innerWidth < 1180 });
+    this.checkMobile();
+    window.addEventListener('resize', this.checkMobile);
+  }
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.checkMobile);
+  }
+
+  goTo(page) {
+    this.setState({ page, mobileOpen: false });
+    window.scrollTo(0, 0);
+  }
+
+  emailValid(v) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v || '');
+  }
+
+  updateMember(field, value) {
+    this.setState(s => ({ memberForm: { ...s.memberForm, [field]: value } }));
+  }
+
+  submitMemberForm() {
+    const f = this.state.memberForm;
+    const errors = {};
+    if (!f.prenom.trim()) errors.prenom = true;
+    if (!f.nom.trim()) errors.nom = true;
+    if (!this.emailValid(f.email)) errors.email = true;
+    this.setState({ memberErrors: errors });
+    if (Object.keys(errors).length === 0) {
+      this.setState({ memberSubmitted: true });
+    }
+  }
+
+  resetMemberForm() {
+    this.setState({
+      memberSubmitted: false,
+      memberErrors: {},
+      memberForm: { type: 'Adhésion', prenom: '', nom: '', email: '', telephone: '', message: '' }
+    });
+  }
+
+  updateContact(field, value) {
+    this.setState(s => ({ contactForm: { ...s.contactForm, [field]: value } }));
+  }
+
+  submitContactForm() {
+    const f = this.state.contactForm;
+    const errors = {};
+    if (!f.nom.trim()) errors.nom = true;
+    if (!this.emailValid(f.email)) errors.email = true;
+    if (!f.message.trim()) errors.message = true;
+    this.setState({ contactErrors: errors });
+    if (Object.keys(errors).length === 0) {
+      this.setState({ contactSubmitted: true });
+    }
+  }
+
+  resetContactForm() {
+    this.setState({
+      contactSubmitted: false,
+      contactErrors: {},
+      contactForm: { nom: '', email: '', sujet: '', message: '' }
+    });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const page = s.page;
+
+    const navDefs = [
+      ['home', 'Accueil'],
+      ['association', "L'association"],
+      ['evenements', 'Événements'],
+      ['actualites', 'Actualités'],
+      ['viepratique', 'Vie pratique'],
+      ['culture', 'Culture nigérienne'],
+      ['contact', 'Contact']
+    ];
+    const navItems = navDefs.map(([id, label]) => ({
+      id, label,
+      onClick: () => this.goTo(id),
+      color: page === id ? '#176B4D' : '#1F2925',
+      underline: page === id ? '#E97824' : 'transparent'
+    }));
+
+    const events = [
+      { id: 1, date: 'Samedi 20 septembre 2026', title: 'Journée culturelle nigérienne', place: 'Parc Bordelais, Bordeaux', desc: "Musique, danses, gastronomie et rencontres pour célébrer nos traditions, ouvert à tous.", category: 'Culture', color: '#176B4D', isPast: false },
+      { id: 2, date: 'Dimanche 12 octobre 2026', title: 'Tournoi de football amical', place: 'Stade Léo Lagrange, Bordeaux', desc: 'Un tournoi convivial entre équipes de la communauté et amis du Niger.', category: 'Sport', color: '#E97824', isPast: false },
+      { id: 3, date: 'Samedi 8 novembre 2026', title: "Soirée d'entraide et collecte solidaire", place: 'Salle associative, Bordeaux', desc: "Une collecte pour soutenir des familles et des projets solidaires au Niger.", category: 'Solidarité', color: '#1F2925', isPast: false },
+      { id: 4, date: 'Juin 2026', title: 'Pique-nique communautaire', place: 'Bords de Garonne, Bordeaux', desc: "Un après-midi convivial entre familles, au bord de l'eau.", category: 'Rencontres', color: '#176B4D', isPast: true },
+      { id: 5, date: 'Mars 2026', title: 'Soirée musique et poésie', place: 'Bordeaux', desc: 'Une soirée dédiée aux artistes nigériens de la région.', category: 'Culture', color: '#E97824', isPast: true },
+      { id: 6, date: 'Janvier 2026', title: "Repas de nouvel an de l'ANB", place: 'Bordeaux', desc: "Le traditionnel repas partagé pour bien commencer l'année ensemble.", category: 'Rencontres', color: '#1F2925', isPast: true }
+    ];
+    const filterList = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontres'];
+    const eventFilters = filterList.map(f => ({
+      label: f,
+      onClick: () => this.setState({ eventFilter: f }),
+      bg: s.eventFilter === f ? '#176B4D' : 'transparent',
+      color: s.eventFilter === f ? '#FFFFFF' : '#176B4D',
+      border: '#176B4D'
+    }));
+    const filteredEvents = (s.eventFilter === 'Tous' ? events : events.filter(e => e.category === s.eventFilter));
+
+    const newsArticles = [
+      { category: 'Communauté', date: '2 juillet 2026', title: 'Retour sur notre dernière rencontre communautaire', excerpt: "Plus de 80 personnes réunies pour un après-midi de partage, de musique et de repas fait maison.", bg: 'linear-gradient(150deg,#176B4D,#1F2925)' },
+      { category: 'Vie associative', date: '18 juin 2026', title: "Bienvenue aux nouveaux membres de l'ANB", excerpt: "Ce trimestre, notre communauté s'agrandit : découvrez les nouveaux visages qui nous rejoignent.", bg: 'linear-gradient(150deg,#E97824,#E8D8BF)' },
+      { category: 'Bénévolat', date: '5 juin 2026', title: 'Appel à bénévoles pour notre prochain événement', excerpt: "La Journée culturelle nigérienne approche : nous avons besoin de bras et de bonnes volontés.", bg: 'linear-gradient(150deg,#E8D8BF,#176B4D)' }
+    ];
+
+    const homeGallery = [
+      { bg: 'linear-gradient(150deg,#176B4D,#1F2925)', span: 2, label: 'Repas communautaire' },
+      { bg: 'linear-gradient(150deg,#E97824,#E8D8BF)', span: 1, label: 'Journée culturelle' },
+      { bg: 'linear-gradient(150deg,#1F2925,#176B4D)', span: 1, label: 'Bénévoles en action' },
+      { bg: 'linear-gradient(150deg,#E8D8BF,#E97824)', span: 2, label: 'Musique et danse' },
+      { bg: 'linear-gradient(150deg,#176B4D,#E97824)', span: 1, label: 'Rencontre des familles' },
+      { bg: 'linear-gradient(150deg,#E97824,#1F2925)', span: 1, label: 'Sport communautaire' },
+      { bg: 'linear-gradient(150deg,#1F2925,#E8D8BF)', span: 1, label: 'Sourires partagés' },
+      { bg: 'linear-gradient(150deg,#E8D8BF,#176B4D)', span: 1, label: 'Artistes locaux' }
+    ];
+    const fullGallery = [...homeGallery, ...homeGallery.map((g, i) => ({ ...g, label: g.label + ' — ' + (i + 2) }))];
+
+    const teamMembers = [
+      { name: 'Prénom Nom', role: 'Président', bg: 'linear-gradient(150deg,#176B4D,#1F2925)' },
+      { name: 'Prénom Nom', role: 'Vice-Présidente', bg: 'linear-gradient(150deg,#E97824,#E8D8BF)' },
+      { name: 'Prénom Nom', role: 'Trésorier', bg: 'linear-gradient(150deg,#1F2925,#176B4D)' },
+      { name: 'Prénom Nom', role: 'Secrétaire générale', bg: 'linear-gradient(150deg,#E8D8BF,#E97824)' },
+      { name: 'Prénom Nom', role: 'Responsable culture', bg: 'linear-gradient(150deg,#176B4D,#E97824)' },
+      { name: 'Prénom Nom', role: 'Responsable solidarité', bg: 'linear-gradient(150deg,#E97824,#1F2925)' }
+    ];
+
+    const timeline = [
+      { year: '20XX', text: "Création de l'association par un groupe d'étudiants et de familles nigériennes de Bordeaux." },
+      { year: '20XX', text: "Premiers événements culturels et mise en place d'un réseau d'entraide pour les nouveaux arrivants." },
+      { year: '20XX', text: 'Structuration du bureau et lancement des actions solidaires en direction du Niger.' },
+      { year: "Aujourd'hui", text: 'Une communauté active, des événements réguliers et un accompagnement renforcé pour chacun.' }
+    ];
+
+    const memberTypeList = ['Adhésion', 'Bénévolat', 'Don / Partenariat'];
+    const memberTypes = memberTypeList.map(t => ({
+      label: t,
+      onClick: () => this.updateMember('type', t),
+      bg: s.memberForm.type === t ? '#176B4D' : 'transparent',
+      color: s.memberForm.type === t ? '#FFFFFF' : '#176B4D',
+      border: '#176B4D'
+    }));
+
+    const errBorder = (has) => has ? '#E97824' : '#d8d0c0';
+
+    return {
+      isMobile: s.isMobile,
+      isNotMobile: !s.isMobile,
+      mobileOpen: s.mobileOpen,
+      toggleMobileMenu: () => this.setState(st => ({ mobileOpen: !st.mobileOpen })),
+      goHome: () => this.goTo('home'),
+      goAssociation: () => this.goTo('association'),
+      goEvenements: () => this.goTo('evenements'),
+      goActualites: () => this.goTo('actualites'),
+      goViePratique: () => this.goTo('viepratique'),
+      goGalerie: () => this.goTo('galerie'),
+      goAdherer: () => this.goTo('adherer'),
+      navItems,
+
+      isHome: page === 'home',
+      isAssociation: page === 'association',
+      isEvenements: page === 'evenements',
+      isActualites: page === 'actualites',
+      isViePratique: page === 'viepratique',
+      isCulture: page === 'culture',
+      isGalerie: page === 'galerie',
+      isAdherer: page === 'adherer',
+      isContact: page === 'contact',
+
+      homeGallery,
+      fullGallery,
+      newsArticles,
+      teamMembers,
+      timeline,
+      eventFilters,
+      filteredEvents,
+
+      memberTypes,
+      memberForm: s.memberForm,
+      memberErrors: {
+        prenom: errBorder(s.memberErrors.prenom),
+        nom: errBorder(s.memberErrors.nom),
+        email: errBorder(s.memberErrors.email)
+      },
+      memberSubmitted: s.memberSubmitted,
+      memberFormVisible: !s.memberSubmitted,
+      onMemberPrenom: (e) => this.updateMember('prenom', e.target.value),
+      onMemberNom: (e) => this.updateMember('nom', e.target.value),
+      onMemberEmail: (e) => this.updateMember('email', e.target.value),
+      onMemberTel: (e) => this.updateMember('telephone', e.target.value),
+      onMemberMessage: (e) => this.updateMember('message', e.target.value),
+      submitMemberForm: () => this.submitMemberForm(),
+      resetMemberForm: () => this.resetMemberForm(),
+
+      contactForm: s.contactForm,
+      contactErrors: {
+        nom: errBorder(s.contactErrors.nom),
+        email: errBorder(s.contactErrors.email),
+        message: errBorder(s.contactErrors.message)
+      },
+      contactSubmitted: s.contactSubmitted,
+      contactFormVisible: !s.contactSubmitted,
+      onContactNom: (e) => this.updateContact('nom', e.target.value),
+      onContactEmail: (e) => this.updateContact('email', e.target.value),
+      onContactSujet: (e) => this.updateContact('sujet', e.target.value),
+      onContactMessage: (e) => this.updateContact('message', e.target.value),
+      submitContactForm: () => this.submitContactForm(),
+      resetContactForm: () => this.resetContactForm()
+    };
+  }
+}
+
+</script>
+</body>
+</html>
