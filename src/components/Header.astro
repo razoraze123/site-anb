@@ -4,16 +4,13 @@ import { navItems } from '../lib/demo-data';
 const currentPath = Astro.url.pathname;
 ---
 
-<header style="position:sticky; top:0; z-index:100; background:rgba(248,244,236,0.92); backdrop-filter:blur(10px); border-bottom:1px solid rgba(31,41,37,0.08);">
-  <div style="max-width:1280px; margin:0 auto; padding:16px clamp(20px,4vw,48px); display:flex; align-items:center; justify-content:space-between; gap:24px;">
-    <a href="/" style="display:flex; align-items:center; gap:12px; cursor:pointer;">
-      <div style="width:46px; height:46px; border-radius:13px; background:#176B4D; display:flex; align-items:center; justify-content:center; position:relative; flex-shrink:0;">
-        <span style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:14px; color:#FFFFFF; letter-spacing:0.02em;">ANB</span>
-        <div style="position:absolute; top:-4px; right:-4px; width:12px; height:12px; border-radius:50%; background:#E97824; border:2px solid #F8F4EC;"></div>
-      </div>
-      <div style="display:flex; flex-direction:column; line-height:1.15;">
-        <span style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:17px; color:#176B4D;">ANB</span>
-        <span style="font-size:10px; font-weight:700; letter-spacing:0.12em; color:#E97824; text-transform:uppercase;">Bordeaux</span>
+<header style="position:sticky; top:0; z-index:100; background:#F8F4EC;">
+  <div style="max-width:1280px; margin:0 auto; padding:14px clamp(20px,4vw,48px) 12px; display:flex; align-items:center; justify-content:space-between; gap:24px;">
+    <a href="/" style="display:flex; align-items:center; gap:11px; cursor:pointer;">
+      <img src="/logo.png" alt="Logo ANB Bordeaux" width="42" height="42" style="width:42px; height:42px; border-radius:50%; flex-shrink:0; object-fit:cover;" />
+      <div style="display:flex; flex-direction:column; line-height:1.1;">
+        <span style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:16px; color:#1F2925; letter-spacing:-0.01em;">ANB</span>
+        <span style="font-size:10px; font-weight:600; letter-spacing:0.14em; color:#5a655f; text-transform:uppercase;">Bordeaux</span>
       </div>
     </a>
 
@@ -35,7 +32,12 @@ const currentPath = Astro.url.pathname;
       })}
     </nav>
 
-    <a href="/adherer" class="nav-desktop-only" style="align-items:center; background:#E97824; color:#FFFFFF; border:none; padding:14px 28px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer; white-space:nowrap; box-shadow:0 8px 20px rgba(233,120,36,0.28);">Adhérer à l'ANB</a>
+    <a href="/adherer" class="nav-desktop-only" style="align-items:center; background:#176B4D; color:#FFFFFF; border:none; padding:12px 24px; border-radius:8px; font-weight:700; font-size:14px; cursor:pointer; white-space:nowrap; transition:background 0.2s;" onmouseover="this.style.background='#E97824'" onmouseout="this.style.background='#176B4D'">Adhérer à l'ANB</a>
+  </div>
+  <div style="height:3px; display:flex;" aria-hidden="true">
+    <div style="flex:1; background:#E97824;"></div>
+    <div style="flex:1; background:#F8F4EC;"></div>
+    <div style="flex:1; background:#176B4D;"></div>
   </div>
 </header>
 
@@ -48,7 +50,7 @@ const currentPath = Astro.url.pathname;
       {item.label}
     </a>
   ))}
-  <a href="/adherer" style="margin-top:20px; background:#E97824; color:#FFFFFF; border:none; padding:16px 28px; border-radius:999px; font-weight:700; font-size:16px; cursor:pointer; text-align:center;">Adhérer à l'ANB</a>
+  <a href="/adherer" style="margin-top:20px; background:#176B4D; color:#FFFFFF; border:none; padding:16px 28px; border-radius:8px; font-weight:700; font-size:16px; cursor:pointer; text-align:center;">Adhérer à l'ANB</a>
 </div>
 
 <style>

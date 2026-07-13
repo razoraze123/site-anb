@@ -31,76 +31,289 @@ const eventFilters = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 'F
 <Layout title="Événements" description="Se retrouver, célébrer et partager toute l'année avec l'ANB Bordeaux.">
   <main>
     <section style="max-width:1280px; margin:0 auto; padding:70px clamp(20px,4vw,48px) 20px;">
-      <div style="font-size:13px; font-weight:700; color:#E97824; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:16px;">Événements</div>
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
+        <span style="display:flex; gap:3px;">
+          <span style="width:5px; height:16px; border-radius:2px; background:#E97824;"></span>
+          <span style="width:5px; height:16px; border-radius:2px; background:#E8D8BF;"></span>
+          <span style="width:5px; height:16px; border-radius:2px; background:#176B4D;"></span>
+        </span>
+        <span style="font-size:13px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#5a655f;">Événements</span>
+      </div>
       <h1 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(2.1rem,4vw,3rem); color:#1F2925; margin:0 0 40px; max-width:760px;">Se retrouver, célébrer et partager toute l'année.</h1>
 
-      <div id="event-filters" class="filter-row" style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:48px;">
+      <div id="event-filters" class="filter-row" style="display:flex; gap:clamp(18px,3vw,32px); flex-wrap:wrap; margin-bottom:52px; border-bottom:1px solid rgba(31,41,37,0.1);">
         {eventFilters.map((f, i) => (
           <button
             type="button"
             data-filter={f}
             class="filter-btn"
             aria-pressed={i === 0 ? 'true' : 'false'}
-            style={`background:${i === 0 ? '#176B4D' : 'transparent'}; color:${i === 0 ? '#FFFFFF' : '#176B4D'}; border:2px solid #176B4D; padding:11px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;`}
+            style={`background:none; color:${i === 0 ? '#176B4D' : '#5a655f'}; border:none; border-bottom:2px solid ${i === 0 ? '#E97824' : 'transparent'}; padding:0 0 14px; margin-bottom:-1px; font-weight:700; font-size:14.5px; cursor:pointer; white-space:nowrap;`}
           >
             {f}
           </button>
         ))}
       </div>
 
-      <!-- NEXT EVENT LARGE -->
+      <!-- NEXT EVENT: TICKET -->
       {next && (
-        <div data-reveal style="background:#176B4D; border-radius:28px; overflow:hidden; display:flex; flex-wrap:wrap; margin-bottom:64px; box-shadow:0 24px 50px rgba(31,41,37,0.15);">
+        <div data-reveal class="ticket" style="margin-bottom:70px; box-shadow:0 24px 50px rgba(31,41,37,0.15);">
           {next.bg_gradient.startsWith('/') || next.bg_gradient.startsWith('http') ? (
-            <div style={`flex:1 1 380px; min-width:260px; aspect-ratio:16/11; background: url('${next.bg_gradient}') center/cover no-repeat;`}></div>
+            <div class="ticket-image" style={`flex:1 1 380px; min-width:260px; aspect-ratio:16/11; background: url('${next.bg_gradient}') center/cover no-repeat;`}></div>
           ) : (
-            <div style={`flex:1 1 380px; min-width:260px; aspect-ratio:16/11; background:${next.bg_gradient};`}></div>
+            <div class="ticket-image" style={`flex:1 1 380px; min-width:260px; aspect-ratio:16/11; background:${next.bg_gradient};`}></div>
           )}
-          <div style="flex:1 1 380px; min-width:260px; padding:clamp(28px,3.5vw,44px); display:flex; flex-direction:column; justify-content:center;">
+          <div class="ticket-stub" style="flex:1 1 380px; min-width:260px; background:#176B4D; padding:clamp(28px,3.5vw,44px); display:flex; flex-direction:column; justify-content:center;">
+            <span class="ticket-notch ticket-notch--a"></span>
+            <span class="ticket-notch ticket-notch--b"></span>
             <div style="display:inline-block; align-self:flex-start; background:rgba(233,120,36,0.2); color:#E97824; font-size:12px; font-weight:700; padding:6px 14px; border-radius:999px; margin-bottom:16px;">Prochain événement · {next.category}</div>
             <div style="font-size:14px; font-weight:700; color:#F8F4EC; opacity:0.8; margin-bottom:8px;">{next.date}</div>
             <h3 style="font-family:'Unbounded',sans-serif; font-size:clamp(1.4rem,2.2vw,1.9rem); font-weight:700; color:#FFFFFF; margin:0 0 12px;">{next.title}</h3>
-            <p style="font-size:15.5px; line-height:1.7; color:#F8F4EC; opacity:0.85; margin:0 0 26px;">{next.desc}</p>
-            <a href="/adherer" style="align-self:flex-start; background:#E97824; color:#FFFFFF; border:none; padding:15px 30px; border-radius:999px; font-weight:700; font-size:14.5px; cursor:pointer; display:inline-block;">Je participe</a>
+            <p style="font-size:15.5px; line-height:1.7; color:#F8F4EC; opacity:0.85; margin:0 0 20px;">{next.desc}</p>
+
+            {next.status === 'Complet' ? (
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:26px;">
+                <span style="width:8px; height:8px; border-radius:50%; background:#E97824;"></span>
+                <span style="font-size:13.5px; font-weight:700; color:#F8F4EC;">Complet</span>
+              </div>
+            ) : next.status === 'Annulé' ? (
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:26px;">
+                <span style="width:8px; height:8px; border-radius:50%; background:#5a655f;"></span>
+                <span style="font-size:13.5px; font-weight:700; color:#F8F4EC; opacity:0.7;">Annulé</span>
+              </div>
+            ) : (
+              <div style="margin-bottom:26px; max-width:220px;">
+                <div style="height:5px; border-radius:999px; background:rgba(248,244,236,0.25); overflow:hidden; margin-bottom:8px;">
+                  <div style={`height:100%; border-radius:999px; background:#E97824; width:${Math.min(100, Math.round((next.registered_count / next.max_places) * 100))}%;`}></div>
+                </div>
+                <span style="font-size:12.5px; font-weight:700; color:#F8F4EC; opacity:0.8;">{next.registered_count}/{next.max_places} places</span>
+              </div>
+            )}
+
+            {next.status !== 'Complet' && next.status !== 'Annulé' && !next.isPast && (
+              <button
+                type="button"
+                class="js-participate"
+                data-id={next.id}
+                data-title={next.title}
+                style="align-self:flex-start; background:#E97824; color:#FFFFFF; border:none; padding:15px 30px; border-radius:8px; font-weight:700; font-size:14.5px; cursor:pointer;"
+              >Je participe</button>
+            )}
           </div>
         </div>
       )}
 
-      <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.5rem,2.4vw,1.9rem); color:#1F2925; margin:0 0 32px;">Tous les événements</h2>
-      
+      <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.5rem,2.4vw,1.9rem); color:#1F2925; margin:0 0 8px;">Tous les événements</h2>
+
       {events.length === 0 ? (
         <div style="text-align:center; padding:50px; color:#5a655f; font-size:1.1rem;">
           Aucun événement publié pour le moment. Revenez bientôt !
         </div>
       ) : (
-        <div id="event-grid" data-grid-mobile="1" data-reveal-group style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:26px; margin-bottom:60px;">
+        <div id="event-grid" data-reveal-group style="margin-bottom:60px;">
           {events.map((ev) => (
-            <div class="event-card" data-category={ev.category} style="background:#FFFFFF; border-radius:22px; overflow:hidden; box-shadow:0 10px 26px rgba(31,41,37,0.07);">
+            <div
+              class="event-card agenda-row js-open-detail"
+              data-category={ev.category}
+              data-id={ev.id}
+              data-title={ev.title}
+              data-date={ev.date}
+              data-place={ev.place}
+              data-desc={ev.desc}
+              data-status={ev.status}
+              data-past={ev.isPast ? '1' : ''}
+              data-registered={ev.registered_count}
+              data-max={ev.max_places}
+              tabindex="0"
+              role="button"
+              aria-label={`Voir les détails de ${ev.title}`}
+            >
               {ev.bg_gradient.startsWith('/') || ev.bg_gradient.startsWith('http') ? (
-                <div style={`aspect-ratio:16/10; background: url('${ev.bg_gradient}') center/cover no-repeat; position:relative;`}>
-                  {ev.isPast && (
-                    <div style="position:absolute; top:14px; left:14px; background:rgba(31,41,37,0.7); color:#FFFFFF; font-size:11px; font-weight:700; padding:6px 12px; border-radius:999px;">Événement passé</div>
-                  )}
-                </div>
+                <div class="agenda-thumb" style={`background: url('${ev.bg_gradient}') center/cover no-repeat;`}></div>
               ) : (
-                <div style={`aspect-ratio:16/10; background:${ev.bg_gradient}; position:relative;`}>
+                <div class="agenda-thumb" style={`background:${ev.bg_gradient};`}></div>
+              )}
+              <div class="agenda-body">
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:6px;">
+                  <span style="font-size:12px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em;">{ev.category} · {ev.date}</span>
                   {ev.isPast && (
-                    <div style="position:absolute; top:14px; left:14px; background:rgba(31,41,37,0.7); color:#FFFFFF; font-size:11px; font-weight:700; padding:6px 12px; border-radius:999px;">Événement passé</div>
+                    <span style="font-size:11px; font-weight:700; color:#5a655f; background:rgba(31,41,37,0.06); padding:3px 10px; border-radius:999px;">Terminé</span>
+                  )}
+                  {ev.status === 'Complet' && (
+                    <span style="font-size:11px; font-weight:700; color:#E97824; background:rgba(233,120,36,0.1); padding:3px 10px; border-radius:999px;">Complet</span>
+                  )}
+                  {ev.status === 'Annulé' && (
+                    <span style="font-size:11px; font-weight:700; color:#5a655f; background:rgba(31,41,37,0.06); padding:3px 10px; border-radius:999px;">Annulé</span>
                   )}
                 </div>
-              )}
-              <div style="padding:24px;">
-                <div style="font-size:12px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;">{ev.category} · {ev.date}</div>
-                <h3 style="font-size:17px; font-weight:700; color:#1F2925; margin:0 0 8px;">{ev.title}</h3>
+                <h3 style="font-size:17px; font-weight:700; color:#1F2925; margin:0 0 6px;">{ev.title}</h3>
                 <p style="font-size:14px; color:#5a655f; margin:0 0 6px;">{ev.place}</p>
-                <p style="font-size:14px; line-height:1.6; color:#5a655f; margin:0;">{ev.desc}</p>
+                <p class="agenda-desc" style="font-size:14px; line-height:1.6; color:#5a655f; margin:0;">{ev.desc}</p>
               </div>
             </div>
           ))}
         </div>
       )}
     </section>
+
+    <!-- EVENT MODAL -->
+    <div id="event-modal" class="event-modal is-hidden" aria-hidden="true">
+      <div class="event-modal-backdrop" data-close></div>
+      <div class="event-modal-card" role="dialog" aria-modal="true">
+        <div class="event-modal-flag"><span></span><span></span><span></span></div>
+        <button type="button" class="event-modal-close" data-close aria-label="Fermer">✕</button>
+
+        <div id="modal-detail" class="modal-panel">
+          <div id="modal-meta" style="font-size:12px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;"></div>
+          <h3 id="modal-title" style="font-family:'Unbounded',sans-serif; font-size:clamp(1.3rem,2.4vw,1.7rem); font-weight:700; color:#1F2925; margin:0 0 10px;"></h3>
+          <div id="modal-place" style="font-size:14.5px; font-weight:600; color:#5a655f; margin-bottom:16px;"></div>
+          <p id="modal-desc" style="font-size:15px; line-height:1.7; color:#3f4a45; margin:0 0 22px;"></p>
+          <div id="modal-status" style="margin-bottom:22px;"></div>
+          <button type="button" id="modal-go-participate" style="background:#176B4D; color:#FFFFFF; border:none; padding:14px 28px; border-radius:8px; font-weight:700; font-size:14.5px; cursor:pointer;">Je participe</button>
+        </div>
+
+        <div id="modal-participate" class="modal-panel is-hidden">
+          <h3 style="font-family:'Unbounded',sans-serif; font-size:1.3rem; font-weight:700; color:#1F2925; margin:0 0 6px;">Je participe</h3>
+          <p id="participate-event-title" style="font-size:14px; color:#5a655f; margin:0 0 20px;"></p>
+          <label for="participate-first-name" style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Prénom <span style="color:#B14524;">*</span></label>
+          <input type="text" id="participate-first-name" placeholder="Ex: Fatou" style="width:100%; padding:13px 14px; border-radius:12px; border:1.5px solid #E3DCCB; font-size:14px; outline:none; box-sizing:border-box; margin-bottom:14px;" />
+          <div id="participate-error" class="form-error hidden"></div>
+          <div id="participate-success" class="hidden" style="font-size:14.5px; font-weight:700; color:#176B4D; padding:14px 0;">Inscription confirmée, à bientôt !</div>
+          <button type="button" id="participate-submit" style="width:100%; background:#E97824; color:#FFFFFF; border:none; padding:14px; border-radius:8px; font-weight:700; font-size:14.5px; cursor:pointer;">Confirmer ma participation</button>
+        </div>
+      </div>
+    </div>
   </main>
+
+  <style>
+    .ticket {
+      display: flex;
+      flex-wrap: wrap;
+    }
+    .ticket-image {
+      border-radius: 24px 0 0 24px;
+    }
+    .ticket-stub {
+      position: relative;
+      border-left: 2px dashed rgba(248, 244, 236, 0.35);
+      border-radius: 0 24px 24px 0;
+    }
+    .ticket-notch {
+      position: absolute;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #F8F4EC;
+      left: -13px;
+    }
+    .ticket-notch--a { top: -13px; }
+    .ticket-notch--b { bottom: -13px; }
+
+    .agenda-row {
+      display: flex;
+      gap: 22px;
+      align-items: flex-start;
+      padding: 26px 4px;
+      margin: 0 -4px;
+      border-bottom: 1px solid rgba(31, 41, 37, 0.08);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .agenda-row:first-child { padding-top: 0; margin-top: 0; }
+    .agenda-row:hover, .agenda-row:focus-visible {
+      background: rgba(23, 107, 77, 0.04);
+    }
+    .agenda-thumb {
+      flex: 0 0 96px;
+      width: 96px;
+      height: 96px;
+      border-radius: 16px;
+    }
+    .agenda-body { flex: 1 1 auto; min-width: 0; }
+    .agenda-desc { max-width: 60ch; }
+
+    @media (max-width: 640px) {
+      .ticket-image { border-radius: 24px 24px 0 0; }
+      .ticket-stub {
+        border-left: none;
+        border-top: 2px dashed rgba(248, 244, 236, 0.35);
+        border-radius: 0 0 24px 24px;
+      }
+      .ticket-notch { left: auto; top: -13px; }
+      .ticket-notch--a { left: -13px; }
+      .ticket-notch--b { left: auto; right: -13px; bottom: auto; }
+
+      .agenda-thumb { flex-basis: 68px; width: 68px; height: 68px; border-radius: 12px; }
+      .agenda-row { gap: 14px; }
+    }
+
+    .event-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .event-modal.is-hidden { display: none; }
+    .event-modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(31, 41, 37, 0.55);
+    }
+    .event-modal-card {
+      position: relative;
+      background: #FFFFFF;
+      border-radius: 24px;
+      max-width: 460px;
+      width: 100%;
+      max-height: 86vh;
+      overflow-y: auto;
+      padding: 40px 32px 32px;
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.3);
+    }
+    .event-modal-flag {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      display: flex;
+      border-radius: 24px 24px 0 0;
+      overflow: hidden;
+    }
+    .event-modal-flag span { flex: 1; }
+    .event-modal-flag span:nth-child(1) { background: #E97824; }
+    .event-modal-flag span:nth-child(2) { background: #E8D8BF; }
+    .event-modal-flag span:nth-child(3) { background: #176B4D; }
+    .event-modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: #F8F4EC;
+      border: none;
+      color: #1F2925;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .modal-panel.is-hidden { display: none; }
+    .form-error {
+      background: rgba(177, 69, 36, 0.09);
+      color: #B14524;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 12px 16px;
+      border-radius: 10px;
+      border-left: 3px solid #B14524;
+      margin-bottom: 16px;
+    }
+    .hidden { display: none !important; }
+  </style>
 
   <script>
     const buttons = document.querySelectorAll<HTMLButtonElement>('.filter-btn');
@@ -112,14 +325,166 @@ const eventFilters = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 'F
         buttons.forEach((b) => {
           const active = b === btn;
           b.setAttribute('aria-pressed', String(active));
-          b.style.background = active ? '#176B4D' : 'transparent';
-          b.style.color = active ? '#FFFFFF' : '#176B4D';
+          b.style.color = active ? '#176B4D' : '#5a655f';
+          b.style.borderBottomColor = active ? '#E97824' : 'transparent';
         });
         cards.forEach((card) => {
           const show = filter === 'Tous' || card.dataset.category === filter;
           card.style.display = show ? '' : 'none';
         });
       });
+    });
+
+    // ---- Event modal (detail + participate) ----
+    const modal = document.getElementById('event-modal');
+    const detailPanel = document.getElementById('modal-detail');
+    const participatePanel = document.getElementById('modal-participate');
+    const modalMeta = document.getElementById('modal-meta');
+    const modalTitle = document.getElementById('modal-title');
+    const modalPlace = document.getElementById('modal-place');
+    const modalDesc = document.getElementById('modal-desc');
+    const modalStatus = document.getElementById('modal-status');
+    const modalGoParticipate = document.getElementById('modal-go-participate');
+    const participateTitle = document.getElementById('participate-event-title');
+    const participateInput = document.getElementById('participate-first-name') as HTMLInputElement;
+    const participateError = document.getElementById('participate-error');
+    const participateSuccess = document.getElementById('participate-success');
+    const participateSubmit = document.getElementById('participate-submit') as HTMLButtonElement;
+
+    let currentEventId: string | null = null;
+    let currentEventTitle = '';
+
+    function openModal() {
+      modal?.classList.remove('is-hidden');
+      modal?.setAttribute('aria-hidden', 'false');
+    }
+    function closeModal() {
+      modal?.classList.add('is-hidden');
+      modal?.setAttribute('aria-hidden', 'true');
+      detailPanel?.classList.remove('is-hidden');
+      participatePanel?.classList.add('is-hidden');
+      participateError?.classList.add('hidden');
+      participateSuccess?.classList.add('hidden');
+      participateSubmit.disabled = false;
+      participateSubmit.classList.remove('hidden');
+      if (participateInput) participateInput.value = '';
+    }
+
+    function showParticipate(id: string, title: string) {
+      currentEventId = id;
+      currentEventTitle = title;
+      if (participateTitle) participateTitle.textContent = title;
+      detailPanel?.classList.add('is-hidden');
+      participatePanel?.classList.remove('is-hidden');
+      participateError?.classList.add('hidden');
+      participateSuccess?.classList.add('hidden');
+      participateSubmit.disabled = false;
+      participateSubmit.classList.remove('hidden');
+      openModal();
+    }
+
+    document.querySelectorAll<HTMLElement>('.js-open-detail').forEach((row) => {
+      const open = () => {
+        const d = row.dataset;
+        currentEventId = d.id ?? null;
+        currentEventTitle = d.title ?? '';
+
+        if (modalMeta) modalMeta.textContent = `${d.category ?? ''} · ${d.date ?? ''}`;
+        if (modalTitle) modalTitle.textContent = d.title ?? '';
+        if (modalPlace) modalPlace.textContent = d.place ?? '';
+        if (modalDesc) modalDesc.textContent = d.desc ?? '';
+
+        const isPast = d.past === '1';
+        const status = d.status;
+        let eligible = !isPast && status !== 'Complet' && status !== 'Annulé';
+
+        if (modalStatus) {
+          if (isPast) {
+            modalStatus.innerHTML = `<span style="font-size:13px; font-weight:700; color:#5a655f;">Événement terminé</span>`;
+          } else if (status === 'Complet') {
+            modalStatus.innerHTML = `<span style="font-size:13px; font-weight:700; color:#E97824;">Complet</span>`;
+          } else if (status === 'Annulé') {
+            modalStatus.innerHTML = `<span style="font-size:13px; font-weight:700; color:#5a655f;">Annulé</span>`;
+          } else {
+            const registered = Number(d.registered ?? 0);
+            const max = Number(d.max ?? 0);
+            const pct = max > 0 ? Math.min(100, Math.round((registered / max) * 100)) : 0;
+            modalStatus.innerHTML = `
+              <div style="height:5px; border-radius:999px; background:rgba(31,41,37,0.08); overflow:hidden; margin-bottom:8px; max-width:220px;">
+                <div style="height:100%; border-radius:999px; background:#176B4D; width:${pct}%;"></div>
+              </div>
+              <span style="font-size:12.5px; font-weight:700; color:#5a655f;">${registered}/${max} places</span>
+            `;
+          }
+        }
+
+        if (modalGoParticipate) {
+          modalGoParticipate.classList.toggle('hidden', !eligible);
+        }
+
+        detailPanel?.classList.remove('is-hidden');
+        participatePanel?.classList.add('is-hidden');
+        openModal();
+      };
+      row.addEventListener('click', open);
+      row.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          open();
+        }
+      });
+    });
+
+    document.querySelectorAll<HTMLElement>('.js-participate').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        showParticipate(btn.dataset.id ?? '', btn.dataset.title ?? '');
+      });
+    });
+
+    modalGoParticipate?.addEventListener('click', () => {
+      showParticipate(currentEventId ?? '', currentEventTitle);
+    });
+
+    modal?.querySelectorAll('[data-close]').forEach((el) => {
+      el.addEventListener('click', closeModal);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    participateSubmit?.addEventListener('click', async () => {
+      const firstName = participateInput?.value.trim();
+      if (!firstName) {
+        if (participateError) {
+          participateError.textContent = 'Veuillez renseigner votre prénom.';
+          participateError.classList.remove('hidden');
+        }
+        return;
+      }
+      participateSubmit.disabled = true;
+      participateSubmit.textContent = 'Envoi…';
+
+      try {
+        const res = await fetch('/api/inscriptions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ event_id: currentEventId, first_name: firstName })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Une erreur est survenue.');
+
+        participateError?.classList.add('hidden');
+        participateSuccess?.classList.remove('hidden');
+        participateSubmit.classList.add('hidden');
+        setTimeout(closeModal, 1800);
+      } catch (err) {
+        if (participateError) {
+          participateError.textContent = (err as Error).message;
+          participateError.classList.remove('hidden');
+        }
+        participateSubmit.disabled = false;
+        participateSubmit.textContent = 'Confirmer ma participation';
+      }
     });
   </script>
 </Layout>

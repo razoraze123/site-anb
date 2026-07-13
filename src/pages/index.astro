@@ -6,18 +6,23 @@ import { homeGallery, newsArticles, nextEvent } from '../lib/demo-data';
 <Layout title="Accueil">
   <main>
     <!-- HERO -->
-    <section style="position:relative; max-width:1280px; margin:0 auto; padding:clamp(40px,7vw,90px) clamp(20px,4vw,48px) clamp(60px,8vw,110px); display:flex; flex-wrap:wrap; align-items:center; gap:56px; overflow:hidden;">
-      <div style="position:absolute; top:-60px; right:-80px; width:340px; height:340px; border-radius:50%; background:radial-gradient(circle, rgba(233,120,36,0.14), transparent 70%); pointer-events:none;"></div>
-      <div style="position:absolute; bottom:-40px; left:10%; width:260px; height:260px; border-radius:50%; background:radial-gradient(circle, rgba(23,107,77,0.10), transparent 70%); pointer-events:none;"></div>
+    <section style="position:relative; max-width:1280px; margin:0 auto; padding:clamp(40px,7vw,90px) clamp(20px,4vw,48px) clamp(70px,9vw,120px); display:flex; flex-wrap:wrap; align-items:center; gap:56px; overflow:hidden;">
 
       <div style="flex:1 1 460px; min-width:300px; position:relative; z-index:1; animation:fadeInUp 0.8s ease both;">
-        <div style="display:inline-block; background:rgba(23,107,77,0.1); color:#176B4D; font-size:13px; font-weight:700; letter-spacing:0.03em; padding:9px 18px; border-radius:999px; margin-bottom:24px;">Association des Nigériens à Bordeaux</div>
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:22px;">
+          <span style="display:flex; gap:3px;">
+            <span style="width:5px; height:16px; border-radius:2px; background:#E97824;"></span>
+            <span style="width:5px; height:16px; border-radius:2px; background:#E8D8BF;"></span>
+            <span style="width:5px; height:16px; border-radius:2px; background:#176B4D;"></span>
+          </span>
+          <span style="font-size:13px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#5a655f;">Association des Nigériens à Bordeaux</span>
+        </div>
         <h1 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(2.4rem,4.8vw,3.8rem); line-height:1.08; color:#1F2925; margin:0 0 24px; text-wrap:balance;">Ensemble, faire vivre la communauté nigérienne à Bordeaux.</h1>
         <p style="font-size:18px; line-height:1.7; color:#3f4a45; max-width:520px; margin:0 0 36px;">L'ANB rassemble, accompagne et valorise les Nigériens et les amis du Niger dans la métropole bordelaise.</p>
-        <div style="display:flex; gap:16px; flex-wrap:wrap;">
-          <a href="/association" style="background:#176B4D; color:#FFFFFF; border:none; padding:17px 32px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer; box-shadow:0 10px 24px rgba(23,107,77,0.25); display:inline-block;">Découvrir l'association</a>
-          <a href="/evenements" style="background:transparent; color:#176B4D; border:2px solid #176B4D; padding:15px 30px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer; display:inline-block;">Voir les événements</a>
-          <a href="/adherer" style="background:#E97824; color:#FFFFFF; border:none; padding:17px 32px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer; box-shadow:0 10px 24px rgba(233,120,36,0.25); display:inline-block;">Se faire recenser</a>
+        <div style="display:flex; align-items:center; gap:28px; flex-wrap:wrap;">
+          <a href="/association" style="background:#176B4D; color:#FFFFFF; border:none; padding:16px 30px; border-radius:8px; font-weight:700; font-size:15px; cursor:pointer; display:inline-block;">Découvrir l'association</a>
+          <a href="/evenements" style="color:#176B4D; font-weight:700; font-size:15px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">Voir les événements <span aria-hidden="true">→</span></a>
+          <a href="/adherer" style="background:#E97824; color:#FFFFFF; border:none; padding:16px 30px; border-radius:8px; font-weight:700; font-size:15px; cursor:pointer; display:inline-block;">Se faire recenser</a>
         </div>
       </div>
 
@@ -71,7 +76,7 @@ import { homeGallery, newsArticles, nextEvent } from '../lib/demo-data';
       </div>
       <div style="flex:1 1 460px; min-width:300px; order:1;">
         <div style="font-size:13px; font-weight:700; color:#E97824; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:16px;">Notre mission</div>
-        <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.9rem,3.4vw,2.6rem); line-height:1.15; color:#1F2925; margin:0 0 24px; text-wrap:balance;">Bien plus qu'une association : une famille, un repère, une énergie collective.</h2>
+        <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.9rem,3.4vw,2.6rem); line-height:1.15; color:#1F2925; margin:0 0 24px; text-wrap:balance;">Bien plus qu'une association. Une famille, un repère, une énergie collective.</h2>
         <p style="font-size:17px; line-height:1.75; color:#3f4a45; margin:0 0 16px;">L'ANB accueille chaque nouvel arrivant avec chaleur et l'accompagne dans ses premiers pas à Bordeaux. Tout au long de l'année, nous organisons des événements, des temps d'entraide, des actions culturelles et des projets solidaires qui renforcent nos liens et font rayonner nos racines.</p>
         <p style="font-size:17px; line-height:1.75; color:#3f4a45; margin:0 0 32px;">Étudiants, familles, actifs ou amis du Niger : chacun trouve à l'ANB une place, un soutien et une communauté prête à l'accueillir.</p>
         <a href="/association" style="background:#176B4D; color:#FFFFFF; border:none; padding:16px 30px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer; display:inline-block;">En savoir plus sur l'ANB</a>
@@ -179,14 +184,13 @@ import { homeGallery, newsArticles, nextEvent } from '../lib/demo-data';
         <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.9rem,3.2vw,2.5rem); color:#1F2925; margin:0;">Les moments qui nous rassemblent</h2>
         <a href="/galerie" style="background:transparent; border:2px solid #176B4D; color:#176B4D; padding:13px 26px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer; white-space:nowrap; display:inline-block;">Voir toute la galerie</a>
       </div>
-      <div class="mobile-shelf" data-shelf-square data-reveal-group style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); grid-auto-rows:140px; gap:16px;">
+      <div class="gallery-grid" data-reveal-group>
         {homeGallery.map((img) => (
           <div style={`grid-row:span ${img.span}; border-radius:20px; background:${img.bg}; position:relative; overflow:hidden; display:flex; align-items:flex-end; padding:14px;`}>
             <span style="color:rgba(255,255,255,0.9); font-size:12px; font-weight:700;">{img.label}</span>
           </div>
         ))}
       </div>
-      <div class="shelf-thread"><span></span></div>
     </section>
 
     <!-- ACTUALITES -->
@@ -245,6 +249,29 @@ import { homeGallery, newsArticles, nextEvent } from '../lib/demo-data';
   @keyframes home-pulse-dot {
     0%, 100% { transform: scale(1); opacity: 1; }
     50% { transform: scale(1.5); opacity: 0.6; }
+  }
+
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-auto-rows: 140px;
+    gap: 16px;
+  }
+
+  @media (max-width: 640px) {
+    .gallery-grid {
+      grid-template-columns: repeat(2, 1fr);
+      grid-auto-rows: 88px;
+      grid-auto-flow: dense;
+      gap: 10px;
+    }
+    .gallery-grid > div {
+      border-radius: 14px !important;
+      padding: 10px !important;
+    }
+    .gallery-grid > div span {
+      font-size: 11px !important;
+    }
   }
 </style>
 

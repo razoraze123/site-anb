@@ -20,38 +20,142 @@ try {
 <Layout title="Actualités" description="Ce qui fait vivre la communauté nigérienne de Bordeaux, semaine après semaine.">
   <main>
     <section style="max-width:1280px; margin:0 auto; padding:70px clamp(20px,4vw,48px) 90px;">
-      <div style="font-size:13px; font-weight:700; color:#E97824; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:16px;">Actualités</div>
-      <h1 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(2.1rem,4vw,3rem); color:#1F2925; margin:0 0 48px; max-width:760px;">Ce qui fait vivre la communauté, semaine après semaine.</h1>
-      
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
+        <span style="display:flex; gap:3px;">
+          <span style="width:5px; height:16px; border-radius:2px; background:#E97824;"></span>
+          <span style="width:5px; height:16px; border-radius:2px; background:#E8D8BF;"></span>
+          <span style="width:5px; height:16px; border-radius:2px; background:#176B4D;"></span>
+        </span>
+        <span style="font-size:13px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#5a655f;">Actualités</span>
+      </div>
+      <h1 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(2.1rem,4vw,3rem); color:#1F2925; margin:0 0 20px; max-width:760px;">Ce qui fait vivre la communauté, semaine après semaine.</h1>
+      <div class="gazette-rule"></div>
+
       {newsArticles.length === 0 ? (
         <div style="text-align:center; padding:50px; color:#5a655f; font-size:1.1rem;">
           Aucune actualité publiée pour le moment. Revenez bientôt !
         </div>
       ) : (
-        <div data-grid-mobile="1" data-reveal-group style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:28px;">
-          {newsArticles.map((article) => (
-            <div style="background:#FFFFFF; border-radius:24px; overflow:hidden; box-shadow:0 10px 26px rgba(31,41,37,0.07); display:flex; flex-direction:column; justify-content:space-between;">
-              <div>
-                {article.bg_gradient.startsWith('/') || article.bg_gradient.startsWith('http') ? (
-                  <div style={`aspect-ratio:16/10; background: url('${article.bg_gradient}') center/cover no-repeat;`}></div>
-                ) : (
-                  <div style={`aspect-ratio:16/10; background: ${article.bg_gradient};`}></div>
-                )}
-                <div style="padding:26px 26px 10px;">
-                  <div style="font-size:12px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">
-                    {article.category} · {article.created_at.split(' ')[0]}
-                  </div>
-                  <h3 style="font-size:18px; font-weight:700; color:#1F2925; margin:0 0 12px; line-height:1.35;">{article.title}</h3>
-                  <p style="font-size:14.5px; line-height:1.6; color:#5a655f; margin:0 0 18px;">{article.excerpt}</p>
-                </div>
+        <Fragment>
+          <!-- FEATURED (latest) -->
+          <a href={`/actualites/${newsArticles[0].slug}`} class="featured-article" data-reveal>
+            {newsArticles[0].bg_gradient.startsWith('/') || newsArticles[0].bg_gradient.startsWith('http') ? (
+              <div class="featured-image" style={`background: url('${newsArticles[0].bg_gradient}') center/cover no-repeat;`}></div>
+            ) : (
+              <div class="featured-image" style={`background: ${newsArticles[0].bg_gradient};`}></div>
+            )}
+            <div class="featured-body">
+              <div style="font-size:12px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:12px;">
+                À la une · {newsArticles[0].category} · {newsArticles[0].created_at.split(' ')[0]}
               </div>
-              <div style="padding:0 26px 26px;">
-                <a href={`/actualites/${article.slug}`} style="font-size:14px; font-weight:700; color:#176B4D; text-decoration:none; display:inline-block;">Lire l'article →</a>
-              </div>
+              <h2 style="font-family:'Unbounded',sans-serif; font-size:clamp(1.5rem,2.6vw,2.1rem); font-weight:700; color:#1F2925; margin:0 0 14px; line-height:1.25;">{newsArticles[0].title}</h2>
+              <p style="font-size:15.5px; line-height:1.7; color:#5a655f; margin:0 0 22px; max-width:60ch;">{newsArticles[0].excerpt}</p>
+              <span style="background:#176B4D; color:#FFFFFF; padding:14px 26px; border-radius:8px; font-weight:700; font-size:14px; display:inline-block;">Lire l'article →</span>
             </div>
-          ))}
-        </div>
+          </a>
+
+          {newsArticles.length > 1 && (
+            <Fragment>
+              <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.3rem,2vw,1.6rem); color:#1F2925; margin:56px 0 24px;">Toutes les actualités</h2>
+              <div class="brief-grid" data-reveal-group>
+                {newsArticles.slice(1).map((article) => (
+                  <a href={`/actualites/${article.slug}`} class="brief-row">
+                    {article.bg_gradient.startsWith('/') || article.bg_gradient.startsWith('http') ? (
+                      <div class="brief-thumb" style={`background: url('${article.bg_gradient}') center/cover no-repeat;`}></div>
+                    ) : (
+                      <div class="brief-thumb" style={`background: ${article.bg_gradient};`}></div>
+                    )}
+                    <div class="brief-body">
+                      <div style="font-size:11.5px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:5px;">
+                        {article.category} · {article.created_at.split(' ')[0]}
+                      </div>
+                      <h3 style="font-size:16px; font-weight:700; color:#1F2925; margin:0 0 5px; line-height:1.35;">{article.title}</h3>
+                      <p class="brief-excerpt" style="font-size:13.5px; line-height:1.55; color:#5a655f; margin:0;">{article.excerpt}</p>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </Fragment>
+          )}
+        </Fragment>
       )}
     </section>
   </main>
+
+  <style>
+    .gazette-rule {
+      height: 4px;
+      background: #176B4D;
+      border-radius: 999px;
+      margin-bottom: 48px;
+      max-width: 120px;
+      position: relative;
+    }
+    .gazette-rule::after {
+      content: '';
+      position: absolute;
+      top: 8px;
+      left: 0;
+      width: 60px;
+      height: 2px;
+      background: #E97824;
+      border-radius: 999px;
+    }
+
+    .featured-article {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0;
+      background: #FFFFFF;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 20px 44px rgba(31, 41, 37, 0.1);
+      text-decoration: none;
+      margin-bottom: 24px;
+    }
+    .featured-image {
+      flex: 1 1 440px;
+      min-width: 280px;
+      aspect-ratio: 16/10;
+    }
+    .featured-body {
+      flex: 1 1 380px;
+      min-width: 280px;
+      padding: clamp(28px, 3.5vw, 44px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .brief-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      column-gap: 40px;
+    }
+    .brief-row {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(31, 41, 37, 0.08);
+      text-decoration: none;
+    }
+    .brief-thumb {
+      flex: 0 0 64px;
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+    }
+    .brief-body { min-width: 0; }
+    .brief-excerpt {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    @media (max-width: 780px) {
+      .brief-grid { grid-template-columns: 1fr; column-gap: 0; }
+    }
+  </style>
 </Layout>

@@ -76,6 +76,41 @@ export async function POST(context) {
       rgpd_consent ? 1 : 0
     ).run();
 
+    if (env.RESEND_API_KEY) {
+      try {
+        await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            from: "ANB Bordeaux <noreply@alphatoute.tech>",
+            to: email.trim(),
+            subject: "Bienvenue à l'ANB Bordeaux !",
+            headers: {
+              "List-Unsubscribe": "<mailto:contact@anb-bordeaux.fr?subject=Desinscription>",
+              "List-Unsubscribe-Post": "List-Unsubscribe=One-Click"
+            },
+            text: `Bonjour ${first_name.trim()},\n\nVotre adhésion à l'ANB Bordeaux a bien été enregistrée. Vous recevrez nos actualités, événements et annonces à cette adresse.\n\nÀ bientôt !\n\nL'équipe ANB Bordeaux\ncontact@anb-bordeaux.fr\n\nPour vous désinscrire, répondez à cet e-mail.`,
+            html: `<div style="font-family:Arial,sans-serif;font-size:15px;color:#1F2925;line-height:1.6;max-width:520px;margin:0 auto;">
+              <p>Bonjour ${first_name.trim()},</p>
+              <p>Votre adhésion à l'ANB Bordeaux a bien été enregistrée. Vous recevrez nos actualités, événements et annonces à cette adresse.</p>
+              <p>À bientôt !</p>
+              <p>L'équipe ANB Bordeaux</p>
+              <hr style="border:none;border-top:1px solid #E3DCCB;margin:24px 0;" />
+              <p style="font-size:12px;color:#9aa39c;">
+                ANB Bordeaux · contact@anb-bordeaux.fr<br />
+                Vous recevez cet e-mail suite à votre adhésion. <a href="mailto:contact@anb-bordeaux.fr?subject=Desinscription" style="color:#9aa39c;">Se désinscrire</a>
+              </p>
+            </div>`
+          })
+        });
+      } catch (mailError) {
+        console.error("Resend send failed:", mailError);
+      }
+    }
+
     return new Response(JSON.stringify({
       success: true,
       message: "Recensement enregistré avec succès !"
