@@ -21,8 +21,9 @@ export async function POST(context) {
 
     // Plafond défensif : la conversation grandit à chaque échange côté
     // client, sans limite ce sont autant de tokens (donc de coût Mistral)
-    // en plus à chaque message.
-    if (messages.length > 40 || messages.some((m) => typeof m.content !== 'string' || m.content.length > 2000)) {
+    // en plus à chaque message. Le system prompt (~3100 caractères) est
+    // envoyé à chaque requête, d'où la marge au-delà de sa taille.
+    if (messages.length > 40 || messages.some((m) => typeof m.content !== 'string' || m.content.length > 5000)) {
       return new Response(JSON.stringify({ error: "Conversation trop longue ou message trop volumineux. Rechargez la page." }), {
         status: 400,
         headers: { "Content-Type": "application/json" }
