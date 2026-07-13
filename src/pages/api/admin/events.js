@@ -17,7 +17,7 @@ export async function POST(context) {
     }
 
     const body = await context.request.json();
-    const { title, date, place, category, registered_count, max_places, status, bg_gradient, tab } = body;
+    const { title, date, place, category, max_places, status, bg_gradient, tab } = body;
 
     if (!title || !date || !place) {
       return new Response(JSON.stringify({ error: "Les paramètres title, date et place sont requis." }), {
@@ -28,16 +28,15 @@ export async function POST(context) {
 
     // Default values if omitted
     const cat = category || "Culture";
-    const regCount = registered_count !== undefined ? registered_count : 0;
     const maxPl = max_places !== undefined ? max_places : 100;
     const stat = status || "Ouvert";
     const bg = bg_gradient || "linear-gradient(150deg,#E97824,#1F2925)";
     const tb = tab || "À venir";
 
-    // Insert into D1
+    // Insert into D1 (registered_count is derived live from `inscriptions`, not stored)
     const statement = db.prepare(
-      "INSERT INTO evenements (title, date, place, category, registered_count, max_places, status, bg_gradient, tab) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-    ).bind(title, date, place, cat, regCount, maxPl, stat, bg, tb);
+      "INSERT INTO evenements (title, date, place, category, max_places, status, bg_gradient, tab) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+    ).bind(title, date, place, cat, maxPl, stat, bg, tb);
 
     const result = await statement.run();
 

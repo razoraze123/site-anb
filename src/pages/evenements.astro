@@ -10,7 +10,11 @@ let next = null;
 
 try {
   if (db) {
-    const { results } = await db.prepare("SELECT * FROM evenements ORDER BY id ASC").all();
+    const { results } = await db.prepare(
+      `SELECT id, title, date, place, category, max_places, status, bg_gradient, tab, created_at,
+        (SELECT COUNT(*) FROM inscriptions i WHERE i.event_id = evenements.id AND i.status != 'Annulé') AS registered_count
+       FROM evenements ORDER BY id ASC`
+    ).all();
     events = results.map(e => ({
       ...e,
       isPast: e.tab === 'Passés' || e.status === 'Terminé',

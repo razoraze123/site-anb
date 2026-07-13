@@ -190,10 +190,6 @@ if (!user || !['admin', 'super_admin'].includes(user.role)) {
                 <div style="font-size:13.5px; color:#5a655f; margin-top:4px;">Membres / Inscrits</div>
               </div>
               <div style="background:#FFFFFF; border-radius:18px; padding:22px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
-                <div id="stat-pending-adhesions" style="font-size:26px; font-weight:800; color:#E97824;">0</div>
-                <div style="font-size:13.5px; color:#5a655f; margin-top:4px;">Adhésions en attente</div>
-              </div>
-              <div style="background:#FFFFFF; border-radius:18px; padding:22px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
                 <div id="stat-news-count" style="font-size:26px; font-weight:800; color:#176B4D;">0</div>
                 <div style="font-size:13.5px; color:#5a655f; margin-top:4px;">Actualités publiées</div>
               </div>
@@ -414,36 +410,6 @@ if (!user || !['admin', 'super_admin'].includes(user.role)) {
           </div>
         </section>
 
-        <!-- GALERIE VIEW -->
-        <section id="view-galerie" class="hidden fade-in">
-          <div style="display:flex; flex-direction:column; gap:20px;">
-            <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:14px;">
-              <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Galerie médias</h1>
-              <button style="background:#E97824; color:#FFFFFF; border:none; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Ajouter des médias</button>
-            </div>
-            <div style="background:rgba(233,120,36,0.1); color:#B75E12; padding:12px 18px; border-radius:12px; font-size:13px; font-weight:600;">⚠ Vérifiez que vous disposez du droit de diffusion des images.</div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;" class="gallery-tab-container">
-              <!-- filter tabs -->
-            </div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:14px;" id="gallery-items-container">
-              <!-- media items -->
-            </div>
-          </div>
-        </section>
-
-        <!-- VIE PRATIQUE VIEW -->
-        <section id="view-viepratique" class="hidden fade-in">
-          <div style="display:flex; flex-direction:column; gap:20px;">
-            <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:14px;">
-              <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Vie pratique</h1>
-              <button style="background:#E97824; color:#FFFFFF; border:none; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Ajouter une ressource</button>
-            </div>
-            <div style="background:#FFFFFF; border-radius:20px; padding:8px; box-shadow:0 8px 24px rgba(31,41,37,0.05);" id="practical-resources-container">
-              <!-- list -->
-            </div>
-          </div>
-        </section>
-
         <!-- INSCRIPTIONS VIEW -->
         <section id="view-inscriptions" class="hidden fade-in">
           <div style="display:flex; flex-direction:column; gap:20px;">
@@ -525,22 +491,6 @@ if (!user || !['admin', 'super_admin'].includes(user.role)) {
           </div>
         </section>
 
-
-        <!-- ADHESIONS VIEW -->
-        <section id="view-adhesions" class="hidden fade-in">
-          <div style="display:flex; flex-direction:column; gap:20px;">
-            <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Adhésions</h1>
-            
-            <div style="display:grid; grid-template-columns:1fr 1.2fr; gap:20px; align-items:start; flex-wrap:wrap;">
-              <div style="background:#FFFFFF; border-radius:20px; padding:8px; box-shadow:0 8px 24px rgba(31,41,37,0.05); min-width:0;" id="membership-requests-list">
-                <!-- list -->
-              </div>
-              <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05); min-width:0;" id="membership-detail-box">
-                <!-- detail -->
-              </div>
-            </div>
-          </div>
-        </section>
 
         <!-- MESSAGES VIEW -->
         <section id="view-messages" class="hidden fade-in">
@@ -642,8 +592,6 @@ if (!user || !['admin', 'super_admin'].includes(user.role)) {
       page: 'dashboard',
       newsTab: 'Publiées',
       eventsFilter: 'À venir',
-      galleryFilter: 'Tous',
-      adhesionSelectedIdx: 0,
       messagesTab: 'Tous',
       messageSelectedIdx: 0,
       statsPeriod: '30 jours',
@@ -656,11 +604,8 @@ if (!user || !['admin', 'super_admin'].includes(user.role)) {
       { key: 'dashboard', label: 'Tableau de bord' },
       { key: 'actualites', label: 'Actualités' },
       { key: 'evenements', label: 'Événements' },
-      { key: 'galerie', label: 'Galerie médias' },
-      { key: 'viepratique', label: 'Vie pratique' },
       { key: 'inscriptions', label: 'Inscriptions' },
       { key: 'recensement', label: 'Recensement' },
-      { key: 'adhesions', label: 'Adhésions' },
       { key: 'messages', label: 'Messages' },
       { key: 'pages', label: 'Pages du site' },
       { key: 'stats', label: 'Statistiques' },
@@ -672,11 +617,8 @@ if (!user || !['admin', 'super_admin'].includes(user.role)) {
       dashboard: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="8" height="8" rx="2"></rect><rect x="13" y="3" width="8" height="8" rx="2"></rect><rect x="3" y="13" width="8" height="8" rx="2"></rect><rect x="13" y="13" width="8" height="8" rx="2"></rect></svg>`,
       actualites: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="7" y1="9" x2="17" y2="9"></line><line x1="7" y1="13" x2="17" y2="13"></line><line x1="7" y1="17" x2="12" y2="17"></line></svg>`,
       evenements: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line></svg>`,
-      galerie: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="M21 15l-5-5-9 9"></path></svg>`,
-      viepratique: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v4l3 2"></path></svg>`,
       inscriptions: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="9"></circle></svg>`,
       recensement: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 00-3-3.87"></path><path d="M16 3.13a4 4 0 010 7.75"></path></svg>`,
-      adhesions: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="8" cy="9" r="3"></circle><circle cx="17" cy="10" r="2.3"></circle><path d="M2.5 20c0-3.3 2.5-5.6 5.5-5.6s5.5 2.3 5.5 5.6"></path><path d="M14 15c2.5 0.2 4 2.1 4 4.6"></path></svg>`,
       messages: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 6l9 6 9-6"></path></svg>`,
       pages: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 3h8l4 4v14a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 017-1z"></path><path d="M15 3v4h4"></path></svg>`,
       stats: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 20V10M12 20V4M20 20v-7"></path></svg>`,
@@ -687,20 +629,11 @@ if (!user || !['admin', 'super_admin'].includes(user.role)) {
     let priorityItems = [];
     let newsArticles = [];
     let eventsAdmin = [];
-    let mediaList = [];
     let registrants = [];
-    let membershipRequests = [];
+    let pendingInscriptionsEventId = null;
     let messages = [];
     let recensementList = [];
     let recensementSearch = '';
-
-    const practicalResources = [
-      { title: 'Bourses et aides financières étudiantes', cat: 'Étudier', summary: 'Panorama des bourses CROUS et aides régionales.', updated: 'juin 2026', status: 'Publié', tone: 'g' },
-      { title: 'Trouver un logement étudiant à Bordeaux', cat: 'Se loger', summary: 'CROUS, résidences, garanties Visale.', updated: 'mai 2026', status: 'Publié', tone: 'g' },
-      { title: 'Ouvrir un compte bancaire en arrivant en France', cat: 'Démarches', summary: 'Pièces à fournir et banques recommandées.', updated: 'avril 2026', status: 'Publié', tone: 'g' },
-      { title: 'Accéder à la sécurité sociale étudiante', cat: 'Santé', summary: 'Inscription et carte vitale.', updated: 'brouillon', status: 'Brouillon', tone: 'o' },
-      { title: 'Rechercher un emploi ou une alternance', cat: 'Travailler', summary: 'Plateformes et réseau professionnel local.', updated: 'mars 2026', status: 'Publié', tone: 'g' }
-    ];
 
     async function fetchAdminData() {
       try {
@@ -712,32 +645,17 @@ if (!user || !['admin', 'super_admin'].includes(user.role)) {
         newsArticles = data.actualites;
         eventsAdmin = data.evenements;
         registrants = data.inscriptions;
-        membershipRequests = data.adhesions;
         messages = data.messages;
-        mediaList = data.media_galerie;
         recensementList = data.recensement || [];
 
         // Populate statistics indicators
         document.getElementById('stat-events-count').textContent = eventsAdmin.length;
         document.getElementById('stat-news-count').textContent = newsArticles.filter(n => n.status === 'Publié').length;
-        document.getElementById('stat-pending-adhesions').textContent = membershipRequests.filter(m => m.status === 'Nouvelle' || m.status === 'En attente').length;
-        document.getElementById('stat-members-count').textContent = registrants.filter(r => r.status === 'Confirmé').length + membershipRequests.filter(m => m.status === 'Validée').length;
+        document.getElementById('stat-members-count').textContent = registrants.filter(r => r.status === 'Confirmé').length;
         document.getElementById('stat-census-count').textContent = recensementList.length;
 
         // Update priority items
         priorityItems = [];
-        membershipRequests.filter(m => m.status === 'Nouvelle' || m.status === 'En attente').forEach(m => {
-          priorityItems.push({
-            id: m.id,
-            name: m.name,
-            type: "Demande d'adhésion",
-            date: 'En attente',
-            status: m.status,
-            tone: 'o',
-            avatarBg: 'linear-gradient(150deg,#176B4D,#E97824)',
-            action: 'adhesions'
-          });
-        });
 
         messages.filter(m => m.status === 'Non lu' || m.status === 'À traiter').forEach(m => {
           priorityItems.push({
@@ -806,8 +724,8 @@ if (!user || !['admin', 'super_admin'].includes(user.role)) {
 
       const pageTitleMap = {
         dashboard: 'Tableau de bord', actualites: 'Actualités', 'actualites-new': 'Nouvelle actualité',
-        evenements: 'Événements', 'evenements-new': 'Créer un événement', galerie: 'Galerie médias',
-        viepratique: 'Vie pratique', inscriptions: 'Inscriptions', recensement: 'Recensement', adhesions: 'Adhésions',
+        evenements: 'Événements', 'evenements-new': 'Créer un événement',
+        inscriptions: 'Inscriptions', recensement: 'Recensement',
         messages: 'Messages', pages: 'Pages du site', stats: 'Statistiques', profil: 'Mon profil'
       };
 
@@ -976,16 +894,10 @@ if (!user || !['admin', 'super_admin'].includes(user.role)) {
         renderActualites();
       } else if (pageKey === 'evenements') {
         renderEvenements();
-      } else if (pageKey === 'galerie') {
-        renderGalerie();
-      } else if (pageKey === 'viepratique') {
-        renderViePratique();
       } else if (pageKey === 'inscriptions') {
         renderInscriptions();
       } else if (pageKey === 'recensement') {
         renderRecensement();
-      } else if (pageKey === 'adhesions') {
-        renderAdhesions();
       } else if (pageKey === 'messages') {
         renderMessages();
       } else if (pageKey === 'pages') {
@@ -1015,8 +927,9 @@ if (!user || !['admin', 'super_admin'].includes(user.role)) {
             <div style="font-size:12.5px; color:#5a655f;">${it.date}</div>
           </div>
           ${getBadgeHtml(it.status, it.tone)}
-          <a style="font-size:13.5px; font-weight:700; color:#176B4D; cursor:pointer; text-decoration: underline;" onclick="goPage('${it.action}')">Traiter →</a>
+          <a class="priority-item-action" style="font-size:13.5px; font-weight:700; color:#176B4D; cursor:pointer; text-decoration: underline;">Traiter →</a>
         `;
+        row.querySelector('.priority-item-action').addEventListener('click', () => goPage(it.action));
         container.appendChild(row);
       });
 
@@ -1174,11 +1087,18 @@ if (!user || !['admin', 'super_admin'].includes(user.role)) {
               <p style="font-size:13px; color:#5a655f; margin:0 0 16px;">${ev.place} · ${ev.registered_count}/${ev.max_places} inscrits</p>
             </div>
             <div style="display:flex; gap:8px;">
-              <button style="flex:1; background:#F8F4EC; border:none; padding:10px; border-radius:999px; font-size:12.5px; font-weight:700; cursor:pointer; color:#1F2925;" onclick="goPage('inscriptions')">Inscrits</button>
+              <button class="view-registrants-btn" style="flex:1; background:#F8F4EC; border:none; padding:10px; border-radius:999px; font-size:12.5px; font-weight:700; cursor:pointer; color:#1F2925;">Inscrits</button>
               <button class="edit-event-btn" data-id="${ev.id}" style="flex:1; background:#176B4D; border:none; padding:10px; border-radius:999px; font-size:12.5px; font-weight:700; cursor:pointer; color:#FFFFFF;">Modifier</button>
             </div>
           </div>
         `;
+
+        // Bind "Inscrits" action — jump to Inscriptions view pre-filtered on this event
+        card.querySelector('.view-registrants-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          pendingInscriptionsEventId = ev.id;
+          goPage('inscriptions');
+        });
 
         // Bind Edit Action
         card.querySelector('.edit-event-btn').addEventListener('click', (e) => {
@@ -1214,50 +1134,7 @@ if (!user || !['admin', 'super_admin'].includes(user.role)) {
       });
     }
 
-    // 4. Galerie
-    function renderGalerie() {
-      const container = document.getElementById('gallery-items-container');
-      container.innerHTML = '';
-
-      if (mediaList.length === 0) {
-        container.innerHTML = '<div style="grid-column:1/-1; padding:20px; text-align:center; color:var(--color-muted-text);">Aucun média dans la galerie.</div>';
-        return;
-      }
-
-      mediaList.forEach(m => {
-        const div = document.createElement('div');
-        div.style.cssText = `border-radius:14px; overflow:hidden; aspect-ratio:1.2; background:linear-gradient(150deg, #176B4D, #1F2925); position:relative;`;
-        div.innerHTML = `
-          <span style="position:absolute; top:8px; left:8px; background:rgba(0,0,0,0.5); color:#FFFFFF; font-size:10.5px; font-weight:700; padding:3px 8px; border-radius:999px;">${m.type}</span>
-          <div style="position:absolute; bottom:0; inset-x:0; background:rgba(31,41,37,0.85); padding:10px; color:#FFFFFF;">
-            <div style="font-size:12px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${m.titre}</div>
-            <div style="font-size:10px; opacity:0.7;">Crédit : ${m.credit}</div>
-          </div>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    // 5. Vie Pratique
-    function renderViePratique() {
-      const container = document.getElementById('practical-resources-container');
-      container.innerHTML = '';
-      practicalResources.forEach(r => {
-        const row = document.createElement('div');
-        row.style.cssText = 'display:flex; align-items:center; gap:16px; padding:16px; border-bottom:1px solid rgba(31,41,37,0.06); flex-wrap:wrap;';
-        row.innerHTML = `
-          <div style="flex:2; min-width:220px;">
-            <div style="font-size:14.5px; font-weight:700; color:#1F2925;">${r.title}</div>
-            <div style="font-size:12.5px; color:#5a655f; margin-top:3px;">${r.summary}</div>
-          </div>
-          <span style="background:rgba(23,107,77,0.08); color:#176B4D; padding:4px 12px; border-radius:999px; font-size:12px; font-weight:700;">${r.cat}</span>
-          ${getBadgeHtml(r.status, r.tone)}
-        `;
-        container.appendChild(row);
-      });
-    }
-
-    // 6. Inscriptions
+    // 4. Inscriptions
     function renderInscriptions() {
       const select = document.getElementById('registrants-event-select');
       
@@ -1270,7 +1147,10 @@ if (!user || !['admin', 'super_admin'].includes(user.role)) {
         opt.textContent = `${e.title} — ${e.date}`;
         select.appendChild(opt);
       });
-      if (currentVal) select.value = currentVal;
+      if (pendingInscriptionsEventId !== null) {
+        select.value = pendingInscriptionsEventId;
+        pendingInscriptionsEventId = null;
+      } else if (currentVal) select.value = currentVal;
       else if (eventsAdmin.length > 0) select.value = eventsAdmin[0].id;
 
       const activeEventId = parseInt(select.value);
@@ -1404,88 +1284,7 @@ if (!user || !['admin', 'super_admin'].includes(user.role)) {
     }
 
 
-    // 7. Adhésions
-    function renderAdhesions() {
-      const listWrapper = document.getElementById('membership-requests-list');
-      listWrapper.innerHTML = '';
-
-      if (membershipRequests.length === 0) {
-        listWrapper.innerHTML = '<div style="padding:20px; text-align:center; color:var(--color-muted-text);">Aucune demande.</div>';
-        document.getElementById('membership-detail-box').innerHTML = '';
-        return;
-      }
-
-      membershipRequests.forEach((d, i) => {
-        const isSelected = state.adhesionSelectedIdx === i;
-        const tone = d.status === 'Validée' || d.status === 'Renouvellement' ? 'g' : (d.status === 'Refusée' ? 'r' : 'o');
-        const item = document.createElement('div');
-        item.style.cssText = `padding:16px; border-bottom:1px solid rgba(31,41,37,0.06); cursor:pointer; background:${isSelected ? '#F8F4EC' : 'transparent'}; border-left: 3px solid ${isSelected ? '#176B4D' : 'transparent'};`;
-        item.innerHTML = `
-          <div style="display:flex; justify-content:space-between; gap:8px; align-items: flex-start;">
-            <div style="font-size:14px; font-weight:700; color:#1F2925;">${d.name}</div>
-            ${getBadgeHtml(d.status, tone)}
-          </div>
-          <div style="font-size:12.5px; color:#5a655f; margin-top:4px;">${d.email}</div>
-        `;
-        item.addEventListener('click', () => {
-          state.adhesionSelectedIdx = i;
-          renderAdhesions();
-        });
-        listWrapper.appendChild(item);
-      });
-
-      const detailBox = document.getElementById('membership-detail-box');
-      const selected = membershipRequests[state.adhesionSelectedIdx] || membershipRequests[0];
-      
-      if (!selected) return;
-
-      const detailTone = selected.status === 'Validée' || selected.status === 'Renouvellement' ? 'g' : (selected.status === 'Refusée' ? 'r' : 'o');
-
-      detailBox.innerHTML = `
-        <h3 style="font-size:16px; font-weight:700; color:#1F2925; margin:0 0 4px;">${selected.name}</h3>
-        <div style="font-size:13px; color:#5a655f; margin-bottom:16px;">${selected.email}</div>
-        <div style="display:inline-block; margin-bottom:18px;">${getBadgeHtml(selected.status, detailTone)}</div>
-        <div style="font-size:13px; font-weight:700; color:#1F2925; margin-bottom:6px;">Motivation</div>
-        <p style="font-size:13.5px; line-height:1.6; color:#3f4a45; margin:0 0 18px; background:rgba(31,41,37,0.02); padding:12px; border-radius:8px;">${selected.motivation}</p>
-        
-        <div style="display:flex; gap:10px; flex-wrap:wrap; border-top:1px solid rgba(31,41,37,0.06); padding-top:16px;">
-          <button id="adhesion-validate-btn" style="background:#176B4D; color:#FFFFFF; border:none; padding:11px 22px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;" ${selected.status === 'Validée' ? 'disabled style="opacity:0.5; cursor:default;"' : ''}>Valider la demande</button>
-          <button id="adhesion-refuse-btn" style="background:rgba(177,69,36,0.1); color:#B14524; border:none; padding:11px 22px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;" ${selected.status === 'Refusée' ? 'disabled style="opacity:0.5; cursor:default;"' : ''}>Refuser</button>
-        </div>
-      `;
-
-      document.getElementById('adhesion-validate-btn').addEventListener('click', async () => {
-        try {
-          const res = await fetch('/api/admin/adhesions', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: selected.id, status: 'Validée' })
-          });
-          if (!res.ok) throw new Error("Erreur de validation");
-          alert('Adhésion validée avec succès !');
-          await fetchAdminData();
-        } catch (err) {
-          alert(err.message);
-        }
-      });
-
-      document.getElementById('adhesion-refuse-btn').addEventListener('click', async () => {
-        try {
-          const res = await fetch('/api/admin/adhesions', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: selected.id, status: 'Refusée' })
-          });
-          if (!res.ok) throw new Error("Erreur de refus");
-          alert('Adhésion refusée.');
-          await fetchAdminData();
-        } catch (err) {
-          alert(err.message);
-        }
-      });
-    }
-
-    // 8. Messages
+    // 7. Messages
     function renderMessages() {
       const tabsWrapper = document.querySelector('.messages-tab-container');
       tabsWrapper.innerHTML = '';

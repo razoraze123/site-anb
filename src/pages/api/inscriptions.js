@@ -28,7 +28,7 @@ export async function POST(context) {
     }
 
     const { results: eventRows } = await db.prepare(
-      "SELECT id, status, registered_count, max_places FROM evenements WHERE id = ?"
+      "SELECT id, status, max_places FROM evenements WHERE id = ?"
     ).bind(event_id).all();
 
     const event = eventRows[0];
@@ -38,7 +38,13 @@ export async function POST(context) {
         headers: { "Content-Type": "application/json" }
       });
     }
-    if (event.status === 'Complet' || event.status === 'Annulé' || event.registered_count >= event.max_places) {
+
+    const { results: countRows } = await db.prepare(
+      "SELECT COUNT(*) as cnt FROM inscriptions WHERE event_id = ? AND status != 'Annulé'"
+    ).bind(event_id).all();
+    const registeredCount = countRows[0].cnt;
+
+    if (event.status === 'Complet' || event.status === 'Annulé' || registeredCount >= event.max_places) {
       return new Response(JSON.stringify({ error: "Cet événement n'accepte plus d'inscriptions." }), {
         status: 409,
         headers: { "Content-Type": "application/json" }
@@ -49,10 +55,6 @@ export async function POST(context) {
       `INSERT INTO inscriptions (event_id, first_name, last_name, email, phone, status)
        VALUES (?, ?, '', '', '', 'Confirmé')`
     ).bind(event_id, first_name.trim()).run();
-
-    await db.prepare(
-      "UPDATE evenements SET registered_count = registered_count + 1 WHERE id = ?"
-    ).bind(event_id).run();
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
