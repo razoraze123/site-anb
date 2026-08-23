@@ -479,21 +479,21 @@ export const prerender = false;
               </div>
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Nom complet</label>
-                <input id="profile-form-name" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" value="Nasser Diallo" />
+                <input id="profile-form-name" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" />
               </div>
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">E-mail</label>
-                <input id="profile-form-email" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="vous@anb-bordeaux.fr" value="nasser.diallo@anb-bordeaux.fr" />
+                <input id="profile-form-email" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="vous@anb-bordeaux.fr" />
               </div>
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Rôle</label>
-                <input readonly style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px; color:#9aa39c;" value="Super Admin" />
+                <input id="profile-form-role" readonly style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px; color:#9aa39c;" />
               </div>
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Nouveau mot de passe</label>
-                <input type="password" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="••••••••" />
+                <input id="profile-form-password" type="password" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="Laisser vide pour ne pas changer" />
               </div>
-              <button style="align-self:flex-start; background:#176B4D; color:#FFFFFF; border:none; padding:12px 24px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;" onclick="alert('Profil enregistré !')">Enregistrer</button>
+              <button id="save-profile-btn" style="align-self:flex-start; background:#176B4D; color:#FFFFFF; border:none; padding:12px 24px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Enregistrer</button>
             </div>
           </div>
         </section>
@@ -856,6 +856,8 @@ export const prerender = false;
         renderMentions();
       } else if (pageKey === 'stats') {
         loadStats();
+      } else if (pageKey === 'profil') {
+        loadProfile();
       }
     }
 
@@ -1284,6 +1286,43 @@ export const prerender = false;
     });
     document.getElementById('save-seo-btn').addEventListener('click', () => {
       saveSettings(['seo_titre', 'seo_description']);
+    });
+
+    // 5ter. Mon profil
+    const PROFILE_ROLE_LABELS = { admin: 'Admin', super_admin: 'Super Admin', editeur: 'Éditeur' };
+
+    async function loadProfile() {
+      try {
+        const res = await fetch('/api/superadmin/profile');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur de chargement.');
+        document.getElementById('profile-form-name').value = data.nom;
+        document.getElementById('profile-form-email').value = data.email;
+        document.getElementById('profile-form-role').value = PROFILE_ROLE_LABELS[data.role] || data.role;
+        document.getElementById('profile-form-password').value = '';
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    document.getElementById('save-profile-btn').addEventListener('click', async () => {
+      const nom = document.getElementById('profile-form-name').value.trim();
+      const email = document.getElementById('profile-form-email').value.trim();
+      const password = document.getElementById('profile-form-password').value;
+
+      try {
+        const res = await fetch('/api/superadmin/profile', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nom, email, password: password || undefined })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur.');
+        alert('Profil enregistré !');
+        document.getElementById('profile-form-password').value = '';
+      } catch (err) {
+        alert(err.message);
+      }
     });
 
     // 6. Intégrations
