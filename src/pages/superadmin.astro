@@ -985,8 +985,9 @@ export const prerender = false;
         <div style="display:flex; flex-direction:column; gap:10px;">
           <button id="user-reset-btn" style="background:#F8F4EC; color:#1F2925; border:none; padding:11px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">Réinitialiser l'accès</button>
           ${selected.id === state.currentUserId
-            ? `<div style="font-size:12.5px; color:#9aa39c; text-align:center; padding:8px;">C'est votre propre compte — utilisez « Mon profil » pour le modifier. Vous ne pouvez pas vous suspendre vous-même.</div>`
-            : `<button id="user-toggle-btn" style="background:#F8F4EC; color:#1F2925; border:none; padding:11px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">${selected.status === 'Actif' ? 'Suspendre le compte' : 'Activer le compte'}</button>`}
+            ? `<div style="font-size:12.5px; color:#9aa39c; text-align:center; padding:8px;">C'est votre propre compte — utilisez « Mon profil » pour le modifier. Vous ne pouvez pas vous suspendre ni vous supprimer vous-même.</div>`
+            : `<button id="user-toggle-btn" style="background:#F8F4EC; color:#1F2925; border:none; padding:11px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">${selected.status === 'Actif' ? 'Suspendre le compte' : 'Activer le compte'}</button>
+               <button id="user-delete-btn" style="background:rgba(177,69,36,0.08); color:#B14524; border:none; padding:11px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">Supprimer l'utilisateur</button>`}
         </div>
       `;
 
@@ -1015,6 +1016,18 @@ export const prerender = false;
           const data = await res.json();
           if (!res.ok) throw new Error(data.error || 'Erreur.');
           state.userSelectedIdx = users.findIndex(u => u.id === selected.id);
+          await loadUsers();
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+      document.getElementById('user-delete-btn')?.addEventListener('click', async () => {
+        if (!confirm(`Supprimer définitivement le compte de ${selected.name} (${selected.email}) ? Cette action est irréversible.`)) return;
+        try {
+          const res = await fetch(`/api/superadmin/users?id=${selected.id}`, { method: 'DELETE' });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Erreur.');
+          state.userSelectedIdx = 0;
           await loadUsers();
         } catch (err) {
           alert(err.message);
