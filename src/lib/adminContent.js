@@ -109,11 +109,17 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
   let closeOpenActionsMenu = null;
 
   function openActionsMenu(anchorBtn, items) {
-    if (closeOpenActionsMenu) { closeOpenActionsMenu(); return; }
+    const reopening = closeOpenActionsMenu;
+    if (reopening) reopening();
+    // Un deuxième clic sur le même bouton doit juste refermer le menu, pas
+    // le rouvrir aussitôt.
+    if (reopening && reopening.anchor === anchorBtn) return;
 
+    const MENU_WIDTH = 190;
+    const MARGIN = 8;
     const rect = anchorBtn.getBoundingClientRect();
     const menu = document.createElement('div');
-    menu.style.cssText = `position:fixed; top:${rect.bottom + 6}px; left:${rect.right - 190}px; width:190px; background:#FFFFFF; border-radius:12px; box-shadow:0 12px 32px rgba(31,41,37,0.18); padding:6px; z-index:1000; display:flex; flex-direction:column; gap:2px;`;
+    menu.style.cssText = `position:fixed; width:${MENU_WIDTH}px; background:#FFFFFF; border-radius:12px; box-shadow:0 12px 32px rgba(31,41,37,0.18); padding:6px; z-index:1000; display:flex; flex-direction:column; gap:2px; visibility:hidden;`;
 
     items.forEach(({ label, onClick, danger }) => {
       const item = document.createElement('button');
@@ -131,10 +137,30 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
 
     document.body.appendChild(menu);
 
+    // Positionné une fois la vraie hauteur connue (dépend du nombre
+    // d'items) — recalé pour ne JAMAIS déborder du viewport visible :
+    // au-dessus du bouton s'il n'y a pas la place en dessous, et clampé
+    // horizontalement. Sans ça, le menu d'une carte en bas de page se
+    // retrouvait hors écran, impossible à voir ni à utiliser.
+    const menuHeight = menu.offsetHeight;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const top = spaceBelow >= menuHeight + MARGIN
+      ? rect.bottom + 6
+      : Math.max(MARGIN, rect.top - menuHeight - 6);
+    const left = Math.min(
+      Math.max(MARGIN, rect.right - MENU_WIDTH),
+      window.innerWidth - MENU_WIDTH - MARGIN
+    );
+    menu.style.top = `${top}px`;
+    menu.style.left = `${left}px`;
+    menu.style.visibility = 'visible';
+
     function close() {
       menu.remove();
       document.removeEventListener('mousedown', onOutside, true);
       document.removeEventListener('keydown', onEscape, true);
+      window.removeEventListener('scroll', close, true);
+      window.removeEventListener('resize', close);
       closeOpenActionsMenu = null;
     }
     function onOutside(e) {
@@ -147,6 +173,13 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     // "⋯") ne le referme immédiatement via onOutside.
     setTimeout(() => document.addEventListener('mousedown', onOutside, true), 0);
     document.addEventListener('keydown', onEscape, true);
+    // Le menu est en `position:fixed` : il ne suit pas la carte pendant un
+    // scroll. Le fermer au scroll évite qu'il reste affiché, décroché de
+    // son bouton, par-dessus le contenu — le scroll de la page, lui,
+    // n'a jamais été bloqué par ce menu.
+    window.addEventListener('scroll', close, true);
+    window.addEventListener('resize', close);
+    close.anchor = anchorBtn;
     closeOpenActionsMenu = close;
   }
 
@@ -375,6 +408,12 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
   }
 
   function renderEvenements() {
+    // Le menu "⋯" vit dans <body>, pas dans #events-list-container : s'il
+    // reste ouvert au moment où on change d'onglet ou qu'on rafraîchit la
+    // liste, il faut le fermer explicitement (sinon il flotte, orphelin,
+    // par-dessus le nouveau contenu).
+    if (closeOpenActionsMenu) closeOpenActionsMenu();
+
     renderTabs('.events-tab-container', ['Ouvert', 'Complet', 'Terminé', 'Annulé'], state.eventsFilter, (label) => {
       state.eventsFilter = label;
       renderEvenements();
