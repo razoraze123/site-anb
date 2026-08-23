@@ -40,13 +40,14 @@ Fichier : [`src/pages/superadmin.astro`](src/pages/superadmin.astro). Modèle su
 
 ---
 
-## Phase 2 — Espace Éditeur
+## Phase 2 — Espace Éditeur ✅ Implémentée (locale, testée)
 
-Fichier : [`src/pages/editeur.astro`](src/pages/editeur.astro) (aucun `fetch()`). **Non commencée.**
+Fichier : [`src/pages/editeur.astro`](src/pages/editeur.astro).
 
-- [ ] 🔴 `view-econtenus` — CRUD brouillons : réutiliser `POST /api/admin/news.js` avec statut forcé à `Brouillon`, + `PUT src/pages/api/editeur/submit.js` qui passe le statut à `En attente` (repris ensuite par la vue 1.3 du Super Admin, déjà prête à le recevoir).
-- [ ] 🟠 `view-edash` (dashboard perso) — `GET src/pages/api/editeur/dashboard.js`, filtré par `auteur_id`
-- [ ] 🟠 `view-profil` — réutiliser la route 1.8 (`profile.js`), commune à tous les rôles (déjà générique, devrait marcher tel quel pour un éditeur)
+- [x] ✅ 🔴 `view-econtenus` — formulaire "Nouveau brouillon" → `POST /api/admin/news.js` (statut forcé `Brouillon` pour un éditeur), bouton "Soumettre" → [`PUT api/editeur/submit.js`](src/pages/api/editeur/submit.js) qui passe à `En attente` (repris par la vue 1.3 du Super Admin — boucle complète vérifiée de bout en bout). Limite : seuls les **articles** sont pris en charge (pas d'édition d'un brouillon existant, juste créer + soumettre ; pas d'événements/ressources, aucune API pour ça).
+- [x] ✅ 🟠 `view-edash` (dashboard perso) — [`GET api/editeur/dashboard.js`](src/pages/api/editeur/dashboard.js), filtré par `auteur_id`, compteurs + commentaire de retour visible.
+- [x] ✅ 🟠 `view-profil` — réutilise la route 1.8 (`api/superadmin/profile.js`, élargie au rôle éditeur), + confirmation mot de passe/afficher-masquer.
+- [x] ✅ **Nouveau (trouvé en implémentant)** : ajout de `actualites.commentaire_retour` pour que l'éditeur voie pourquoi son contenu a été renvoyé (sinon perdu dans le seul journal, invisible pour lui). Nouveau statut `Renvoyé` distinct de `Brouillon`.
 
 ---
 
@@ -65,7 +66,7 @@ Fichier : [`src/pages/galerie.astro`](src/pages/galerie.astro) (20 lignes, quasi
 - [ ] 🔴 Supprimer [`src/pages/api/test-db.js`](src/pages/api/test-db.js) et [`src/pages/api/test-r2.js`](src/pages/api/test-r2.js) — nuance : déjà neutralisés (renvoient 404), donc pas un risque de sécurité actif, juste du nettoyage cosmétique.
 - [ ] 🔴 Retirer le mot de passe pré-rempli `demo1234` sur `connexion.astro`
 - [ ] ⏳ 🔴 Remplacer les comptes de seed par les vrais comptes admin/super-admin du client — **reporté par décision explicite** (comptes de démo conservés pour l'instant, sera fait avant la mise en prod)
-- [ ] 🔴 **Nouveau** : appliquer `db/schema.sql` (hash des mots de passe + table `site_settings`) sur `anb-db` distant, et pousser les 12 commits locaux de la Phase 1 sur `origin`
+- [ ] 🔴 **Nouveau** : appliquer sur `anb-db` distant (1) le hash des mots de passe, (2) la table `site_settings`, (3) la colonne `actualites.commentaire_retour` — et pousser les commits locaux des Phases 1 et 2 sur `origin`
 
 ---
 
@@ -91,4 +92,6 @@ Fichier : [`src/pages/galerie.astro`](src/pages/galerie.astro) (20 lignes, quasi
 - Recensement public, Adhésion, Contact, Chatbot IA (rate-limité)
 - Pages vitrines statiques (accueil, association, événements, actualités, culture, vie pratique, CGU, confidentialité, mentions légales)
 - Coordonnées réelles intégrées (tél, e-mail, réseaux sociaux) — voir commit `8c16a2d`
-- **Espace Super-admin (Phase 1 ci-dessus)** : Utilisateurs & rôles, Journal d'activité, Contenus & validations (API prête, file vide sans Phase 2), Vue d'ensemble, Statistiques, Données & exports, Réglages identité/SEO (+ reflet en direct sur le site public), Mon profil, Sauvegardes (lien Time Travel), Intégrations (statuts honnêtes) — testé en local, pas encore en prod
+- **Espace Super-admin (Phase 1 ci-dessus)** : Utilisateurs & rôles, Journal d'activité, Contenus & validations, Vue d'ensemble, Statistiques, Données & exports, Réglages identité/SEO (+ reflet en direct sur le site public), Mon profil, Sauvegardes (lien Time Travel), Intégrations (statuts honnêtes) — testé en local, pas encore en prod
+- **Espace Éditeur (Phase 2 ci-dessus)** : création/soumission de brouillons d'articles, tableau de bord perso, boucle complète avec la validation super-admin (renvoi avec commentaire visible, re-soumission, publication) — testé en local, pas encore en prod
+- **Fix identité en dur** : `admin.astro` et `editeur.astro` affichaient un nom figé ("Mariama Souley"/"Fatou Ibrahim") quel que soit le compte connecté — corrigé, plus grave : la création d'actualités attribuait tous les articles à Mariama (id 2) peu importe l'auteur réel — corrigé côté serveur (`api/admin/news.js` dérive désormais l'auteur de la session, jamais du client)
