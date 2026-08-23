@@ -103,6 +103,9 @@ Tableau vérifié route par route.
 
 ## 5. Fait et vérifié
 
+### Tri chronologique des événements (2026-08-24)
+Public et admin affichent désormais les événements dans l'ordre des dates (nouvelle colonne `event_date`, ISO, dédiée au tri — `date` reste le texte affiché). Corrigé aussi au passage : « Modifier une actualité/un événement » ne sauvegardait jamais la nouvelle image de couverture (seule la création l'enregistrait) — vérifié et corrigé.
+
 ### Refonte Événements & Inscriptions (2026-08-24)
 Réponse aux points 🔴 de l'audit précédent (voir l'ancien contenu de la section P2), avec un vrai modèle de données :
 
