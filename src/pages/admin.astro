@@ -526,23 +526,23 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
         <!-- STATISTIQUES VIEW -->
         <section id="view-stats" class="hidden fade-in">
           <div style="display:flex; flex-direction:column; gap:20px;">
-            <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:14px;">
-              <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Statistiques</h1>
-              <div style="display:flex; gap:8px; flex-wrap:wrap;" class="stats-period-container">
-                <!-- Period options -->
-              </div>
-            </div>
+            <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Statistiques</h1>
+            <p style="font-size:12.5px; color:#9aa39c; margin:0;">Basé uniquement sur les données de la plateforme — aucun outil de mesure d'audience (pages vues, visiteurs) n'est branché sur le site pour l'instant.</p>
             <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px;">
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#176B4D;">4 820</div><div style="font-size:13px; color:#5a655f;">Visites du site</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#E97824;">312</div><div style="font-size:13px; color:#5a655f;">Inscriptions aux événements</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#176B4D;">46</div><div style="font-size:13px; color:#5a655f;">Nouvelles demandes d'adhésion</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#E97824;">+18%</div><div style="font-size:13px; color:#5a655f;">Évolution sur la période</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stats-articles-publies" style="font-size:22px; font-weight:800; color:#176B4D;">—</div><div style="font-size:13px; color:#5a655f;">Articles publiés</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stats-inscriptions-confirmees" style="font-size:22px; font-weight:800; color:#E97824;">—</div><div style="font-size:13px; color:#5a655f;">Inscriptions confirmées</div></div>
+              <div id="stats-recensement-card" style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stats-recensement" style="font-size:22px; font-weight:800; color:#176B4D;">—</div><div style="font-size:13px; color:#5a655f;">Membres recensés</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stats-messages-a-traiter" style="font-size:22px; font-weight:800; color:#E97824;">—</div><div style="font-size:13px; color:#5a655f;">Messages à traiter</div></div>
             </div>
-            
-            <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
-              <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0 0 20px;">Visites par semaine</h3>
-              <div style="display:flex; align-items:flex-end; gap:14px; height:160px;" id="visit-bars-container">
-                <!-- chart -->
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px;">
+              <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
+                <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0 0 14px;">Prochains événements</h3>
+                <div id="stats-upcoming-events"></div>
+              </div>
+              <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
+                <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0 0 14px;">Messages récents à traiter</h3>
+                <div id="stats-recent-messages"></div>
               </div>
             </div>
           </div>
@@ -597,7 +597,6 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
       eventsFilter: 'À venir',
       messagesTab: 'Tous',
       messageSelectedIdx: 0,
-      statsPeriod: '30 jours',
       editingNewsId: null,  // Track which news is being edited
       editingEventId: null,  // Track which event is being edited
       recensementFilter: 'Tous'
@@ -1466,45 +1465,39 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
 
     // 10. Statistiques
     function renderStats() {
-      const periodsWrapper = document.querySelector('.stats-period-container');
-      periodsWrapper.innerHTML = '';
-      const periodDefs = ['7 jours', '30 jours', '3 mois', '1 an'];
+      // Tout est recalculé depuis les tableaux déjà chargés par
+      // fetchAdminData() (newsArticles, eventsAdmin, registrants, messages,
+      // recensementList) — pas de nouvel appel réseau nécessaire.
+      document.getElementById('stats-articles-publies').textContent =
+        newsArticles.filter((a) => a.status === 'Publié').length;
+      document.getElementById('stats-inscriptions-confirmees').textContent =
+        registrants.filter((r) => r.status === 'Confirmé').length;
+      document.getElementById('stats-recensement').textContent = recensementList.length;
+      document.getElementById('stats-messages-a-traiter').textContent =
+        messages.filter((m) => m.status === 'Non lu' || m.status === 'À traiter').length;
 
-      periodDefs.forEach(p => {
-        const btn = document.createElement('button');
-        btn.style.cssText = `border:2px solid #176B4D; padding:8px 16px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;`;
-        if (state.statsPeriod === p) {
-          btn.style.background = '#176B4D'; btn.style.color = '#FFFFFF';
-        } else {
-          btn.style.background = 'transparent'; btn.style.color = '#176B4D';
-        }
-        btn.textContent = p;
-        btn.addEventListener('click', () => {
-          state.statsPeriod = p; renderStats();
-        });
-        periodsWrapper.appendChild(btn);
+      const upcoming = eventsAdmin.filter((e) => e.tab === 'À venir').slice(0, 5);
+      const upcomingWrapper = document.getElementById('stats-upcoming-events');
+      upcomingWrapper.innerHTML = upcoming.length
+        ? ''
+        : '<div style="font-size:13.5px; color:#5a655f;">Aucun événement à venir.</div>';
+      upcoming.forEach((ev) => {
+        const item = document.createElement('div');
+        item.style.cssText = 'display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid rgba(31,41,37,0.06); font-size:13.5px; gap:10px;';
+        item.innerHTML = `<span style="color:#1F2925;">${ev.title}</span><span style="font-weight:700; color:#176B4D; white-space:nowrap;">${ev.date}</span>`;
+        upcomingWrapper.appendChild(item);
       });
 
-      const barsWrapper = document.getElementById('visit-bars-container');
-      barsWrapper.innerHTML = '';
-      const visitHeights = {
-        '7 jours': [45, 60, 50, 75, 60, 90, 70],
-        '30 jours': [65, 80, 55, 90, 75, 100, 85],
-        '3 mois': [50, 55, 45, 70, 65, 80, 75],
-        '1 an': [30, 45, 40, 60, 50, 75, 65]
-      };
-      
-      const heights = visitHeights[state.statsPeriod] || visitHeights['30 jours'];
-      const days = ['L','M','M','J','V','S','D'];
-
-      heights.forEach((h, idx) => {
-        const barCol = document.createElement('div');
-        barCol.style.cssText = 'flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; height:100%; justify-content:flex-end;';
-        barCol.innerHTML = `
-          <div style="width:100%; max-width:32px; height:${h}%; background:#176B4D; border-radius:8px 8px 0 0; transition: height 0.3s ease;"></div>
-          <span style="font-size:11px; color:#9aa39c;">${days[idx]}</span>
-        `;
-        barsWrapper.appendChild(barCol);
+      const pending = messages.filter((m) => m.status === 'Non lu' || m.status === 'À traiter').slice(0, 5);
+      const pendingWrapper = document.getElementById('stats-recent-messages');
+      pendingWrapper.innerHTML = pending.length
+        ? ''
+        : '<div style="font-size:13.5px; color:#5a655f;">Rien à traiter.</div>';
+      pending.forEach((m) => {
+        const item = document.createElement('div');
+        item.style.cssText = 'display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid rgba(31,41,37,0.06); font-size:13.5px; gap:10px;';
+        item.innerHTML = `<span style="color:#1F2925;">${m.from_name} — ${m.subject}</span><span style="color:#9aa39c; white-space:nowrap;">${m.status}</span>`;
+        pendingWrapper.appendChild(item);
       });
     }
 
