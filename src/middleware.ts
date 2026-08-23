@@ -14,10 +14,6 @@ const ROLE_REQUIRED: Record<string, string[]> = {
   '/editeur': ['admin', 'super_admin', 'editeur'],
 };
 
-// Cache les pages SSR qui lisent D1 à chaque visite (événements, actualités)
-const CACHEABLE_PATHS = new Set(['/evenements', '/actualites']);
-const CACHE_TTL_SECONDS = 120;
-
 export const onRequest = defineMiddleware(async (context, next) => {
   const { request } = context;
   const url = new URL(request.url);
@@ -38,25 +34,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
       // Connecté mais pas le bon rôle
       return new Response('Accès interdit.', { status: 403 });
     }
-  }
-
-  // --- Cache Cloudflare pour les pages publiques SSR ---
-  if (request.method === 'GET' && CACHEABLE_PATHS.has(pathname)) {
-    const cache = caches.default;
-    const cached = await cache.match(request);
-    if (cached) return new Response(cached.body, cached);
-
-    const response = await next();
-    if (response.status !== 200) return response;
-
-    const cachedResponse = new Response(response.body, response);
-    cachedResponse.headers.set('Cache-Control', `public, max-age=${CACHE_TTL_SECONDS}`);
-
-    const putPromise = cache.put(request, cachedResponse.clone());
-    const cfContext = (context.locals as any)?.cfContext;
-    if (cfContext?.waitUntil) cfContext.waitUntil(putPromise);
-
-    return cachedResponse;
   }
 
   return next();
