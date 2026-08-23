@@ -10,7 +10,7 @@ const year = new Date().getFullYear();
           <img src="/logo.png" alt="Logo ANB Bordeaux" width="44" height="44" style="width:44px; height:44px; border-radius:50%; object-fit:cover;" />
           <span style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:16px; color:#FFFFFF;">ANB Bordeaux</span>
         </div>
-        <p style="font-size:15px; line-height:1.65; color:rgba(248,244,236,0.7); max-width:320px; margin:0;">Ensemble, faire vivre la communauté nigérienne à Bordeaux.</p>
+        <p id="footer-slogan" style="font-size:15px; line-height:1.65; color:rgba(248,244,236,0.7); max-width:320px; margin:0;">Ensemble, faire vivre la communauté nigérienne à Bordeaux.</p>
       </div>
       <div style="flex:1 1 160px; min-width:150px;">
         <div style="font-size:13px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:18px;">Liens rapides</div>
@@ -25,8 +25,8 @@ const year = new Date().getFullYear();
         <div style="font-size:13px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:18px;">Contact</div>
         <div style="display:flex; flex-direction:column; gap:12px; color:rgba(248,244,236,0.75); font-size:14.5px;">
           <div>Bordeaux Métropole</div>
-          <div>anbordeaux33@outlook.fr</div>
-          <div>07 58 62 42 84</div>
+          <div id="footer-email">anbordeaux33@outlook.fr</div>
+          <div id="footer-phone">07 58 62 42 84</div>
         </div>
       </div>
       <div style="flex:1 1 160px; min-width:150px;">
@@ -58,3 +58,21 @@ const year = new Date().getFullYear();
     </div>
   </div>
 </footer>
+
+<script>
+  // Reflète les réglages "Identité" édités depuis le Super Admin
+  // (src/pages/api/settings.js -> site_settings) sans attendre un
+  // redéploiement. Best-effort : en cas d'échec, les valeurs en dur
+  // ci-dessus restent affichées.
+  fetch('/api/settings')
+    .then((res) => res.json())
+    .then(({ settings }) => {
+      const slogan = document.getElementById('footer-slogan');
+      const email = document.getElementById('footer-email');
+      const phone = document.getElementById('footer-phone');
+      if (slogan && settings.identite_slogan) slogan.textContent = settings.identite_slogan;
+      if (email && settings.identite_email) email.textContent = settings.identite_email;
+      if (phone && settings.identite_telephone) phone.textContent = settings.identite_telephone;
+    })
+    .catch(() => {});
+</script>
