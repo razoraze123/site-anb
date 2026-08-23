@@ -1,5 +1,16 @@
 ---
+import ViewActualites from '../components/admin/ViewActualites.astro';
+import ViewEvenements from '../components/admin/ViewEvenements.astro';
+import ViewMessages from '../components/admin/ViewMessages.astro';
+
 export const prerender = false;
+
+// Le middleware garantit déjà le rôle super_admin sur cette route ; on relit
+// la session pour disposer du nom (rédacteur des actualités notamment).
+const user = await Astro.session?.get('user');
+if (!user) {
+  return Astro.redirect('/connexion');
+}
 ---
 <!DOCTYPE html>
 <html lang="fr">
@@ -192,6 +203,11 @@ export const prerender = false;
             </div>
           </div>
         </section>
+
+        <!-- GESTION DU SITE — vues partagées avec /admin -->
+        <ViewActualites authorName={user.nom} />
+        <ViewEvenements />
+        <ViewMessages />
 
         <!-- UTILISATEURS ET ROLES VIEW -->
         <section id="view-users" class="hidden fade-in">
@@ -491,6 +507,17 @@ export const prerender = false;
   </div>
 
   <script>
+    import { createAdminContent } from '../lib/adminContent.js';
+
+    // Vues Actualités / Événements / Messages : exactement les mêmes que
+    // dans /admin (markup dans src/components/admin/, logique dans
+    // lib/adminContent.js). Pas de bouton « Inscrits » ici : cet espace n'a
+    // pas de vue Inscriptions, elle reste propre à /admin.
+    const content = createAdminContent({
+      goPage: (page) => goPage(page),
+      getBadgeHtml: (label, tone) => getBadgeHtml(label, tone),
+    });
+
     // State management
     const state = {
       user: 'super_admin',
@@ -710,6 +737,20 @@ export const prerender = false;
 
     document.addEventListener('DOMContentLoaded', () => {
       generateNav();
+
+      // Câblage des vues partagées (upload, formulaires) — une seule fois.
+      content.wire();
+      document.querySelectorAll('.btn-create-news').forEach((btn) => {
+        btn.addEventListener('click', () => content.resetNewsForm());
+      });
+      document.querySelectorAll('.btn-create-event').forEach((btn) => {
+        btn.addEventListener('click', () => content.resetEventForm());
+      });
+      // Boutons « Annuler » / retour des formulaires partagés.
+      document.querySelectorAll('.nav-trigger-btn').forEach((btn) => {
+        btn.addEventListener('click', () => goPage(btn.dataset.page));
+      });
+
       let initialPage = 'overview';
       try {
         const saved = sessionStorage.getItem('superadmin-current-page');
@@ -784,7 +825,10 @@ export const prerender = false;
         overview: "Vue d'ensemble", users: 'Utilisateurs & rôles', contenus: 'Contenus & validations',
         donnees: 'Données & exports', journal: "Journal d'activité", reglages: 'Réglages du site',
         integrations: 'Intégrations', securite: 'Sécurité', sauvegardes: 'Sauvegardes',
-        mentions: 'Mentions & RGPD', stats: 'Statistiques globales', profil: 'Mon profil'
+        mentions: 'Mentions & RGPD', stats: 'Statistiques globales', profil: 'Mon profil',
+        actualites: 'Actualités', 'actualites-new': 'Nouvelle actualité',
+        evenements: 'Événements', 'evenements-new': 'Créer un événement',
+        messages: 'Messages'
       };
 
       document.getElementById('breadcrumb-page-label').textContent = pageTitleMap[pageKey] || '';
@@ -883,6 +927,29 @@ export const prerender = false;
         loadStats();
       } else if (pageKey === 'profil') {
         loadProfile();
+      } else if (pageKey === 'actualites') {
+        loadContentThen(content.renderActualites);
+      } else if (pageKey === 'evenements') {
+        loadContentThen(content.renderEvenements);
+      } else if (pageKey === 'messages') {
+        loadContentThen(content.renderMessages);
+      }
+    }
+
+    // Les vues partagées ont besoin des données de /api/admin/data. On les
+    // charge à la première ouverture seulement, puis on rejoue le rendu.
+    let contentDataLoaded = false;
+    async function loadContentThen(render) {
+      if (contentDataLoaded) {
+        render();
+        return;
+      }
+      try {
+        content.setData(await content.fetchData());
+        contentDataLoaded = true;
+        render();
+      } catch (err) {
+        alert('Impossible de charger les contenus : ' + err.message);
       }
     }
 
