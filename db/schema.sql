@@ -169,7 +169,22 @@ INSERT OR IGNORE INTO media_galerie (nom_fichier, titre, texte_alternatif, credi
 ('photos/galerie_5.jpg', 'Remise d''équipements sportifs', 'Membres de l''équipe de football réunis', 'ANB Bordeaux', 'Photo', 1230400),
 ('videos/galerie_6.mp4', 'Présentation des danses', 'Vidéo des danseurs au parc', 'ANB Bordeaux', 'Vidéo', 8700500);
 
--- 9. Table recensement
+-- 9. Table site_settings (clé/valeur, éditable depuis le Super Admin)
+CREATE TABLE IF NOT EXISTS site_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL DEFAULT '',
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT OR IGNORE INTO site_settings (key, value) VALUES
+('identite_nom', 'Association des Nigériens à Bordeaux'),
+('identite_slogan', 'Ensemble, faire vivre la communauté nigérienne à Bordeaux.'),
+('identite_email', 'anbordeaux33@outlook.fr'),
+('identite_telephone', '07 58 62 42 84'),
+('seo_titre', 'ANB — Association des Nigériens à Bordeaux'),
+('seo_description', 'Communauté nigérienne à Bordeaux : événements, entraide et accompagnement.');
+
+-- 10. Table recensement
 CREATE TABLE IF NOT EXISTS recensement (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   first_name TEXT NOT NULL,
