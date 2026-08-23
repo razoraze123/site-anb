@@ -4,6 +4,17 @@ import { logActivity } from "../../../lib/journal.js";
 
 export const prerender = false;
 
+// Traduit les erreurs D1 brutes (ex. "D1_ERROR: UNIQUE constraint failed:
+// actualites.slug: SQLITE_CONSTRAINT...") en message compréhensible. Le
+// slug est dérivé automatiquement du titre côté client — un conflit
+// signifie donc concrètement "un autre article a déjà (presque) ce titre".
+function friendlyDbError(error) {
+  if (/UNIQUE constraint failed: actualites\.slug/.test(error.message)) {
+    return "Un autre article a déjà cette adresse (souvent parce que le titre est identique ou très proche). Modifiez le titre et réessayez.";
+  }
+  return error.message;
+}
+
 export async function POST(context) {
   try {
     const user = await requireRole(context, ['admin', 'super_admin', 'editeur']);
@@ -53,8 +64,9 @@ export async function POST(context) {
     });
 
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
+    const isConflict = /UNIQUE constraint failed/.test(error.message);
+    return new Response(JSON.stringify({ error: friendlyDbError(error) }), {
+      status: isConflict ? 409 : 500,
       headers: { "Content-Type": "application/json" }
     });
   }
@@ -162,8 +174,9 @@ export async function PUT(context) {
     });
 
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
+    const isConflict = /UNIQUE constraint failed/.test(error.message);
+    return new Response(JSON.stringify({ error: friendlyDbError(error) }), {
+      status: isConflict ? 409 : 500,
       headers: { "Content-Type": "application/json" }
     });
   }
