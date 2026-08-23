@@ -1,4 +1,8 @@
 ---
+import ViewActualites from '../components/admin/ViewActualites.astro';
+import ViewEvenements from '../components/admin/ViewEvenements.astro';
+import ViewMessages from '../components/admin/ViewMessages.astro';
+
 export const prerender = false;
 
 const user = await Astro.session?.get('user');
@@ -251,167 +255,10 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
         </section>
 
         <!-- ACTUALITES VIEW -->
-        <section id="view-actualites" class="hidden fade-in">
-          <div style="display:flex; flex-direction:column; gap:20px;">
-            <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:14px;">
-              <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Actualités</h1>
-              <button class="btn-create-news nav-trigger-btn" data-page="actualites-new" style="background:#E97824; color:#FFFFFF; border:none; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Nouvelle actualité</button>
-            </div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;" class="news-tab-container">
-              <!-- tabs -->
-            </div>
-            <div style="background:#FFFFFF; border-radius:20px; padding:8px; box-shadow:0 8px 24px rgba(31,41,37,0.05);" id="news-list-container">
-              <!-- list -->
-            </div>
-          </div>
-        </section>
-
-        <!-- NOUVELLE ACTUALITE VIEW -->
-        <section id="view-actualites-new" class="hidden fade-in">
-          <div style="display:flex; flex-direction:column; gap:20px; max-width:820px;">
-            <div style="display:flex; align-items:center; gap:14px;">
-              <button class="nav-trigger-btn" data-page="actualites" style="width:36px; height:36px; border-radius:10px; background:#FFFFFF; border:1px solid rgba(31,41,37,0.1); cursor:pointer; display: flex; align-items: center; justify-content: center;">←</button>
-              <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Nouvelle actualité</h1>
-            </div>
-            <div style="background:#FFFFFF; border-radius:20px; padding:28px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:18px;">
-              <div>
-                <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Titre</label>
-                <input id="news-form-title" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px;" placeholder="Titre de l'article" />
-              </div>
-              <div>
-                <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Slug / URL</label>
-                <input id="news-form-slug" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px; color:#9aa39c;" placeholder="/actualites/titre-de-larticle" readonly />
-              </div>
-              <div>
-                <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Résumé court</label>
-                <textarea id="news-form-excerpt" rows="2" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px; resize:vertical;" placeholder="Résumé affiché dans les listes"></textarea>
-              </div>
-              <div>
-                <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Contenu</label>
-                <textarea id="news-form-content" rows="7" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px; resize:vertical;" placeholder="Rédigez votre article ici…"></textarea>
-              </div>
-              <div>
-                <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:8px;">Image de couverture</label>
-                <div id="news-upload-zone" style="border:2px dashed #d8cfb8; border-radius:14px; padding:40px 30px; text-align:center; color:#9aa39c; font-size:13.5px; cursor:pointer; background:#FFFFFF; position:relative; overflow:hidden; transition:all 0.15s ease; display:flex; align-items:center; justify-content:center; min-height:140px;">
-                  <span id="news-upload-placeholder" style="z-index:10;">Glissez-déposez une image ici, ou cliquez pour parcourir</span>
-                </div>
-                <input type="file" id="news-image-input" accept="image/*" style="display:none;" />
-                <input type="hidden" id="news-form-image-url" />
-              </div>
-              <div style="display:flex; gap:14px; flex-wrap:wrap;">
-                <div style="flex:1; min-width:180px;">
-                  <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Catégorie</label>
-                  <select id="news-form-category" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px;">
-                    <option>Communauté</option>
-                    <option>Vie associative</option>
-                    <option>Bénévolat</option>
-                    <option>Culture</option>
-                    <option>Solidarité</option>
-                  </select>
-                </div>
-                <div style="flex:1; min-width:180px;">
-                  <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Rédacteur</label>
-                  <input id="news-form-author" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px; color:#9aa39c;" value={user.nom} readonly />
-                </div>
-              </div>
-              <div style="display:flex; gap:12px; justify-content:flex-end; flex-wrap:wrap; border-top:1px solid rgba(31,41,37,0.07); padding-top:20px;">
-                <button type="button" class="nav-trigger-btn" data-page="actualites" style="background:#FFFFFF; color:#1F2925; border:2px solid rgba(31,41,37,0.15); padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Annuler</button>
-                <button id="publish-news-submit-btn" style="background:#E97824; color:#FFFFFF; border:none; padding:12px 26px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Publier l'actualité</button>
-              </div>
-              <div id="news-publish-success-alert" class="hidden" style="background:rgba(23,107,77,0.08); color:#176B4D; padding:14px 18px; border-radius:12px; font-size:13.5px; font-weight:700;">✓ Actualité enregistrée avec succès.</div>
-            </div>
-          </div>
-        </section>
+        <ViewActualites authorName={user.nom} />
 
         <!-- EVENEMENTS VIEW -->
-        <section id="view-evenements" class="hidden fade-in">
-          <div style="display:flex; flex-direction:column; gap:20px;">
-            <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:14px;">
-              <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Événements</h1>
-              <button class="btn-create-event nav-trigger-btn" data-page="evenements-new" style="background:#E97824; color:#FFFFFF; border:none; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Créer un événement</button>
-            </div>
-
-            <div style="background:#176B4D; border-radius:22px; overflow:hidden; display:flex; flex-wrap:wrap;">
-              <div id="promo-event-cover" style="flex:1 1 260px; min-width:220px; aspect-ratio:16/10; background:linear-gradient(150deg,#E97824,#1F2925);"></div>
-              <div style="flex:2 1 320px; min-width:240px; padding:26px; color:#FFFFFF;">
-                <div style="display:inline-block; background:rgba(233,120,36,0.25); color:#FFD9B0; font-size:11.5px; font-weight:700; padding:5px 12px; border-radius:999px; margin-bottom:12px;">Mis en avant</div>
-                <h3 style="font-size:19px; font-weight:700; margin:0 0 8px;" id="promo-event-title">Journée culturelle nigérienne</h3>
-                <div style="font-size:13.5px; opacity:0.85;" id="promo-event-details">20 sept. 2026 · Parc Bordelais</div>
-              </div>
-            </div>
-
-            <div style="display:flex; gap:8px; flex-wrap:wrap;" class="events-tab-container">
-              <!-- tabs -->
-            </div>
-
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px;" id="events-list-container">
-              <!-- cards -->
-            </div>
-          </div>
-        </section>
-
-        <!-- CREER EVENEMENT VIEW -->
-        <section id="view-evenements-new" class="hidden fade-in">
-          <div style="display:flex; flex-direction:column; gap:20px; max-width:820px;">
-            <div style="display:flex; align-items:center; gap:14px;">
-              <button class="nav-trigger-btn" data-page="evenements" style="width:36px; height:36px; border-radius:10px; background:#FFFFFF; border:1px solid rgba(31,41,37,0.1); cursor:pointer; display: flex; align-items: center; justify-content: center;">←</button>
-              <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Créer un événement</h1>
-            </div>
-            <div style="background:#FFFFFF; border-radius:20px; padding:28px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:18px;">
-              <div>
-                <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Titre de l'événement</label>
-                <input id="event-form-title" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px;" placeholder="Ex : Journée culturelle nigérienne" />
-              </div>
-              <div>
-                <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:8px;">Image de couverture</label>
-                <div id="event-upload-zone" style="border:2px dashed #d8cfb8; border-radius:14px; padding:40px 30px; text-align:center; color:#9aa39c; font-size:13.5px; cursor:pointer; background:#FFFFFF; position:relative; overflow:hidden; transition:all 0.15s ease; display:flex; align-items:center; justify-content:center; min-height:140px;">
-                  <span id="event-upload-placeholder" style="z-index:10;">Glissez-déposez une image ici, ou cliquez pour parcourir</span>
-                </div>
-                <input type="file" id="event-image-input" accept="image/*" style="display:none;" />
-                <input type="hidden" id="event-form-image-url" />
-              </div>
-              <div style="display:flex; gap:14px; flex-wrap:wrap;">
-                <div style="flex:1; min-width:180px;">
-                  <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Catégorie</label>
-                  <select id="event-form-category" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px;">
-                    <option>Culture</option>
-                    <option>Solidarité</option>
-                    <option>Sport</option>
-                    <option>Rencontre</option>
-                    <option>Formation</option>
-                  </select>
-                </div>
-                <div style="flex:1; min-width:180px;">
-                  <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Date et heure</label>
-                  <input id="event-form-date" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px;" placeholder="20/09/2026 — 11h00" />
-                </div>
-              </div>
-              <div>
-                <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Lieu / adresse</label>
-                <input id="event-form-place" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px;" placeholder="Parc Bordelais, Bordeaux" />
-              </div>
-              <div>
-                <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Description</label>
-                <textarea id="event-form-desc" rows="4" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px; resize:vertical;" placeholder="Détails de l'événement"></textarea>
-              </div>
-              <div style="display:flex; gap:14px; flex-wrap:wrap;">
-                <div style="flex:1; min-width:160px;">
-                  <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Nombre de places</label>
-                  <input id="event-form-places" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px;" value="120" />
-                </div>
-                <div style="flex:1; min-width:160px;">
-                  <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Date limite d'inscription</label>
-                  <input style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px;" placeholder="15/09/2026" />
-                </div>
-              </div>
-              <div style="display:flex; gap:12px; justify-content:flex-end; flex-wrap:wrap; border-top:1px solid rgba(31,41,37,0.07); padding-top:20px;">
-                <button type="button" class="nav-trigger-btn" data-page="evenements" style="background:#F8F4EC; color:#1F2925; border:none; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Annuler</button>
-                <button id="publish-event-submit-btn" style="background:#E97824; color:#FFFFFF; border:none; padding:12px 26px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Publier l'événement</button>
-              </div>
-              <div id="event-publish-success-alert" class="hidden" style="background:rgba(23,107,77,0.08); color:#176B4D; padding:14px 18px; border-radius:12px; font-size:13.5px; font-weight:700;">✓ Événement enregistré avec succès.</div>
-            </div>
-          </div>
-        </section>
+        <ViewEvenements />
 
         <!-- INSCRIPTIONS VIEW -->
         <section id="view-inscriptions" class="hidden fade-in">
@@ -496,22 +343,7 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
 
 
         <!-- MESSAGES VIEW -->
-        <section id="view-messages" class="hidden fade-in">
-          <div style="display:flex; flex-direction:column; gap:20px;">
-            <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Messages</h1>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;" class="messages-tab-container">
-              <!-- tabs -->
-            </div>
-            <div style="display:grid; grid-template-columns:1fr 1.3fr; gap:20px; align-items:start; flex-wrap:wrap;">
-              <div style="background:#FFFFFF; border-radius:20px; padding:8px; box-shadow:0 8px 24px rgba(31,41,37,0.05); min-width:0;" id="messages-list-container">
-                <!-- list -->
-              </div>
-              <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05); min-width:0;" id="message-detail-box">
-                <!-- detail -->
-              </div>
-            </div>
-          </div>
-        </section>
+        <ViewMessages />
 
         <!-- PAGES DU SITE VIEW -->
         <section id="view-pages" class="hidden fade-in">
@@ -603,16 +435,24 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
   <button id="mobile-fab-btn" class="nav-mobile-only" aria-label="Créer" style="position:fixed; bottom:26px; right:22px; z-index:120; width:60px; height:60px; border-radius:50%; background:#E97824; border:none; color:#FFFFFF; font-size:28px; font-weight:700; cursor:pointer; box-shadow:0 14px 30px rgba(233,120,36,0.4); display:flex; align-items:center; justify-content:center;">+</button>
 
   <script>
+    import { createAdminContent } from '../lib/adminContent.js';
+
+    // Vues Actualités / Événements / Messages : markup dans
+    // src/components/admin/View*.astro, logique dans lib/adminContent.js —
+    // partagés à l'identique avec /superadmin.
+    const content = createAdminContent({
+      goPage: (page) => goPage(page),
+      getBadgeHtml: (label, tone) => getBadgeHtml(label, tone),
+      onViewRegistrants: (eventId) => {
+        pendingInscriptionsEventId = eventId;
+        goPage('inscriptions');
+      },
+    });
+
     // State management
     const state = {
       user: 'admin',
       page: 'dashboard',
-      newsTab: 'Publiées',
-      eventsFilter: 'À venir',
-      messagesTab: 'Tous',
-      messageSelectedIdx: 0,
-      editingNewsId: null,  // Track which news is being edited
-      editingEventId: null,  // Track which event is being edited
       recensementFilter: 'Tous'
     };
 
@@ -664,6 +504,9 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
         messages = data.messages;
         recensementList = data.recensement || [];
 
+        // Les vues partagées travaillent sur leur propre copie des données.
+        content.setData(data);
+
         // Populate statistics indicators
         document.getElementById('stat-events-count').textContent = eventsAdmin.length;
         document.getElementById('stat-news-count').textContent = newsArticles.filter(n => n.status === 'Publié').length;
@@ -686,26 +529,13 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
           });
         });
 
-        // Next event update
+        // Encart « prochain événement » du tableau de bord. (L'encart
+        // équivalent de la vue Événements est géré par le module partagé.)
         const nextEvent = eventsAdmin.find(e => e.tab === 'À venir');
         if (nextEvent) {
           document.getElementById('next-event-title').textContent = nextEvent.title;
           document.getElementById('next-event-date').textContent = nextEvent.date;
           document.getElementById('next-event-place').textContent = nextEvent.place;
-          
-          document.getElementById('promo-event-title').textContent = nextEvent.title;
-          
-          const coverPromo = document.getElementById('promo-event-cover');
-          if (coverPromo) {
-            const isUrl = nextEvent.bg_gradient.startsWith('/') || nextEvent.bg_gradient.startsWith('http');
-            if (isUrl) {
-              coverPromo.style.background = `url('${nextEvent.bg_gradient}') center/cover no-repeat`;
-            } else {
-              coverPromo.style.background = nextEvent.bg_gradient;
-            }
-          }
-
-          document.getElementById('promo-event-details').textContent = `${nextEvent.date} · ${nextEvent.place} · ${nextEvent.registered_count}/${nextEvent.max_places} inscrits`;
         }
 
         // Re-render current page
@@ -765,91 +595,12 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
       renderPageDetails(pageKey);
     }
 
-    function resetUploadZone(type) {
-      const zone = document.getElementById(`${type}-upload-zone`);
-      const placeholder = document.getElementById(`${type}-upload-placeholder`);
-      const urlInput = document.getElementById(`${type}-form-image-url`);
-      if (urlInput) urlInput.value = '';
-      if (zone && placeholder) {
-        zone.style.background = '#FFFFFF';
-        placeholder.innerHTML = 'Glissez-déposez une image ici, ou cliquez pour parcourir';
-      }
-    }
 
-    function setUploadPreview(type, url) {
-      const zone = document.getElementById(`${type}-upload-zone`);
-      const placeholder = document.getElementById(`${type}-upload-placeholder`);
-      const urlInput = document.getElementById(`${type}-form-image-url`);
-      if (urlInput) urlInput.value = url;
-      if (zone && placeholder) {
-        zone.style.background = `url('${url}') center/cover no-repeat`;
-        placeholder.innerHTML = `<span style="background:rgba(0,0,0,0.65); color:#FFFFFF; padding:6px 12px; border-radius:6px; font-weight:700; font-size:12.5px;">Modifier l'image</span>`;
-      }
-    }
 
     // Redimensionne + réencode en JPEG côté navigateur avant l'envoi : évite
     // d'envoyer des photos de plusieurs Mo telles quelles (coût R2, lenteur,
     // et certains antivirus/proxys cassent les gros uploads multipart).
-    async function compressImage(file, maxDimension = 1920, quality = 0.82) {
-      if (!file.type.startsWith('image/') || file.type === 'image/svg+xml') return file;
 
-      try {
-        const bitmap = await createImageBitmap(file);
-        const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
-        const width = Math.round(bitmap.width * scale);
-        const height = Math.round(bitmap.height * scale);
-
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        canvas.getContext('2d').drawImage(bitmap, 0, 0, width, height);
-        bitmap.close?.();
-
-        const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', quality));
-        if (!blob || blob.size >= file.size) return file;
-
-        const newName = file.name.replace(/\.[^.]+$/, '') + '.jpg';
-        return new File([blob], newName, { type: 'image/jpeg' });
-      } catch {
-        return file;
-      }
-    }
-
-    async function handleImageUpload(file, type) {
-      const zone = document.getElementById(`${type}-upload-zone`);
-      const placeholder = document.getElementById(`${type}-upload-placeholder`);
-      const urlInput = document.getElementById(`${type}-form-image-url`);
-
-      if (!zone || !placeholder || !urlInput) return;
-
-      placeholder.innerHTML = `<span style="color:#176B4D; font-weight:700;">Compression de l'image...</span>`;
-      zone.style.opacity = '0.7';
-
-      const compressedFile = await compressImage(file);
-
-      placeholder.innerHTML = `<span style="color:#176B4D; font-weight:700;">Téléversement en cours...</span>`;
-
-      const formData = new FormData();
-      formData.append('file', compressedFile);
-
-      try {
-        const res = await fetch('/api/admin/upload', {
-          method: 'POST',
-          body: formData
-        });
-
-        if (!res.ok) throw new Error("Erreur de téléversement R2");
-        const data = await res.json();
-        
-        zone.style.opacity = '1';
-        setUploadPreview(type, data.url);
-
-      } catch (err) {
-        zone.style.opacity = '1';
-        zone.style.background = '#FFFFFF';
-        placeholder.innerHTML = `<span style="color:#B14524; font-weight:700;">❌ Échec : ${err.message}</span>`;
-      }
-    }
 
     function generateNav() {
       const desktopContainer = document.getElementById('desktop-sidebar-nav');
@@ -866,30 +617,10 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
         const svgContent = svgMap[item.key] || '';
         link.innerHTML = `${svgContent}<span>${item.label}</span>`;
         link.addEventListener('click', () => {
-          // Reset forms to "New" mode when navigating normally
-          if (item.key === 'actualites-new') {
-            state.editingNewsId = null;
-            if (document.getElementById('news-form-title')) document.getElementById('news-form-title').value = '';
-            if (document.getElementById('news-form-slug')) document.getElementById('news-form-slug').value = '';
-            if (document.getElementById('news-form-excerpt')) document.getElementById('news-form-excerpt').value = '';
-            if (document.getElementById('news-form-content')) document.getElementById('news-form-content').value = '';
-            resetUploadZone('news');
-            
-            document.querySelector('#view-actualites-new h1').textContent = "Nouvelle actualité";
-            document.getElementById('publish-news-submit-btn').textContent = "Publier l'actualité";
-          }
-          if (item.key === 'evenements-new') {
-            state.editingEventId = null;
-            if (document.getElementById('event-form-title')) document.getElementById('event-form-title').value = '';
-            if (document.getElementById('event-form-date')) document.getElementById('event-form-date').value = '';
-            if (document.getElementById('event-form-place')) document.getElementById('event-form-place').value = '';
-            if (document.getElementById('event-form-desc')) document.getElementById('event-form-desc').value = '';
-            resetUploadZone('event');
-            
-            document.querySelector('#view-evenements-new h1').textContent = "Créer un événement";
-            document.getElementById('publish-event-submit-btn').textContent = "Publier l'événement";
-          }
-          
+          // Une entrée de menu ouvre toujours un formulaire vierge : sans ça,
+          // on hériterait du contenu d'une modification en cours.
+          if (item.key === 'actualites-new') content.resetNewsForm();
+          if (item.key === 'evenements-new') content.resetEventForm();
           goPage(item.key);
         });
         return link;
@@ -912,15 +643,15 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
       if (pageKey === 'dashboard') {
         renderDashboard();
       } else if (pageKey === 'actualites') {
-        renderActualites();
+        content.renderActualites();
       } else if (pageKey === 'evenements') {
-        renderEvenements();
+        content.renderEvenements();
       } else if (pageKey === 'inscriptions') {
         renderInscriptions();
       } else if (pageKey === 'recensement') {
         renderRecensement();
       } else if (pageKey === 'messages') {
-        renderMessages();
+        content.renderMessages();
       } else if (pageKey === 'pages') {
         renderPages();
       } else if (pageKey === 'stats') {
@@ -1007,237 +738,8 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
     }
 
     // 2. Actualités
-    function renderActualites() {
-      const tabsWrapper = document.querySelector('.news-tab-container');
-      tabsWrapper.innerHTML = '';
-      const tabDefs = ['Publiées', 'Brouillons', 'Programmées', 'Archivées'];
-      const statusMap = { Publiées: 'Publié', Brouillons: 'Brouillon', Programmées: 'Programmé', Archivées: 'Archivé' };
-
-      tabDefs.forEach(t => {
-        const btn = document.createElement('button');
-        btn.style.cssText = `border:2px solid #176B4D; padding:9px 18px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;`;
-        if (state.newsTab === t) {
-          btn.style.background = '#176B4D';
-          btn.style.color = '#FFFFFF';
-        } else {
-          btn.style.background = 'transparent';
-          btn.style.color = '#176B4D';
-        }
-        btn.textContent = t;
-        btn.addEventListener('click', () => {
-          state.newsTab = t;
-          renderActualites();
-        });
-        tabsWrapper.appendChild(btn);
-      });
-
-      const container = document.getElementById('news-list-container');
-      container.innerHTML = '';
-      const filtered = newsArticles.filter(n => n.status === statusMap[state.newsTab]);
-      
-      if (filtered.length === 0) {
-        container.innerHTML = '<div style="padding: 30px; text-align: center; color: var(--color-muted-text); font-size: 14.5px;">Aucune actualité dans cette rubrique.</div>';
-        return;
-      }
-
-      filtered.forEach(n => {
-        const tone = n.status === 'Publié' ? 'g' : (n.status === 'Archivé' ? 'n' : 'o');
-        const card = document.createElement('div');
-        card.style.cssText = 'display:flex; align-items:center; gap:16px; padding:16px; border-bottom:1px solid rgba(31,41,37,0.06); flex-wrap:wrap;';
-        
-        const isUrl = n.bg_gradient.startsWith('/') || n.bg_gradient.startsWith('http');
-        const coverStyle = isUrl ? `background: url('${n.bg_gradient}') center/cover no-repeat;` : `background: ${n.bg_gradient};`;
-
-        card.innerHTML = `
-          <div style="width:64px; height:48px; border-radius:10px; ${coverStyle} flex-shrink:0;"></div>
-          <div style="flex:2; min-width:220px;">
-            <div style="font-size:14.5px; font-weight:700; color:#1F2925;">${n.title}</div>
-            <div style="font-size:12.5px; color:#5a655f; margin-top:3px;">${n.category} · Par Admin</div>
-          </div>
-          <div style="font-size:12.5px; color:#5a655f; min-width:120px;">Modifié le ${n.created_at.split(' ')[0]}</div>
-          <div style="display:flex; align-items:center; gap:10px; margin-left:auto;">
-            ${getBadgeHtml(n.status, tone)}
-            <button class="edit-news-btn" data-id="${n.id}" style="background:#F8F4EC; border:none; padding:8px 14px; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; color:#176B4D;">Modifier</button>
-            <button class="delete-news-btn" data-id="${n.id}" data-title="${n.title.replace(/"/g, '&quot;')}" style="background:rgba(177,69,36,0.08); border:none; padding:8px 14px; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; color:#B14524;">Supprimer</button>
-          </div>
-        `;
-
-        // Bind Delete Action
-        card.querySelector('.delete-news-btn').addEventListener('click', async (e) => {
-          e.stopPropagation();
-          const btn = e.currentTarget;
-          const id = parseInt(btn.dataset.id);
-          if (!confirm(`Supprimer définitivement l'actualité « ${btn.dataset.title} » ? Cette action est irréversible.`)) return;
-          try {
-            const res = await fetch(`/api/admin/news?id=${id}`, { method: 'DELETE' });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Erreur lors de la suppression.');
-            await fetchAdminData();
-            renderActualites();
-          } catch (err) {
-            alert(err.message);
-          }
-        });
-        
-        // Bind Edit Action
-        card.querySelector('.edit-news-btn').addEventListener('click', (e) => {
-          e.stopPropagation();
-          const artId = parseInt(e.target.dataset.id);
-          const art = newsArticles.find(item => item.id === artId);
-          if (art) {
-            state.editingNewsId = art.id;
-            goPage('actualites-new');
-            
-            // Populate form
-            document.getElementById('news-form-title').value = art.title;
-            document.getElementById('news-form-slug').value = '/actualites/' + art.slug;
-            document.getElementById('news-form-excerpt').value = art.excerpt;
-            document.getElementById('news-form-content').value = art.content;
-            document.getElementById('news-form-category').value = art.category;
-
-            // Handle image R2 check
-            if (art.bg_gradient && (art.bg_gradient.startsWith('/') || art.bg_gradient.startsWith('http'))) {
-              setUploadPreview('news', art.bg_gradient);
-            } else {
-              resetUploadZone('news');
-            }
-            
-            // UI adaptation
-            document.querySelector('#view-actualites-new h1').textContent = "Modifier l'actualité";
-            document.getElementById('publish-news-submit-btn').textContent = "Sauvegarder les modifications";
-          }
-        });
-
-        container.appendChild(card);
-      });
-    }
 
     // 3. Événements
-    function renderEvenements() {
-      const tabsWrapper = document.querySelector('.events-tab-container');
-      tabsWrapper.innerHTML = '';
-      const tabDefs = ['À venir', 'Passés', 'Brouillons', 'Annulés'];
-
-      tabDefs.forEach(t => {
-        const btn = document.createElement('button');
-        btn.style.cssText = `border:2px solid #176B4D; padding:9px 18px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;`;
-        if (state.eventsFilter === t) {
-          btn.style.background = '#176B4D';
-          btn.style.color = '#FFFFFF';
-        } else {
-          btn.style.background = 'transparent';
-          btn.style.color = '#176B4D';
-        }
-        btn.textContent = t;
-        btn.addEventListener('click', () => {
-          state.eventsFilter = t;
-          renderEvenements();
-        });
-        tabsWrapper.appendChild(btn);
-      });
-
-      const container = document.getElementById('events-list-container');
-      container.innerHTML = '';
-      const filtered = eventsAdmin.filter(e => e.tab === state.eventsFilter);
-
-      if (filtered.length === 0) {
-        container.innerHTML = '<div style="grid-column: 1/-1; padding: 30px; text-align: center; color: var(--color-muted-text); font-size: 14.5px;">Aucun événement dans cette rubrique.</div>';
-        return;
-      }
-
-      filtered.forEach(ev => {
-        const card = document.createElement('div');
-        card.style.cssText = 'background:#FFFFFF; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(31,41,37,0.05); display: flex; flex-direction: column;';
-
-        const isUrl = ev.bg_gradient.startsWith('/') || ev.bg_gradient.startsWith('http');
-        const coverStyle = isUrl ? `background: url('${ev.bg_gradient}') center/cover no-repeat;` : `background: ${ev.bg_gradient};`;
-
-        card.innerHTML = `
-          <div style="aspect-ratio:16/9; ${coverStyle}"></div>
-          <div style="padding:20px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
-            <div>
-              <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:8px;">
-                <div style="font-size:12px; font-weight:700; color:#E97824; text-transform:uppercase;">${ev.category} · ${ev.date}</div>
-                ${getBadgeHtml(ev.status, ev.status === 'Ouvert' ? 'g' : 'o')}
-              </div>
-              <h3 style="font-size:16px; font-weight:700; color:#1F2925; margin:0 0 6px;">${ev.title}</h3>
-              <p style="font-size:13px; color:#5a655f; margin:0 0 16px;">${ev.place} · ${ev.registered_count}/${ev.max_places} inscrits</p>
-            </div>
-            <div style="display:flex; gap:8px;">
-              <button class="view-registrants-btn" style="flex:1; background:#F8F4EC; border:none; padding:10px; border-radius:999px; font-size:12.5px; font-weight:700; cursor:pointer; color:#1F2925;">Inscrits</button>
-              <button class="edit-event-btn" data-id="${ev.id}" style="flex:1; background:#176B4D; border:none; padding:10px; border-radius:999px; font-size:12.5px; font-weight:700; cursor:pointer; color:#FFFFFF;">Modifier</button>
-              <button class="delete-event-btn" data-id="${ev.id}" data-title="${ev.title.replace(/"/g, '&quot;')}" style="background:rgba(177,69,36,0.08); border:none; padding:10px 14px; border-radius:999px; font-size:12.5px; font-weight:700; cursor:pointer; color:#B14524;">Supprimer</button>
-            </div>
-          </div>
-        `;
-
-        // Bind "Inscrits" action — jump to Inscriptions view pre-filtered on this event
-        card.querySelector('.view-registrants-btn').addEventListener('click', (e) => {
-          e.stopPropagation();
-          pendingInscriptionsEventId = ev.id;
-          goPage('inscriptions');
-        });
-
-        // Bind Delete Action — l'API refuse en 409 si l'événement a des
-        // inscrits, on redemande alors confirmation explicite (les
-        // inscriptions seront supprimées avec lui).
-        card.querySelector('.delete-event-btn').addEventListener('click', async (e) => {
-          e.stopPropagation();
-          const btn = e.currentTarget;
-          const id = parseInt(btn.dataset.id);
-          const title = btn.dataset.title;
-          if (!confirm(`Supprimer définitivement l'événement « ${title} » ?`)) return;
-          try {
-            let res = await fetch(`/api/admin/events?id=${id}`, { method: 'DELETE' });
-            let data = await res.json();
-
-            if (res.status === 409 && data.needsConfirmation) {
-              if (!confirm(`Cet événement a ${data.inscrits} inscription(s). Elles seront supprimées elles aussi. Confirmer ?`)) return;
-              res = await fetch(`/api/admin/events?id=${id}&confirm=1`, { method: 'DELETE' });
-              data = await res.json();
-            }
-
-            if (!res.ok) throw new Error(data.error || 'Erreur lors de la suppression.');
-            await fetchAdminData();
-            renderEvenements();
-          } catch (err) {
-            alert(err.message);
-          }
-        });
-
-        // Bind Edit Action
-        card.querySelector('.edit-event-btn').addEventListener('click', (e) => {
-          e.stopPropagation();
-          const evId = parseInt(e.target.dataset.id);
-          const eventItem = eventsAdmin.find(item => item.id === evId);
-          if (eventItem) {
-            state.editingEventId = eventItem.id;
-            goPage('evenements-new');
-            
-            // Populate form
-            document.getElementById('event-form-title').value = eventItem.title;
-            document.getElementById('event-form-date').value = eventItem.date;
-            document.getElementById('event-form-place').value = eventItem.place;
-            document.getElementById('event-form-category').value = eventItem.category;
-            document.getElementById('event-form-places').value = eventItem.max_places;
-            document.getElementById('event-form-desc').value = eventItem.desc || '';
-
-            // Handle image R2 check
-            if (eventItem.bg_gradient && (eventItem.bg_gradient.startsWith('/') || eventItem.bg_gradient.startsWith('http'))) {
-              setUploadPreview('event', eventItem.bg_gradient);
-            } else {
-              resetUploadZone('event');
-            }
-            
-            // UI adaptation
-            document.querySelector('#view-evenements-new h1').textContent = "Modifier l'événement";
-            document.getElementById('publish-event-submit-btn').textContent = "Sauvegarder les modifications";
-          }
-        });
-
-        container.appendChild(card);
-      });
-    }
 
     // 4. Inscriptions
     function renderInscriptions() {
@@ -1390,111 +892,6 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
 
 
     // 7. Messages
-    function renderMessages() {
-      const tabsWrapper = document.querySelector('.messages-tab-container');
-      tabsWrapper.innerHTML = '';
-      const tabDefs = ['Tous', 'Non lus', 'À traiter', 'Traités', 'Archivés'];
-      const statusMap = { 'Non lus': 'Non lu', 'À traiter': 'À traiter', Traités: 'Traité', Archivés: 'Archivé' };
-
-      tabDefs.forEach(t => {
-        const btn = document.createElement('button');
-        btn.style.cssText = `border:2px solid #176B4D; padding:9px 18px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;`;
-        if (state.messagesTab === t) {
-          btn.style.background = '#176B4D'; btn.style.color = '#FFFFFF';
-        } else {
-          btn.style.background = 'transparent'; btn.style.color = '#176B4D';
-        }
-        btn.textContent = t;
-        btn.addEventListener('click', () => {
-          state.messagesTab = t; state.messageSelectedIdx = 0;
-          renderMessages();
-        });
-        tabsWrapper.appendChild(btn);
-      });
-
-      const listWrapper = document.getElementById('messages-list-container');
-      listWrapper.innerHTML = '';
-
-      const filtered = state.messagesTab === 'Tous' ? messages : messages.filter(m => m.status === statusMap[state.messagesTab]);
-
-      if (filtered.length === 0) {
-        listWrapper.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--color-muted-text);">Aucun message dans cette boîte.</div>';
-        document.getElementById('message-detail-box').innerHTML = '';
-        return;
-      }
-
-      filtered.forEach((m, i) => {
-        const realIdx = messages.indexOf(m);
-        const isSelected = state.messageSelectedIdx === realIdx;
-        const tone = m.status === 'Traité' ? 'g' : (m.status === 'Archivé' ? 'n' : 'o');
-        const item = document.createElement('div');
-        item.style.cssText = `padding:16px; border-bottom:1px solid rgba(31,41,37,0.06); cursor:pointer; background:${isSelected ? '#F8F4EC' : 'transparent'}; border-left: 3px solid ${isSelected ? '#176B4D' : 'transparent'};`;
-        item.innerHTML = `
-          <div style="display:flex; justify-content:space-between; gap:8px; align-items: flex-start;">
-            <div style="font-size:14px; font-weight:700; color:#1F2925;">${m.from_name}</div>
-            ${getBadgeHtml(m.status, tone)}
-          </div>
-          <div style="font-size:13px; color:#3f4a45; margin-top:3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${m.subject}</div>
-        `;
-        item.addEventListener('click', () => {
-          state.messageSelectedIdx = realIdx;
-          renderMessages();
-        });
-        listWrapper.appendChild(item);
-      });
-
-      const detailBox = document.getElementById('message-detail-box');
-      const selected = messages[state.messageSelectedIdx] || filtered[0];
-
-      if (!selected) return;
-
-      detailBox.innerHTML = `
-        <h3 style="font-size:16px; font-weight:700; color:#1F2925; margin:0 0 4px;">${selected.subject}</h3>
-        <div style="font-size:13px; color:#5a655f; margin-bottom:16px;">De ${selected.from_name} · Catégorie : ${selected.category}</div>
-        <p style="font-size:13.5px; line-height:1.6; color:#3f4a45; margin:0 0 18px; background: rgba(31,41,37,0.02); padding: 12px; border-radius: 8px;">${selected.content}</p>
-        <textarea id="message-reply-text" rows="3" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:13.5px; resize:vertical; margin-bottom:14px;" placeholder="Votre réponse…"></textarea>
-        <div style="display:flex; gap:10px;">
-          <button id="message-reply-btn" style="background:#176B4D; color:#FFFFFF; border:none; padding:11px 20px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">Répondre</button>
-          <button id="message-done-btn" style="background:#F8F4EC; color:#1F2925; border:none; padding:11px 20px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;" ${selected.status === 'Traité' ? 'disabled style="opacity:0.5; cursor:default;"' : ''}>Marquer comme Traité</button>
-        </div>
-      `;
-
-      document.getElementById('message-reply-btn').addEventListener('click', async () => {
-        const text = document.getElementById('message-reply-text').value.trim();
-        if (!text) {
-          alert('Le message de réponse est vide.');
-          return;
-        }
-        
-        try {
-          const res = await fetch('/api/admin/messages', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: selected.id, status: 'Traité' })
-          });
-          if (!res.ok) throw new Error("Erreur serveur");
-          alert('Réponse envoyée et message marqué comme traité !');
-          await fetchAdminData();
-        } catch (err) {
-          alert(err.message);
-        }
-      });
-
-      document.getElementById('message-done-btn').addEventListener('click', async () => {
-        try {
-          const res = await fetch('/api/admin/messages', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: selected.id, status: 'Traité' })
-          });
-          if (!res.ok) throw new Error("Erreur serveur");
-          alert('Message marqué comme traité.');
-          await fetchAdminData();
-        } catch (err) {
-          alert(err.message);
-        }
-      });
-    }
 
     // 9. Pages
     function renderPages() {
@@ -1565,7 +962,10 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
     document.addEventListener('DOMContentLoaded', async () => {
       // Nav structure init
       generateNav();
-      
+
+      // Câblage des vues partagées (upload, formulaires) — une seule fois.
+      content.wire();
+
       // Load D1 data
       await fetchAdminData();
       
@@ -1642,23 +1042,6 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
         });
       }
 
-      // Title to Slug automatic typing listener
-      const titleFormInput = document.getElementById('news-form-title');
-      const slugFormInput = document.getElementById('news-form-slug');
-      if (titleFormInput && slugFormInput) {
-        titleFormInput.addEventListener('input', (e) => {
-          // Only generate slug automatically if we are NOT editing
-          if (!state.editingNewsId) {
-            slugFormInput.value = '/actualites/' + e.target.value
-              .toLowerCase()
-              .trim()
-              .normalize("NFD")
-              .replace(/[\u0300-\u036f]/g, "") // Remove accents
-              .replace(/[^a-z0-9]+/g, '-');
-          }
-        });
-      }
-
       // Recensement Search listener
       const recSearchInput = document.getElementById('recensement-search-input');
       if (recSearchInput) {
@@ -1711,233 +1094,20 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
         });
       }
 
-      // Hook up interactive R2 upload zone for News
-      const newsUploadZone = document.getElementById('news-upload-zone');
-      const newsImageInput = document.getElementById('news-image-input');
-      if (newsUploadZone && newsImageInput) {
-        newsUploadZone.addEventListener('click', () => {
-          newsImageInput.click();
-        });
-        newsUploadZone.addEventListener('dragover', (e) => {
-          e.preventDefault();
-          newsUploadZone.style.borderColor = '#176B4D';
-          newsUploadZone.style.background = 'rgba(23,107,77,0.03)';
-        });
-        newsUploadZone.addEventListener('dragleave', () => {
-          newsUploadZone.style.borderColor = '#d8cfb8';
-          newsUploadZone.style.background = '#FFFFFF';
-        });
-        newsUploadZone.addEventListener('drop', (e) => {
-          e.preventDefault();
-          newsUploadZone.style.borderColor = '#d8cfb8';
-          newsUploadZone.style.background = '#FFFFFF';
-          if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            handleImageUpload(e.dataTransfer.files[0], 'news');
-          }
-        });
-        newsImageInput.addEventListener('change', (e) => {
-          if (e.target.files && e.target.files[0]) {
-            handleImageUpload(e.target.files[0], 'news');
-          }
-        });
-      }
-
-      // Hook up interactive R2 upload zone for Events
-      const eventUploadZone = document.getElementById('event-upload-zone');
-      const eventImageInput = document.getElementById('event-image-input');
-      if (eventUploadZone && eventImageInput) {
-        eventUploadZone.addEventListener('click', () => {
-          eventImageInput.click();
-        });
-        eventUploadZone.addEventListener('dragover', (e) => {
-          e.preventDefault();
-          eventUploadZone.style.borderColor = '#176B4D';
-          eventUploadZone.style.background = 'rgba(23,107,77,0.03)';
-        });
-        eventUploadZone.addEventListener('dragleave', () => {
-          eventUploadZone.style.borderColor = '#d8cfb8';
-          eventUploadZone.style.background = '#FFFFFF';
-        });
-        eventUploadZone.addEventListener('drop', (e) => {
-          e.preventDefault();
-          eventUploadZone.style.borderColor = '#d8cfb8';
-          eventUploadZone.style.background = '#FFFFFF';
-          if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            handleImageUpload(e.dataTransfer.files[0], 'event');
-          }
-        });
-        eventImageInput.addEventListener('change', (e) => {
-          if (e.target.files && e.target.files[0]) {
-            handleImageUpload(e.target.files[0], 'event');
-          }
-        });
-      }
-
-      // News Publish Submission
-      const publishNewsBtn = document.getElementById('publish-news-submit-btn');
-      if (publishNewsBtn) {
-        publishNewsBtn.addEventListener('click', async () => {
-          const titleVal = titleFormInput ? titleFormInput.value.trim() : '';
-          const slugVal = slugFormInput ? slugFormInput.value.trim() : '';
-          const excerptVal = document.getElementById('news-form-excerpt') ? document.getElementById('news-form-excerpt').value.trim() : '';
-          const contentVal = document.getElementById('news-form-content') ? document.getElementById('news-form-content').value.trim() : '';
-          const categoryVal = document.getElementById('news-form-category') ? document.getElementById('news-form-category').value : 'Communauté';
-          const r2ImageUrl = document.getElementById('news-form-image-url') ? document.getElementById('news-form-image-url').value : '';
-
-          if (!titleVal || !excerptVal || !contentVal) {
-            alert('Veuillez remplir le titre, le résumé et le contenu de l\'actualité.');
-            return;
-          }
-
-          const isEdit = state.editingNewsId !== null;
-          const url = isEdit ? '/api/admin/news' : '/api/admin/news';
-          const method = isEdit ? 'PUT' : 'POST';
-
-          // Default gradient if no image uploaded
-          const finalCover = r2ImageUrl || 'linear-gradient(150deg,#176B4D,#1F2925)';
-
-          try {
-            const res = await fetch(url, {
-              method: method,
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                id: state.editingNewsId, // will be ignored by POST
-                title: titleVal,
-                slug: slugVal.replace('/actualites/', ''), // extract raw slug
-                excerpt: excerptVal,
-                content: contentVal,
-                category: categoryVal,
-                status: 'Publié',
-                bg_gradient: finalCover
-              })
-            });
-
-            if (!res.ok) {
-              const errBody = await res.json();
-              throw new Error(errBody.error || "Erreur lors de l'enregistrement");
-            }
-
-            document.getElementById('news-publish-success-alert').classList.remove('hidden');
-            await fetchAdminData();
-            
-            setTimeout(() => {
-              document.getElementById('news-publish-success-alert').classList.add('hidden');
-              if (titleFormInput) titleFormInput.value = '';
-              if (slugFormInput) slugFormInput.value = '';
-              if (document.getElementById('news-form-excerpt')) document.getElementById('news-form-excerpt').value = '';
-              if (document.getElementById('news-form-content')) document.getElementById('news-form-content').value = '';
-              resetUploadZone('news');
-              state.editingNewsId = null;
-              goPage('actualites');
-            }, 1200);
-
-          } catch (err) {
-            alert("Erreur de sauvegarde : " + err.message);
-          }
-        });
-      }
-
-      // Event Publish Submission
-      const publishEventBtn = document.getElementById('publish-event-submit-btn');
-      if (publishEventBtn) {
-        publishEventBtn.addEventListener('click', async () => {
-          const titleVal = document.getElementById('event-form-title') ? document.getElementById('event-form-title').value.trim() : '';
-          const dateVal = document.getElementById('event-form-date') ? document.getElementById('event-form-date').value.trim() : '';
-          const placeVal = document.getElementById('event-form-place') ? document.getElementById('event-form-place').value.trim() : '';
-          const categoryVal = document.getElementById('event-form-category') ? document.getElementById('event-form-category').value : 'Culture';
-          const maxPlacesVal = document.getElementById('event-form-places') ? parseInt(document.getElementById('event-form-places').value) : 100;
-          const descVal = document.getElementById('event-form-desc') ? document.getElementById('event-form-desc').value.trim() : '';
-          const r2ImageUrl = document.getElementById('event-form-image-url') ? document.getElementById('event-form-image-url').value : '';
-
-          if (!titleVal || !dateVal || !placeVal) {
-            alert('Veuillez remplir le titre, la date et le lieu du nouvel événement.');
-            return;
-          }
-
-          const isEdit = state.editingEventId !== null;
-          const url = isEdit ? '/api/admin/events' : '/api/admin/events';
-          const method = isEdit ? 'PUT' : 'POST';
-
-          // Default gradient if no image uploaded
-          const finalCover = r2ImageUrl || 'linear-gradient(150deg,#E97824,#1F2925)';
-
-          try {
-            const res = await fetch(url, {
-              method: method,
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                id: state.editingEventId,
-                title: titleVal,
-                date: dateVal,
-                place: placeVal,
-                category: categoryVal,
-                max_places: maxPlacesVal,
-                status: 'Ouvert',
-                bg_gradient: finalCover
-              })
-            });
-
-            if (!res.ok) {
-              const errBody = await res.json();
-              throw new Error(errBody.error || "Erreur de création serveur");
-            }
-
-            const successAlert = document.getElementById('event-publish-success-alert');
-            if (successAlert) successAlert.classList.remove('hidden');
-            await fetchAdminData();
-            
-            setTimeout(() => {
-              if (successAlert) successAlert.classList.add('hidden');
-              if (document.getElementById('event-form-title')) document.getElementById('event-form-title').value = '';
-              if (document.getElementById('event-form-date')) document.getElementById('event-form-date').value = '';
-              if (document.getElementById('event-form-place')) document.getElementById('event-form-place').value = '';
-              if (document.getElementById('event-form-desc')) document.getElementById('event-form-desc').value = '';
-              resetUploadZone('event');
-              state.editingEventId = null;
-              goPage('evenements');
-            }, 1200);
-
-          } catch (err) {
-            alert("Erreur de sauvegarde : " + err.message);
-          }
-        });
-      }
-
       // Mobile FAB Trigger
-      const mobileFabBtn = document.getElementById('mobile-fab-btn');
-      if (mobileFabBtn) {
-        mobileFabBtn.addEventListener('click', () => {
-          state.editingNewsId = null;
-          resetUploadZone('news');
-          goPage('actualites-new');
-        });
-      }
-
-      // Bind all creation shortcuts in views
-      document.querySelectorAll('.btn-create-news').forEach(btn => {
-        btn.addEventListener('click', () => {
-          state.editingNewsId = null;
-          document.querySelector('#view-actualites-new h1').textContent = "Nouvelle actualité";
-          document.getElementById('publish-news-submit-btn').textContent = "Publier l'actualité";
-          if (titleFormInput) titleFormInput.value = '';
-          if (slugFormInput) slugFormInput.value = '';
-          if (document.getElementById('news-form-excerpt')) document.getElementById('news-form-excerpt').value = '';
-          if (document.getElementById('news-form-content')) document.getElementById('news-form-content').value = '';
-          resetUploadZone('news');
-        });
+      document.getElementById('mobile-fab-btn')?.addEventListener('click', () => {
+        content.resetNewsForm();
+        goPage('actualites-new');
       });
 
-      document.querySelectorAll('.btn-create-event').forEach(btn => {
-        btn.addEventListener('click', () => {
-          state.editingEventId = null;
-          document.querySelector('#view-evenements-new h1').textContent = "Créer un événement";
-          document.getElementById('publish-event-submit-btn').textContent = "Publier l'événement";
-          if (document.getElementById('event-form-title')) document.getElementById('event-form-title').value = '';
-          if (document.getElementById('event-form-date')) document.getElementById('event-form-date').value = '';
-          if (document.getElementById('event-form-place')) document.getElementById('event-form-place').value = '';
-          if (document.getElementById('event-form-desc')) document.getElementById('event-form-desc').value = '';
-          resetUploadZone('event');
-        });
+      // Raccourcis « Créer » présents dans les vues : le formulaire doit
+      // toujours s'ouvrir vierge. (La navigation elle-même est prise en
+      // charge par .nav-trigger-btn plus bas.)
+      document.querySelectorAll('.btn-create-news').forEach((btn) => {
+        btn.addEventListener('click', () => content.resetNewsForm());
+      });
+      document.querySelectorAll('.btn-create-event').forEach((btn) => {
+        btn.addEventListener('click', () => content.resetEventForm());
       });
 
       // General nav triggers (buttons)
