@@ -18,25 +18,38 @@ try {
         (SELECT COUNT(*) FROM inscriptions i WHERE i.event_id = evenements.id) AS registered_count
        FROM evenements WHERE status != 'Annulé' ORDER BY event_date IS NULL, event_date ASC`
     ).all();
+    // Filtre temporel (À venir / Passés) : basé sur event_date, jamais sur
+    // le statut — un événement Ouvert dont la date est dépassée doit
+    // pouvoir apparaître dans "Passés" même si personne ne l'a marqué
+    // Terminé. N'affecte aucune règle métier de statut existante.
+    const todayISO = new Date().toISOString().slice(0, 10);
+
     events = results.map(e => ({
       ...e,
       // "Terminé" est posé à la main par un admin (bouton dédié) — jamais
-      // déduit automatiquement de la date pour l'instant.
+      // déduit automatiquement de la date pour l'instant. Inchangé.
       isPast: e.status === 'Terminé',
       isFull: e.max_places > 0 && e.registered_count >= e.max_places,
       isRegistrationClosed: !e.inscriptions_ouvertes,
+      // Purement temporel, indépendant du statut. Un événement sans
+      // event_date connu (cas hérité) est classé par défaut dans "Passés"
+      // plutôt que de rester indéfiniment affiché comme "à venir".
+      isFutureByDate: !!e.event_date && e.event_date >= todayISO,
       desc: e.category === 'Culture' ? "Célébration des traditions nigériennes." : "Rencontre solidaire et conviviale."
     }));
 
-    // Find next upcoming event
-    const upcoming = events.filter(e => !e.isPast);
-    next = upcoming[0] ?? events[0];
+    // Prochain événement mis en avant : le plus proche par date parmi ceux
+    // réellement à venir (et pas déjà Terminé) — jamais de repli sur un
+    // événement passé (`events` est trié par event_date ASC, donc `find`
+    // retourne bien le plus proche).
+    next = events.find(e => !e.isPast && e.isFutureByDate) ?? null;
   }
 } catch (error) {
   console.error("Erreur de récupération D1 pour les événements :", error);
 }
 
-const eventFilters = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 'Formation'];
+const timeFilters = ['À venir', 'Passés'];
+const eventFilters = ['Toutes', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 'Formation'];
 ---
 
 <Layout title="Événements" description="Se retrouver, célébrer et partager toute l'année avec l'ANB Bordeaux.">
@@ -51,6 +64,21 @@ const eventFilters = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 'F
         <span style="font-size:13px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#5a655f;">Événements</span>
       </div>
       <h1 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(2.1rem,4vw,3rem); color:#1F2925; margin:0 0 40px; max-width:760px;">Se retrouver, célébrer et partager toute l'année.</h1>
+
+      <!-- Filtre temporel — priorité sur la catégorie, séparé visuellement -->
+      <div id="time-filters" class="filter-row" style="display:flex; gap:28px; margin-bottom:16px;">
+        {timeFilters.map((f, i) => (
+          <button
+            type="button"
+            data-time-filter={f}
+            class="time-filter-btn"
+            aria-pressed={i === 0 ? 'true' : 'false'}
+            style={`background:none; color:${i === 0 ? '#176B4D' : '#5a655f'}; border:none; border-bottom:2px solid ${i === 0 ? '#176B4D' : 'transparent'}; padding:0 0 10px; font-weight:800; font-size:16px; cursor:pointer; white-space:nowrap;`}
+          >
+            {f}
+          </button>
+        ))}
+      </div>
 
       <div id="event-filters" class="filter-row" style="display:flex; gap:clamp(18px,3vw,32px); flex-wrap:wrap; margin-bottom:52px; border-bottom:1px solid rgba(31,41,37,0.1);">
         {eventFilters.map((f, i) => (
@@ -119,7 +147,7 @@ const eventFilters = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 'F
         </div>
       )}
 
-      <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.5rem,2.4vw,1.9rem); color:#1F2925; margin:0 0 8px;">Tous les événements</h2>
+      <h2 id="events-list-title" style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.5rem,2.4vw,1.9rem); color:#1F2925; margin:0 0 8px;">Tous les événements à venir</h2>
 
       {events.length === 0 ? (
         <div style="text-align:center; padding:50px; color:#5a655f; font-size:1.1rem;">
@@ -134,6 +162,8 @@ const eventFilters = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 'F
               data-id={ev.id}
               data-title={ev.title}
               data-date={ev.date}
+              data-event-date={ev.event_date || ''}
+              data-time-bucket={ev.isFutureByDate ? 'upcoming' : 'past'}
               data-place={ev.place}
               data-desc={ev.desc}
               data-status={ev.status}
@@ -169,6 +199,9 @@ const eventFilters = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 'F
               </div>
             </div>
           ))}
+          <div id="no-events-message" class="hidden" style="text-align:center; padding:50px; color:#5a655f; font-size:1.1rem;">
+            Aucun événement dans cette rubrique.
+          </div>
         </div>
       )}
     </section>
@@ -335,24 +368,68 @@ const eventFilters = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 'F
   </style>
 
   <script>
+    const timeButtons = document.querySelectorAll<HTMLButtonElement>('.time-filter-btn');
     const buttons = document.querySelectorAll<HTMLButtonElement>('.filter-btn');
     const cards = document.querySelectorAll<HTMLElement>('.event-card');
+    const eventGrid = document.getElementById('event-grid');
+    const noEventsMessage = document.getElementById('no-events-message');
+    const listTitle = document.getElementById('events-list-title');
+
+    // Les cartes arrivent du serveur triées par event_date croissante (utile
+    // tel quel pour "À venir"). Pour "Passés", on les réordonne une seule
+    // fois dans le DOM (event_date décroissante — le plus récent d'abord) :
+    // les cartes "à venir" gardent leur ordre d'origine, jamais retouché.
+    const pastCardsDesc = [...cards]
+      .filter((c) => c.dataset.timeBucket === 'past')
+      .sort((a, b) => (b.dataset.eventDate || '').localeCompare(a.dataset.eventDate || ''));
+    pastCardsDesc.forEach((c) => eventGrid?.appendChild(c));
+
+    let activeTimeFilter: string = 'À venir';
+    let activeCategory: string = 'Toutes';
+
+    function applyFilters() {
+      const wantBucket = activeTimeFilter === 'À venir' ? 'upcoming' : 'past';
+      let visibleCount = 0;
+      cards.forEach((card) => {
+        const matchesBucket = card.dataset.timeBucket === wantBucket;
+        const matchesCategory = activeCategory === 'Toutes' || card.dataset.category === activeCategory;
+        const show = matchesBucket && matchesCategory;
+        card.style.display = show ? '' : 'none';
+        if (show) visibleCount++;
+      });
+      noEventsMessage?.classList.toggle('hidden', visibleCount > 0);
+      if (listTitle) {
+        listTitle.textContent = activeTimeFilter === 'À venir' ? 'Tous les événements à venir' : 'Événements passés';
+      }
+    }
+
+    timeButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        activeTimeFilter = btn.dataset.timeFilter ?? 'À venir';
+        timeButtons.forEach((b) => {
+          const active = b === btn;
+          b.setAttribute('aria-pressed', String(active));
+          b.style.color = active ? '#176B4D' : '#5a655f';
+          b.style.borderBottomColor = active ? '#176B4D' : 'transparent';
+        });
+        applyFilters();
+      });
+    });
 
     buttons.forEach((btn) => {
       btn.addEventListener('click', () => {
-        const filter = btn.dataset.filter;
+        activeCategory = btn.dataset.filter ?? 'Toutes';
         buttons.forEach((b) => {
           const active = b === btn;
           b.setAttribute('aria-pressed', String(active));
           b.style.color = active ? '#176B4D' : '#5a655f';
           b.style.borderBottomColor = active ? '#E97824' : 'transparent';
         });
-        cards.forEach((card) => {
-          const show = filter === 'Tous' || card.dataset.category === filter;
-          card.style.display = show ? '' : 'none';
-        });
+        applyFilters();
       });
     });
+
+    applyFilters();
 
     // ---- Event modal (detail + participate) ----
     const modal = document.getElementById('event-modal');
