@@ -104,6 +104,15 @@ Tableau vérifié route par route.
 
 ## 5. Fait et vérifié
 
+### Vocabulaire et définitions des KPI corrigés (2026-08-24)
+Aucune relation créée entre `recensement` et `inscriptions` — elles restent deux tables indépendantes (voir l'audit du modèle de données). Seuls le vocabulaire et, pour un KPI, la définition, ont été corrigés :
+
+- **Admin** — « Membres / Inscrits » → **« Inscriptions aux événements »** (le calcul ne change pas : `registrants.length`, le nombre total de lignes dans `inscriptions`, jamais un nombre de personnes distinctes — ni un « membre »). « Membres recensés » → **« Personnes recensées »** (calcul inchangé, `recensementList.length`). « Événements enregistrés » → **« Événements à venir »** — ici le *calcul* change aussi : comptait tous les événements (`eventsAdmin.length`, y compris Terminé/Annulé), compte désormais seulement les événements au statut Ouvert (`eventBucket(e) === 'Ouvert' || 'Complet'` — "Complet" n'étant qu'un sous-classement d'affichage du même statut Ouvert). « Articles publiés » → « Actualités publiées » (cohérence de vocabulaire avec le reste).
+- **Super Admin** — mêmes corrections de libellé (« Membres recensés » → « Personnes recensées », deux occurrences). « Événements à venir » et « Inscriptions aux événements » avaient déjà le bon vocabulaire **et** la bonne définition (`WHERE status = 'Ouvert'`, `COUNT(*) FROM inscriptions`) — confirmé identique à la définition Admin ci-dessus, donc aligné sans rien changer côté Super Admin pour ces deux-là.
+- Pas de KPI « Participants uniques » créé — n'existe nulle part dans le code (confirmé : aucun `DISTINCT`/`GROUP BY` sur `inscriptions`), et ce n'était pas demandé.
+- À noter, pas corrigé (hors périmètre demandé) : le Super Admin n'a **aucun** KPI numérique « Actualités publiées » (ni sur la Vue d'ensemble, ni sur Statistiques globales) — seulement une liste des derniers articles avec badge de statut. Rien à renommer puisqu'il n'existe pas.
+- Aucune donnée, aucune table, aucune structure visuelle de page modifiée — uniquement les libellés et le filtre du KPI « Événements à venir ».
+
 ### Formulaires Actualités Admin/Éditeur harmonisés (2026-08-24)
 Même socle de champs, même ordre (Titre → Catégorie/Rédacteur → Image de couverture → Résumé court → Contenu) — seules les actions finales changent selon le rôle (Admin : Publier · Éditeur : Enregistrer le brouillon / Soumettre à validation, cette dernière enchaînant sauvegarde + `PUT /api/editeur/submit` en un clic).
 - **Bug corrigé** : `POST /api/admin/upload` était réservé à `['admin', 'super_admin']` — un éditeur ne pouvait pas illustrer son propre brouillon (le formulaire proposait l'upload, l'API le refusait). Ouvert à `editeur` — reste une simple permission d'upload, pas un droit d'administration R2 (pas de liste/suppression). Vérifié : upload par un compte éditeur → 200.

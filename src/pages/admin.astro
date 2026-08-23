@@ -191,11 +191,11 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
             <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px;">
               <div style="background:#FFFFFF; border-radius:18px; padding:22px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
                 <div id="stat-events-count" style="font-size:26px; font-weight:800; color:#176B4D;">0</div>
-                <div style="font-size:13.5px; color:#5a655f; margin-top:4px;">Événements enregistrés</div>
+                <div style="font-size:13.5px; color:#5a655f; margin-top:4px;">Événements à venir</div>
               </div>
               <div style="background:#FFFFFF; border-radius:18px; padding:22px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
                 <div id="stat-members-count" style="font-size:26px; font-weight:800; color:#E97824;">0</div>
-                <div style="font-size:13.5px; color:#5a655f; margin-top:4px;">Membres / Inscrits</div>
+                <div style="font-size:13.5px; color:#5a655f; margin-top:4px;">Inscriptions aux événements</div>
               </div>
               <div style="background:#FFFFFF; border-radius:18px; padding:22px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
                 <div id="stat-news-count" style="font-size:26px; font-weight:800; color:#176B4D;">0</div>
@@ -203,7 +203,7 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
               </div>
               <div style="background:#FFFFFF; border-radius:18px; padding:22px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
                 <div id="stat-census-count" style="font-size:26px; font-weight:800; color:#176B4D;">0</div>
-                <div style="font-size:13.5px; color:#5a655f; margin-top:4px;">Membres recensés</div>
+                <div style="font-size:13.5px; color:#5a655f; margin-top:4px;">Personnes recensées</div>
               </div>
             </div>
 
@@ -345,9 +345,9 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
             <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Statistiques</h1>
             <p style="font-size:12.5px; color:#9aa39c; margin:0;">Basé uniquement sur les données de la plateforme — aucun outil de mesure d'audience (pages vues, visiteurs) n'est branché sur le site pour l'instant.</p>
             <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px;">
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stats-articles-publies" style="font-size:22px; font-weight:800; color:#176B4D;">—</div><div style="font-size:13px; color:#5a655f;">Articles publiés</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stats-articles-publies" style="font-size:22px; font-weight:800; color:#176B4D;">—</div><div style="font-size:13px; color:#5a655f;">Actualités publiées</div></div>
               <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stats-inscriptions-confirmees" style="font-size:22px; font-weight:800; color:#E97824;">—</div><div style="font-size:13px; color:#5a655f;">Inscriptions aux événements</div></div>
-              <div id="stats-recensement-card" style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stats-recensement" style="font-size:22px; font-weight:800; color:#176B4D;">—</div><div style="font-size:13px; color:#5a655f;">Membres recensés</div></div>
+              <div id="stats-recensement-card" style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stats-recensement" style="font-size:22px; font-weight:800; color:#176B4D;">—</div><div style="font-size:13px; color:#5a655f;">Personnes recensées</div></div>
               <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stats-messages-a-traiter" style="font-size:22px; font-weight:800; color:#E97824;">—</div><div style="font-size:13px; color:#5a655f;">Messages à traiter</div></div>
             </div>
 
@@ -491,9 +491,21 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
         content.setData(data);
 
         // Populate statistics indicators
-        document.getElementById('stat-events-count').textContent = eventsAdmin.length;
+        // "Événements à venir" = statut Ouvert (qu'il soit complet ou non —
+        // "Complet" n'est qu'un sous-classement d'affichage, pas un statut
+        // stocké à part) ; jamais Terminé/Annulé. Même définition que le
+        // KPI équivalent du Super Admin (api/superadmin/stats.js :
+        // WHERE status = 'Ouvert').
+        document.getElementById('stat-events-count').textContent =
+          eventsAdmin.filter(e => eventBucket(e) === 'Ouvert' || eventBucket(e) === 'Complet').length;
         document.getElementById('stat-news-count').textContent = newsArticles.filter(n => n.status === 'Publié').length;
+        // "Inscriptions aux événements" = nombre total de lignes dans
+        // `inscriptions`, PAS un nombre de personnes distinctes (aucune
+        // notion fiable de participant unique dans ce modèle de données —
+        // voir BACKLOG.md). Ne jamais renommer "Membres" ni "Participants".
         document.getElementById('stat-members-count').textContent = registrants.length;
+        // "Personnes recensées" = COUNT(*) sur `recensement`, distinct de
+        // `inscriptions` : aucune relation entre les deux tables.
         document.getElementById('stat-census-count').textContent = recensementList.length;
 
         // Update priority items

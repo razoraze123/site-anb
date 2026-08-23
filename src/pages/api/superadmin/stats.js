@@ -31,6 +31,14 @@ export async function GET(context) {
     const days = PERIOD_DAYS[searchParams.get('period')] || 30;
     const sinceExpr = `datetime('now', '-${days} days')`;
 
+    // "membres" (label affiché : "Personnes recensées") = COUNT(*) sur
+    // `recensement`, distinct de `inscriptions` : les deux tables n'ont
+    // aucune relation entre elles (voir BACKLOG.md). "inscriptionsPeriode"
+    // = nombre total de lignes de `inscriptions`, pas un nombre de
+    // personnes distinctes (pas de notion fiable de participant unique
+    // dans ce modèle). "evenementsAVenir" = statut Ouvert uniquement
+    // (jamais Terminé/Annulé) — même définition que le KPI "Événements à
+    // venir" du dashboard Admin.
     const [
       membres, recensementCeMois, evenementsAVenir, messagesATraiter,
       adminsActifs, comptesDesactives, inscriptionsPeriode, recensementPeriode,
