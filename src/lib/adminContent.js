@@ -101,6 +101,55 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     });
   }
 
+  // Menu contextuel « ⋯ » générique (actions secondaires d'une carte).
+  // Positionné en `fixed` et ajouté à <body> plutôt qu'à l'intérieur de la
+  // carte : les cartes ont `overflow:hidden` (pour les coins arrondis de
+  // l'image de couverture), un menu en position absolue à l'intérieur
+  // serait donc coupé.
+  let closeOpenActionsMenu = null;
+
+  function openActionsMenu(anchorBtn, items) {
+    if (closeOpenActionsMenu) { closeOpenActionsMenu(); return; }
+
+    const rect = anchorBtn.getBoundingClientRect();
+    const menu = document.createElement('div');
+    menu.style.cssText = `position:fixed; top:${rect.bottom + 6}px; left:${rect.right - 190}px; width:190px; background:#FFFFFF; border-radius:12px; box-shadow:0 12px 32px rgba(31,41,37,0.18); padding:6px; z-index:1000; display:flex; flex-direction:column; gap:2px;`;
+
+    items.forEach(({ label, onClick, danger }) => {
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.textContent = label;
+      item.style.cssText = `text-align:left; background:none; border:none; padding:10px 12px; border-radius:8px; font-size:13.5px; font-weight:700; cursor:pointer; color:${danger ? '#B14524' : '#1F2925'};`;
+      item.addEventListener('mouseenter', () => { item.style.background = danger ? 'rgba(177,69,36,0.08)' : '#F8F4EC'; });
+      item.addEventListener('mouseleave', () => { item.style.background = 'none'; });
+      item.addEventListener('click', () => {
+        close();
+        onClick();
+      });
+      menu.appendChild(item);
+    });
+
+    document.body.appendChild(menu);
+
+    function close() {
+      menu.remove();
+      document.removeEventListener('mousedown', onOutside, true);
+      document.removeEventListener('keydown', onEscape, true);
+      closeOpenActionsMenu = null;
+    }
+    function onOutside(e) {
+      if (!menu.contains(e.target) && e.target !== anchorBtn) close();
+    }
+    function onEscape(e) {
+      if (e.key === 'Escape') close();
+    }
+    // setTimeout : évite que le mousedown qui a ouvert le menu (le clic sur
+    // "⋯") ne le referme immédiatement via onOutside.
+    setTimeout(() => document.addEventListener('mousedown', onOutside, true), 0);
+    document.addEventListener('keydown', onEscape, true);
+    closeOpenActionsMenu = close;
+  }
+
   function resetUploadZone(type) {
     const zone = document.getElementById(`${type}-upload-zone`);
     const placeholder = document.getElementById(`${type}-upload-placeholder`);
@@ -373,13 +422,8 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
             ${onViewRegistrants ? '<button class="view-registrants-btn" style="flex:1; background:#F8F4EC; border:none; padding:10px; border-radius:999px; font-size:12.5px; font-weight:700; cursor:pointer; color:#1F2925;">Inscrits</button>' : ''}
             <button class="edit-event-btn" style="flex:1; background:#176B4D; border:none; padding:10px; border-radius:999px; font-size:12.5px; font-weight:700; cursor:pointer; color:#FFFFFF;">Modifier</button>
-            <button class="delete-event-btn" style="background:rgba(177,69,36,0.08); border:none; padding:10px 14px; border-radius:999px; font-size:12.5px; font-weight:700; cursor:pointer; color:#B14524;">Supprimer</button>
+            <button class="more-event-actions-btn" aria-label="Plus d'actions" style="background:#F8F4EC; border:none; width:38px; padding:10px 0; border-radius:999px; font-size:16px; font-weight:700; cursor:pointer; color:#1F2925; line-height:1;">⋯</button>
           </div>
-          ${ev.status === 'Ouvert' ? `
-          <div style="display:flex; gap:8px; margin-top:8px;">
-            <button class="complete-event-btn" style="flex:1; background:#F8F4EC; border:none; padding:9px; border-radius:999px; font-size:12px; font-weight:700; cursor:pointer; color:#5a655f;">Marquer comme terminé</button>
-            <button class="cancel-event-btn" style="flex:1; background:#F8F4EC; border:none; padding:9px; border-radius:999px; font-size:12px; font-weight:700; cursor:pointer; color:#B14524;">Annuler l'événement</button>
-          </div>` : ''}
         </div>
       `;
 
@@ -391,6 +435,8 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
       // Bascule de statut : envoie toujours la ligne complète (comme
       // "Modifier" le ferait), avec juste `status` en plus — même
       // architecture que le bouton Archiver/Publier des actualités.
+      // Logique inchangée : simplement déplacée du bouton de carte vers
+      // une entrée du menu "⋯".
       async function setEventStatus(newStatus) {
         try {
           const res = await fetch('/api/admin/events', {
@@ -411,22 +457,19 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
         }
       }
 
-      card.querySelector('.complete-event-btn')?.addEventListener('click', (e) => {
-        e.stopPropagation();
+      function completeEvent() {
         if (!confirm(`Marquer « ${ev.title} » comme terminé ? Il restera visible publiquement mais ne sera plus inscriptible.`)) return;
         setEventStatus('Terminé');
-      });
+      }
 
-      card.querySelector('.cancel-event-btn')?.addEventListener('click', (e) => {
-        e.stopPropagation();
+      function cancelEvent() {
         if (!confirm(`Annuler « ${ev.title} » ? Il disparaîtra du site public mais restera visible ici, et ses inscriptions existantes sont conservées.`)) return;
         setEventStatus('Annulé');
-      });
+      }
 
       // L'API refuse en 409 tant que la perte des inscriptions liées n'est
       // pas explicitement confirmée (ON DELETE CASCADE côté schéma).
-      card.querySelector('.delete-event-btn').addEventListener('click', async (e) => {
-        e.stopPropagation();
+      async function deleteEvent() {
         if (!confirm(`Supprimer définitivement l'événement « ${ev.title} » ?`)) return;
         try {
           let res = await fetch(`/api/admin/events?id=${ev.id}`, { method: 'DELETE' });
@@ -443,6 +486,18 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
         } catch (err) {
           alert(err.message);
         }
+      }
+
+      // Contenu du menu selon le statut (règle métier inchangée : Terminé
+      // reste une action manuelle, jamais proposée si déjà Terminé/Annulé ;
+      // Annuler reste possible tant que ce n'est pas déjà Annulé).
+      card.querySelector('.more-event-actions-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const items = [];
+        if (ev.status === 'Ouvert') items.push({ label: 'Marquer comme terminé', onClick: completeEvent });
+        if (ev.status !== 'Annulé') items.push({ label: "Annuler l'événement", onClick: cancelEvent, danger: true });
+        items.push({ label: 'Supprimer', onClick: deleteEvent, danger: true });
+        openActionsMenu(e.currentTarget, items);
       });
 
       card.querySelector('.edit-event-btn').addEventListener('click', (e) => {
