@@ -104,6 +104,16 @@ Tableau vérifié route par route.
 
 ## 5. Fait et vérifié
 
+### Source de vérité serveur unique pour les 4 KPI communs (2026-08-24)
+Étape 2 après la correction du vocabulaire : les 4 KPI (Événements à venir, Inscriptions aux événements, Actualités publiées, Personnes recensées) sont désormais calculés **une seule fois, côté serveur**, par `src/lib/stats.js` (`getCommonKpis(db)`, agrégations SQL), au lieu d'être recalculés indépendamment par filtrage de tableaux dans chaque page.
+
+- Nouvelle route `GET /api/admin/kpis` (admin/super-admin) — utilisée par le dashboard Admin.
+- `api/superadmin/stats.js` appelle désormais la même fonction au lieu de dupliquer ses propres requêtes SQL pour ces 4 KPI.
+- « Événements à venir » utilise `evenements.event_date` (la vraie date ISO introduite pour le tri chronologique), pas le texte affiché `date` — `status = 'Ouvert' AND event_date >= date('now')`.
+- Vérifié en exécution : `/api/admin/kpis` et `/api/superadmin/stats` renvoient exactement les mêmes 4 valeurs ; les deux dashboards (et la page Statistiques de chacun) affichent des nombres identiques.
+- **Changement de valeur assumé** (signalé, pas silencieux) : la carte Super Admin « Inscriptions aux événements » de la page Statistiques globales était en réalité filtrée par période (`WHERE created_at >= ...`) malgré son libellé qui ne l'indiquait pas — elle affiche maintenant le total non filtré, identique à Admin. La requête SQL correspondante (`inscriptionsPeriode`) a été supprimée, elle n'était plus utilisée que là.
+- Aucune table, relation, notion de participant unique, statut ou design de dashboard modifié.
+
 ### Vocabulaire et définitions des KPI corrigés (2026-08-24)
 Aucune relation créée entre `recensement` et `inscriptions` — elles restent deux tables indépendantes (voir l'audit du modèle de données). Seuls le vocabulaire et, pour un KPI, la définition, ont été corrigés :
 

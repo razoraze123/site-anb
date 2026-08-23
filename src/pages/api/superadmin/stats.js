@@ -1,5 +1,6 @@
 import { env } from "cloudflare:workers";
 import { requireRole, unauthorized } from "../../../lib/auth.js";
+import { getCommonKpis } from "../../../lib/stats.js";
 
 export const prerender = false;
 
@@ -31,26 +32,22 @@ export async function GET(context) {
     const days = PERIOD_DAYS[searchParams.get('period')] || 30;
     const sinceExpr = `datetime('now', '-${days} days')`;
 
-    // "membres" (label affiché : "Personnes recensées") = COUNT(*) sur
-    // `recensement`, distinct de `inscriptions` : les deux tables n'ont
-    // aucune relation entre elles (voir BACKLOG.md). "inscriptionsPeriode"
-    // = nombre total de lignes de `inscriptions`, pas un nombre de
-    // personnes distinctes (pas de notion fiable de participant unique
-    // dans ce modèle). "evenementsAVenir" = statut Ouvert uniquement
-    // (jamais Terminé/Annulé) — même définition que le KPI "Événements à
-    // venir" du dashboard Admin.
+    // Les 4 KPI communs avec le dashboard Admin (membres/personnes
+    // recensées, événements à venir, inscriptions aux événements,
+    // actualités publiées) viennent tous de lib/stats.js — source de
+    // vérité unique, mêmes requêtes SQL que celles utilisées par
+    // /api/admin/kpis pour l'espace Admin. Ne plus dupliquer ces calculs
+    // ici.
     const [
-      membres, recensementCeMois, evenementsAVenir, messagesATraiter,
-      adminsActifs, comptesDesactives, inscriptionsPeriode, recensementPeriode,
+      commonKpis, recensementCeMois, messagesATraiter,
+      adminsActifs, comptesDesactives, recensementPeriode,
       recentJournal, latestArticles, upcomingEvents
     ] = await Promise.all([
-      db.prepare("SELECT COUNT(*) AS n FROM recensement").first(),
+      getCommonKpis(db),
       db.prepare("SELECT COUNT(*) AS n FROM recensement WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')").first(),
-      db.prepare("SELECT COUNT(*) AS n FROM evenements WHERE status = 'Ouvert'").first(),
       db.prepare("SELECT COUNT(*) AS n FROM messages WHERE status IN ('Non lu', 'À traiter')").first(),
       db.prepare("SELECT COUNT(*) AS n FROM utilisateurs WHERE role IN ('admin','super_admin') AND statut = 'actif'").first(),
       db.prepare("SELECT COUNT(*) AS n FROM utilisateurs WHERE statut = 'desactive'").first(),
-      db.prepare(`SELECT COUNT(*) AS n FROM inscriptions WHERE created_at >= ${sinceExpr}`).first(),
       db.prepare(`SELECT COUNT(*) AS n FROM recensement WHERE created_at >= ${sinceExpr}`).first(),
       db.prepare("SELECT utilisateur_email, role, action, details, created_at FROM journal_activite ORDER BY created_at DESC LIMIT 5").all(),
       db.prepare("SELECT title, category, status, created_at FROM actualites ORDER BY created_at DESC LIMIT 5").all(),
@@ -69,9 +66,14 @@ export async function GET(context) {
 
     return new Response(JSON.stringify({
       overview: {
-        membres: membres.n,
+        // membres/evenements_a_venir/inscriptions_evenements/
+        // actualites_publiees : source unique lib/stats.js, identique à
+        // /api/admin/kpis.
+        membres: commonKpis.personnes_recensees,
         adhesions_ce_mois: recensementCeMois.n,
-        evenements_a_venir: evenementsAVenir.n,
+        evenements_a_venir: commonKpis.evenements_a_venir,
+        inscriptions_evenements: commonKpis.inscriptions_evenements,
+        actualites_publiees: commonKpis.actualites_publiees,
         demandes_a_traiter: messagesATraiter.n,
         admins_actifs: adminsActifs.n,
         comptes_desactives: comptesDesactives.n,
@@ -80,7 +82,6 @@ export async function GET(context) {
       recent_activity: recentJournal.results,
       period_days: days,
       period_stats: {
-        inscriptions: inscriptionsPeriode.n,
         adhesions: recensementPeriode.n,
       },
       latest_articles: latestArticles.results,

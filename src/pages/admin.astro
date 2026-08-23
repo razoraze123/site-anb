@@ -473,14 +473,23 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
     let messages = [];
     let recensementList = [];
     let recensementSearch = '';
+    // Les 4 KPI communs avec le Super Admin (voir lib/stats.js) : calculés
+    // côté serveur par /api/admin/kpis, plus jamais dérivés en filtrant les
+    // tableaux ci-dessus dans le navigateur.
+    let commonKpis = { evenements_a_venir: 0, inscriptions_evenements: 0, actualites_publiees: 0, personnes_recensees: 0 };
 
     async function fetchAdminData() {
       try {
-        const response = await fetch('/api/admin/data');
+        const [response, kpisResponse] = await Promise.all([
+          fetch('/api/admin/data'),
+          fetch('/api/admin/kpis'),
+        ]);
         if (!response.ok) throw new Error("Erreur de récupération des données");
-        
+        if (!kpisResponse.ok) throw new Error("Erreur de récupération des statistiques");
+
         const data = await response.json();
-        
+        commonKpis = await kpisResponse.json();
+
         newsArticles = data.actualites;
         eventsAdmin = data.evenements;
         registrants = data.inscriptions;
@@ -490,23 +499,13 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
         // Les vues partagées travaillent sur leur propre copie des données.
         content.setData(data);
 
-        // Populate statistics indicators
-        // "Événements à venir" = statut Ouvert (qu'il soit complet ou non —
-        // "Complet" n'est qu'un sous-classement d'affichage, pas un statut
-        // stocké à part) ; jamais Terminé/Annulé. Même définition que le
-        // KPI équivalent du Super Admin (api/superadmin/stats.js :
-        // WHERE status = 'Ouvert').
-        document.getElementById('stat-events-count').textContent =
-          eventsAdmin.filter(e => eventBucket(e) === 'Ouvert' || eventBucket(e) === 'Complet').length;
-        document.getElementById('stat-news-count').textContent = newsArticles.filter(n => n.status === 'Publié').length;
-        // "Inscriptions aux événements" = nombre total de lignes dans
-        // `inscriptions`, PAS un nombre de personnes distinctes (aucune
-        // notion fiable de participant unique dans ce modèle de données —
-        // voir BACKLOG.md). Ne jamais renommer "Membres" ni "Participants".
-        document.getElementById('stat-members-count').textContent = registrants.length;
-        // "Personnes recensées" = COUNT(*) sur `recensement`, distinct de
-        // `inscriptions` : aucune relation entre les deux tables.
-        document.getElementById('stat-census-count').textContent = recensementList.length;
+        // Populate statistics indicators — les 4 valeurs viennent de
+        // commonKpis (source de vérité serveur, identique au Super Admin),
+        // plus d'un seul .filter()/.length côté client pour ces 4-là.
+        document.getElementById('stat-events-count').textContent = commonKpis.evenements_a_venir;
+        document.getElementById('stat-news-count').textContent = commonKpis.actualites_publiees;
+        document.getElementById('stat-members-count').textContent = commonKpis.inscriptions_evenements;
+        document.getElementById('stat-census-count').textContent = commonKpis.personnes_recensees;
 
         // Update priority items
         priorityItems = [];
@@ -860,14 +859,15 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
 
     // 10. Statistiques
     function renderStats() {
-      // Tout est recalculé depuis les tableaux déjà chargés par
-      // fetchAdminData() (newsArticles, eventsAdmin, registrants, messages,
-      // recensementList) — pas de nouvel appel réseau nécessaire.
-      document.getElementById('stats-articles-publies').textContent =
-        newsArticles.filter((a) => a.status === 'Publié').length;
-      document.getElementById('stats-inscriptions-confirmees').textContent =
-        registrants.length;
-      document.getElementById('stats-recensement').textContent = recensementList.length;
+      // Les 4 KPI communs (articles publiés/inscriptions/recensement/
+      // événements à venir, ce dernier via la liste "Prochains événements"
+      // plus bas) viennent de commonKpis, chargé par fetchAdminData() —
+      // même source que le Super Admin (lib/stats.js), pas de nouveau
+      // .filter()/.length recalculé ici. Messages reste local (pas un des
+      // 4 KPI communs).
+      document.getElementById('stats-articles-publies').textContent = commonKpis.actualites_publiees;
+      document.getElementById('stats-inscriptions-confirmees').textContent = commonKpis.inscriptions_evenements;
+      document.getElementById('stats-recensement').textContent = commonKpis.personnes_recensees;
       document.getElementById('stats-messages-a-traiter').textContent =
         messages.filter((m) => m.status === 'Non lu' || m.status === 'À traiter').length;
 
