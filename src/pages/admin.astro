@@ -110,7 +110,7 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
       <div style="padding:16px; border-top:1px solid rgba(31,41,37,0.06); display:flex; align-items:center; gap:12px;">
         <div style="width:38px; height:38px; border-radius:50%; background:linear-gradient(150deg,#176B4D,#E97824); flex-shrink:0;"></div>
         <div style="flex:1; min-width:0;">
-          <div style="font-size:13.5px; font-weight:700; color:#1F2925; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{user.nom}</div>
+          <div id="sidebar-user-name" style="font-size:13.5px; font-weight:700; color:#1F2925; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{user.nom}</div>
           <div style="font-size:11.5px; color:#5a655f;">{roleLabel}</div>
         </div>
         <button class="logout-btn" aria-label="Déconnexion" style="width:34px; height:34px; border-radius:10px; background:#F8F4EC; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;">
@@ -574,9 +574,23 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
               </div>
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Nouveau mot de passe</label>
-                <input type="password" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="••••••••" />
+                <div style="position:relative;">
+                  <input id="profile-form-password" type="password" style="width:100%; padding:12px 44px 12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="Laisser vide pour ne pas changer" />
+                  <button type="button" class="toggle-password-visibility-btn" data-target="profile-form-password" aria-label="Afficher le mot de passe" style="position:absolute; top:50%; right:10px; transform:translateY(-50%); background:none; border:none; cursor:pointer; padding:4px; color:#5a655f; display:flex;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  </button>
+                </div>
               </div>
-              <button style="align-self:flex-start; background:#176B4D; color:#FFFFFF; border:none; padding:12px 24px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;" onclick="alert('Profil enregistré !')">Enregistrer</button>
+              <div>
+                <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Confirmer le nouveau mot de passe</label>
+                <div style="position:relative;">
+                  <input id="profile-form-password-confirm" type="password" style="width:100%; padding:12px 44px 12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="Ressaisir le mot de passe" />
+                  <button type="button" class="toggle-password-visibility-btn" data-target="profile-form-password-confirm" aria-label="Afficher le mot de passe" style="position:absolute; top:50%; right:10px; transform:translateY(-50%); background:none; border:none; cursor:pointer; padding:4px; color:#5a655f; display:flex;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  </button>
+                </div>
+              </div>
+              <button id="save-profile-btn" style="align-self:flex-start; background:#176B4D; color:#FFFFFF; border:none; padding:12px 24px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Enregistrer</button>
             </div>
           </div>
         </section>
@@ -1044,8 +1058,26 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
           <div style="display:flex; align-items:center; gap:10px; margin-left:auto;">
             ${getBadgeHtml(n.status, tone)}
             <button class="edit-news-btn" data-id="${n.id}" style="background:#F8F4EC; border:none; padding:8px 14px; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; color:#176B4D;">Modifier</button>
+            <button class="delete-news-btn" data-id="${n.id}" data-title="${n.title.replace(/"/g, '&quot;')}" style="background:rgba(177,69,36,0.08); border:none; padding:8px 14px; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; color:#B14524;">Supprimer</button>
           </div>
         `;
+
+        // Bind Delete Action
+        card.querySelector('.delete-news-btn').addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const btn = e.currentTarget;
+          const id = parseInt(btn.dataset.id);
+          if (!confirm(`Supprimer définitivement l'actualité « ${btn.dataset.title} » ? Cette action est irréversible.`)) return;
+          try {
+            const res = await fetch(`/api/admin/news?id=${id}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Erreur lors de la suppression.');
+            await fetchAdminData();
+            renderActualites();
+          } catch (err) {
+            alert(err.message);
+          }
+        });
         
         // Bind Edit Action
         card.querySelector('.edit-news-btn').addEventListener('click', (e) => {
@@ -1134,6 +1166,7 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
             <div style="display:flex; gap:8px;">
               <button class="view-registrants-btn" style="flex:1; background:#F8F4EC; border:none; padding:10px; border-radius:999px; font-size:12.5px; font-weight:700; cursor:pointer; color:#1F2925;">Inscrits</button>
               <button class="edit-event-btn" data-id="${ev.id}" style="flex:1; background:#176B4D; border:none; padding:10px; border-radius:999px; font-size:12.5px; font-weight:700; cursor:pointer; color:#FFFFFF;">Modifier</button>
+              <button class="delete-event-btn" data-id="${ev.id}" data-title="${ev.title.replace(/"/g, '&quot;')}" style="background:rgba(177,69,36,0.08); border:none; padding:10px 14px; border-radius:999px; font-size:12.5px; font-weight:700; cursor:pointer; color:#B14524;">Supprimer</button>
             </div>
           </div>
         `;
@@ -1143,6 +1176,33 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
           e.stopPropagation();
           pendingInscriptionsEventId = ev.id;
           goPage('inscriptions');
+        });
+
+        // Bind Delete Action — l'API refuse en 409 si l'événement a des
+        // inscrits, on redemande alors confirmation explicite (les
+        // inscriptions seront supprimées avec lui).
+        card.querySelector('.delete-event-btn').addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const btn = e.currentTarget;
+          const id = parseInt(btn.dataset.id);
+          const title = btn.dataset.title;
+          if (!confirm(`Supprimer définitivement l'événement « ${title} » ?`)) return;
+          try {
+            let res = await fetch(`/api/admin/events?id=${id}`, { method: 'DELETE' });
+            let data = await res.json();
+
+            if (res.status === 409 && data.needsConfirmation) {
+              if (!confirm(`Cet événement a ${data.inscrits} inscription(s). Elles seront supprimées elles aussi. Confirmer ?`)) return;
+              res = await fetch(`/api/admin/events?id=${id}&confirm=1`, { method: 'DELETE' });
+              data = await res.json();
+            }
+
+            if (!res.ok) throw new Error(data.error || 'Erreur lors de la suppression.');
+            await fetchAdminData();
+            renderEvenements();
+          } catch (err) {
+            alert(err.message);
+          }
         });
 
         // Bind Edit Action
@@ -1523,6 +1583,47 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
           await fetch('/api/logout', { method: 'POST' });
           window.location.href = '/connexion';
         });
+      });
+
+      // Afficher/masquer un champ mot de passe (délégation).
+      document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.toggle-password-visibility-btn');
+        if (!btn) return;
+        const input = document.getElementById(btn.dataset.target);
+        if (!input) return;
+        const showing = input.type === 'text';
+        input.type = showing ? 'password' : 'text';
+        btn.setAttribute('aria-label', showing ? 'Afficher le mot de passe' : 'Masquer le mot de passe');
+      });
+
+      // Mon profil — route commune à tous les rôles (api/superadmin/profile.js)
+      document.getElementById('save-profile-btn')?.addEventListener('click', async () => {
+        const nom = document.getElementById('profile-form-name').value.trim();
+        const email = document.getElementById('profile-form-email').value.trim();
+        const password = document.getElementById('profile-form-password').value;
+        const passwordConfirm = document.getElementById('profile-form-password-confirm').value;
+
+        if (password && password !== passwordConfirm) {
+          alert('Les deux mots de passe ne correspondent pas.');
+          return;
+        }
+
+        try {
+          const res = await fetch('/api/superadmin/profile', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nom, email, password: password || undefined })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Erreur.');
+          alert('Profil enregistré !');
+          document.getElementById('profile-form-password').value = '';
+          document.getElementById('profile-form-password-confirm').value = '';
+          const sidebarName = document.getElementById('sidebar-user-name');
+          if (sidebarName) sidebarName.textContent = nom;
+        } catch (err) {
+          alert(err.message);
+        }
       });
 
       // Mobile Drawer actions

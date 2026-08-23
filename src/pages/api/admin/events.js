@@ -1,7 +1,86 @@
 import { env } from "cloudflare:workers";
 import { requireRole, unauthorized } from "../../../lib/auth.js";
+import { logActivity } from "../../../lib/journal.js";
 
 export const prerender = false;
+
+// Suppression définitive d'un événement. Attention : le schéma déclare
+// ON DELETE CASCADE sur inscriptions.event_id — supprimer un événement
+// supprime donc aussi toutes ses inscriptions. On prévient l'appelant du
+// nombre d'inscrits concernés pour qu'il puisse confirmer en connaissance
+// de cause (voir le paramètre ?confirm=1).
+export async function DELETE(context) {
+  try {
+    const user = await requireRole(context, ['admin', 'super_admin']);
+    if (!user) return unauthorized();
+
+    const db = env.DB;
+    if (!db) {
+      return new Response(JSON.stringify({ error: "La base de données D1 (DB) n'est pas configurée dans env." }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    const { searchParams } = new URL(context.request.url);
+    const id = searchParams.get('id');
+    const confirmed = searchParams.get('confirm') === '1';
+    if (!id) {
+      return new Response(JSON.stringify({ error: "Le paramètre id est requis." }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    const event = await db.prepare("SELECT title FROM evenements WHERE id = ?").bind(id).first();
+    if (!event) {
+      return new Response(JSON.stringify({ error: "Événement introuvable." }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    const { n: inscrits } = await db
+      .prepare("SELECT COUNT(*) AS n FROM inscriptions WHERE event_id = ?")
+      .bind(id)
+      .first();
+
+    // Garde-fou : on refuse la suppression tant que l'appelant n'a pas
+    // explicitement confirmé la perte des inscriptions associées.
+    if (inscrits > 0 && !confirmed) {
+      return new Response(JSON.stringify({
+        error: `Cet événement a ${inscrits} inscription(s). Les supprimer aussi ?`,
+        needsConfirmation: true,
+        inscrits,
+      }), {
+        status: 409,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    await db.prepare("DELETE FROM evenements WHERE id = ?").bind(id).run();
+    await logActivity(
+      db, context, user,
+      "Suppression d'un événement",
+      inscrits > 0 ? `${event.title} (+ ${inscrits} inscription(s))` : event.title
+    );
+
+    return new Response(JSON.stringify({
+      success: true,
+      message: inscrits > 0
+        ? `Événement supprimé, ainsi que ses ${inscrits} inscription(s).`
+        : "Événement supprimé.",
+    }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+}
 
 export async function POST(context) {
   try {

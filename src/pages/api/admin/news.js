@@ -1,5 +1,6 @@
 import { env } from "cloudflare:workers";
 import { requireRole, unauthorized } from "../../../lib/auth.js";
+import { logActivity } from "../../../lib/journal.js";
 
 export const prerender = false;
 
@@ -51,6 +52,54 @@ export async function POST(context) {
       headers: { "Content-Type": "application/json" }
     });
 
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+}
+
+// Suppression définitive d'une actualité. Réservée à admin/super_admin :
+// un éditeur ne supprime pas, même ses propres brouillons (garde-fou
+// volontaire — il peut les laisser en brouillon).
+export async function DELETE(context) {
+  try {
+    const user = await requireRole(context, ['admin', 'super_admin']);
+    if (!user) return unauthorized();
+
+    const db = env.DB;
+    if (!db) {
+      return new Response(JSON.stringify({ error: "La base de données D1 (DB) n'est pas configurée dans env." }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    const { searchParams } = new URL(context.request.url);
+    const id = searchParams.get('id');
+    if (!id) {
+      return new Response(JSON.stringify({ error: "Le paramètre id est requis." }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    const article = await db.prepare("SELECT title FROM actualites WHERE id = ?").bind(id).first();
+    if (!article) {
+      return new Response(JSON.stringify({ error: "Actualité introuvable." }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    await db.prepare("DELETE FROM actualites WHERE id = ?").bind(id).run();
+    await logActivity(db, context, user, "Suppression d'une actualité", article.title);
+
+    return new Response(JSON.stringify({ success: true, message: "Actualité supprimée." }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    });
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
