@@ -38,7 +38,7 @@ export async function GET(context) {
     ] = await Promise.all([
       db.prepare("SELECT COUNT(*) AS n FROM recensement").first(),
       db.prepare("SELECT COUNT(*) AS n FROM recensement WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')").first(),
-      db.prepare("SELECT COUNT(*) AS n FROM evenements WHERE tab = 'À venir'").first(),
+      db.prepare("SELECT COUNT(*) AS n FROM evenements WHERE status = 'Ouvert'").first(),
       db.prepare("SELECT COUNT(*) AS n FROM messages WHERE status IN ('Non lu', 'À traiter')").first(),
       db.prepare("SELECT COUNT(*) AS n FROM utilisateurs WHERE role IN ('admin','super_admin') AND statut = 'actif'").first(),
       db.prepare("SELECT COUNT(*) AS n FROM utilisateurs WHERE statut = 'desactive'").first(),
@@ -46,7 +46,7 @@ export async function GET(context) {
       db.prepare(`SELECT COUNT(*) AS n FROM recensement WHERE created_at >= ${sinceExpr}`).first(),
       db.prepare("SELECT utilisateur_email, role, action, details, created_at FROM journal_activite ORDER BY created_at DESC LIMIT 5").all(),
       db.prepare("SELECT title, category, status, created_at FROM actualites ORDER BY created_at DESC LIMIT 5").all(),
-      db.prepare("SELECT title, date, place FROM evenements WHERE tab = 'À venir' ORDER BY created_at DESC LIMIT 5").all(),
+      db.prepare("SELECT title, date, place FROM evenements WHERE status = 'Ouvert' ORDER BY created_at DESC LIMIT 5").all(),
     ]);
 
     // Pas de file d'attente pour le recensement (contrairement aux messages) :

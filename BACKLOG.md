@@ -4,7 +4,7 @@
 
 Ce document remplace le backlog précédent, qui contenait des affirmations non vérifiées.
 
-**État git :** 51 commits sur la branche `content/contacts-legal-info`, dont **34 non poussés** vers `origin`. Aucune migration appliquée sur la base distante `anb-db` — tout le travail est local.
+**État git :** 56 commits sur la branche `content/contacts-legal-info`, dont **39 non poussés** vers `origin`. Aucune migration appliquée sur la base distante `anb-db` — tout le travail est local.
 
 Légende : 🔴 Bloquant lancement · 🟠 Important · 🟡 Peut attendre
 
@@ -20,20 +20,13 @@ Conséquences : un visiteur croit avoir envoyé un message, personne ne le reço
 
 À faire : créer `api/contact.js` (POST public + anti-abus, sur le modèle de `api/recensement.js`) et brancher le formulaire dessus.
 
-### 🔴 P2 — Événements & Inscriptions : audit complet (2026-08-23)
+### 🟡 P2 — Reliquats mineurs Événements/Inscriptions
 
-Vérifié en exécution (inscription réelle, modification réelle d'un événement annulé, relecture de toutes les routes). Ce qui marche déjà bien : CRUD Événements (créer/modifier/supprimer, avec garde-fou sur les inscrits liés — testé), capacité réelle vs affichée (`isFull`, déjà corrigé plus tôt), inscription publique elle-même (respecte bien capacité/statut Complet/Annulé, anti-abus par IP).
+Le gros de l'audit du 2026-08-23 sur Événements & Inscriptions est traité — voir section 5 (« Refonte Événements & Inscriptions »). Ce qui reste, volontairement laissé de côté (hors du périmètre demandé) :
 
-Ce qui ne va pas, par gravité :
-
-- 🔴 **L'inscription publique ne récupère que le prénom.** `api/inscriptions.js` insère `last_name`, `email`, `phone` en chaînes vides à chaque fois — le formulaire (`evenements.astro`) ne demande que « Prénom ». Résultat vérifié en base : un inscrit réel n'a ni nom, ni e-mail, ni téléphone. La vue Inscrits de l'admin affiche des colonnes Nom/E-mail/Téléphone qui sont donc **toujours vides** pour toute vraie inscription. Concrètement, l'association n'a **aucun moyen de recontacter un inscrit**. C'est le point le plus important de cet audit.
-- 🔴 **« Modifier » un événement réinitialise silencieusement son statut à « Ouvert ».** Même famille de bug que celui déjà corrigé sur les actualités, mais **pas corrigé ici**. Reproduit en direct : un événement annulé (`status='Annulé'`), une fois passé par « Modifier » → « Sauvegarder », repasse en `Ouvert` — alors que rien dans le formulaire ne parle de statut. Un événement annulé redevient donc inscriptible dès qu'on corrige une simple faute de frappe dans sa description.
-- 🟠 **Aucun moyen de faire passer un événement en Passé, Annulé ou Brouillon.** Le formulaire de création/édition n'a ni champ statut ni champ `tab`, et `PUT /api/admin/events` ne touche jamais `tab`. Conséquence vérifiée en base : sur les 8 événements existants, seuls ceux insérés à la main par le fichier de seed sont dans les onglets Passés/Brouillons/Annulés — **aucun événement créé depuis l'interface n'a jamais pu y arriver**. Plus concrètement : un événement qui a eu lieu reste affiché comme « à venir » (sur `/evenements` public *et* dans l'admin) indéfiniment, tant que personne ne va corriger `tab` à la main dans la base. Avant un vrai lancement, il faut au minimum un bouton pour marquer un événement Terminé/Annulé ; idéalement, dériver l'état « passé » de la date plutôt que d'un champ à mettre à jour à la main (mais `date` est aujourd'hui un texte libre — `"20 sept. 2026 — 11h00"` — pas une vraie date, donc ça demande d'abord de changer ce champ en date structurée).
-- 🟠 **Impossible de changer le statut d'un inscrit** (Confirmé/En attente/Liste d'attente/Annulé) — s'affiche mais aucune route ne le permet. À faire : `PUT /api/admin/inscriptions` + sélecteur dans la vue.
-- 🟡 Champ « Date limite d'inscription » du formulaire événement : présent visuellement mais sans `id`, jamais lu ni envoyé à l'API. Purement décoratif.
-- 🟡 La vue Inscrits n'a pas de recherche (contrairement à Recensement, qui en a une) — gênant seulement si un événement a beaucoup d'inscrits.
-- 🟡 Le Super Admin n'a aucune vue Inscriptions (ni dans son espace, ni de bouton vers celle de `/admin`) — seul l'export CSV agrégé y donne accès. Ça contredit le principe déjà appliqué ailleurs cette session (« un super-admin est un admin, mêmes onglets ») ; à harmoniser si tu veux que le super-admin puisse consulter/gérer les inscrits sans compte admin séparé.
-- 🟡 Matrice de permissions (Super Admin, ligne « Traitement des inscriptions et adhésions ») affiche `✓` pour admin/super-admin — en réalité on peut seulement *consulter* une inscription, jamais la « traiter » (aucune route ne le permet, cf. ci-dessus). À corriger en même temps que le reste de la matrice.
+- La vue Inscrits n'a pas de recherche (contrairement à Recensement, qui en a une) — gênant seulement si un événement a beaucoup d'inscrits.
+- Le Super Admin n'a aucune vue Inscriptions (ni dans son espace, ni de bouton vers celle de `/admin`) — seul l'export CSV agrégé y donne accès. Ça contredit le principe déjà appliqué ailleurs cette session (« un super-admin est un admin, mêmes onglets ») ; à harmoniser si tu veux que le super-admin puisse consulter/gérer les inscrits sans compte admin séparé.
+- Matrice de permissions (Super Admin, ligne « Traitement des inscriptions et adhésions ») affiche `✓` pour admin/super-admin — en réalité on peut seulement consulter/supprimer une inscription (plus de statut à « traiter » depuis la refonte). Formulation à ajuster en même temps que le reste de la matrice.
 
 ### 🟠 P3 — « Pages du site » (Admin) est une maquette figée
 
@@ -51,7 +44,6 @@ Options : supprimer la vue, ou la remplacer par une vraie liste des pages avec u
 
 ### 🟡 P5 — Suppressions et corrections secondaires
 
-- [ ] `DELETE /api/admin/inscriptions` — désinscrire quelqu'un
 - [ ] `PUT /api/admin/recensement` — corriger la fiche d'un membre recensé (aujourd'hui : suppression uniquement)
 
 ### 🟡 P6 — Vues Super Admin encore en maquette
@@ -76,7 +68,7 @@ Tableau vérifié route par route.
 | **Actualités** | ✅ | ✅ | ✅ | ✅ |
 | **Événements** | ✅ | ✅ | ✅ | ✅ (avec garde-fou sur les inscrits) |
 | **Messages** | ❌ formulaire cassé (P1) | ✅ | ✅ statut | ✅ (uniquement après archivage) |
-| **Inscriptions événements** | ✅ public | ✅ | ❌ (P2) | ❌ (P5) |
+| **Inscriptions événements** | ✅ public | ✅ | — *(plus de statut à modifier, cf. section 5)* | ✅ |
 | **Recensement / adhésions** | ✅ public | ✅ | ❌ (P5) | ✅ |
 | **Réglages du site** | — | ✅ | ✅ | — (clé/valeur, normal) |
 | **Médias / galerie** | ✅ upload R2 | ❌ (P4) | ❌ | ❌ |
@@ -110,6 +102,22 @@ Tableau vérifié route par route.
 ---
 
 ## 5. Fait et vérifié
+
+### Refonte Événements & Inscriptions (2026-08-24)
+Réponse aux points 🔴 de l'audit précédent (voir l'ancien contenu de la section P2), avec un vrai modèle de données :
+
+- **Statut de l'événement** simplifié à 3 valeurs posées uniquement par un admin : Ouvert / Terminé / Annulé. **« Complet » n'est plus stocké** : c'est calculé (inscrits ≥ capacité), recalculé à chaque lecture — plus besoin d'y toucher manuellement, et supprimer une inscription libère automatiquement une place. **« Brouillon » a disparu** (même principe que pour les actualités : un admin publie toujours directement).
+- **Inscriptions ouvertes/fermées** devient un champ indépendant du statut (nouvelle colonne `inscriptions_ouvertes`), modifiable à la création et à l'édition.
+- **Nouvelles actions admin** : « Annuler l'événement » (confirmation requise, disparaît du site public, inscriptions existantes conservées, pas de suppression automatique) et « Marquer comme terminé » (reste visible publiquement, plus inscriptible). Aucune des deux n'est déduite automatiquement de la date.
+- **Bug corrigé** : « Modifier » un événement réinitialisait silencieusement son statut à « Ouvert » à chaque sauvegarde (même famille que le bug déjà corrigé sur les actualités) — un événement annulé redevenait inscriptible dès qu'on touchait à sa description. Le contenu et le statut sont désormais des mises à jour strictement séparées côté API.
+- **Onglets admin** recalculés depuis statut + capacité (Ouvert/Complet/Terminé/Annulé) au lieu d'un champ `tab` à mettre à jour à la main — l'ancien système faisait que 3 des 4 onglets n'étaient jamais atteignables depuis l'interface réelle (vérifié en base avant correction).
+- **Inscription publique** : ne demande plus que prénom + nom (retrait des champs e-mail/téléphone, qui n'ont jamais été collectés en pratique — vérifié). Immédiate, sans validation manuelle : l'ancien système de statuts (Confirmé/En attente/Liste d'attente/Annulé) disparaît complètement, une inscription existe ou n'existe pas.
+- **Concurrence** : l'inscription publique est désormais une seule requête SQL atomique (`INSERT ... SELECT ... WHERE`) qui vérifie et écrit en une seule opération — élimine la fenêtre de dépassement de capacité entre deux inscriptions simultanées sur la toute dernière place. Vérifié en tirant 5 inscriptions concurrentes sur un événement à 1 place : exactement 1 a réussi.
+- **Suppression d'une inscription** par l'admin, avec libération réelle de la place — vérifié.
+- **Date/heure** : le champ texte libre est remplacé par un vrai sélecteur date + heure dans le formulaire admin (le format texte stocké en base ne change pas, aucune rupture de compatibilité).
+- Migration appliquée en local : `db/migration-2026-08-24-evenements-inscriptions.sql` (colonnes `evenements.tab` et `inscriptions.status/email/phone` supprimées après vérification qu'elles n'étaient utilisées nulle part ailleurs ; `inscriptions_ouvertes` ajoutée). `db/schema.sql` mis à jour en conséquence.
+- Bug préexistant (indépendant de cette refonte, trouvé en testant la vue Inscrits) : le sélecteur d'événement de la vue Inscrits se figeait dès que l'événement affiché par défaut n'avait aucun inscrit — corrigé au passage.
+- Tout vérifié en exécution : création/édition via le vrai formulaire, annulation, marquage terminé, inscription publique avec/sans places disponibles, inscriptions fermées, événement annulé absent du site public, suppression d'inscription, anti-abus (5/10 min), et le test de concurrence ci-dessus.
 
 ### Audit ciblé « le système Actualités/Événements marche-t-il à 100% ? »
 Deux bugs réels trouvés en le faisant volontairement échouer (pas en relisant le code), corrigés et re-testés :

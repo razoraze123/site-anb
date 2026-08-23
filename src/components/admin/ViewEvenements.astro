@@ -60,9 +60,13 @@
             <option>Formation</option>
           </select>
         </div>
-        <div style="flex:1; min-width:180px;">
-          <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Date et heure</label>
-          <input id="event-form-date" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px;" placeholder="20/09/2026 — 11h00" />
+        <div style="flex:1; min-width:140px;">
+          <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Date</label>
+          <input type="date" id="event-form-date-picker" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px;" />
+        </div>
+        <div style="flex:1; min-width:120px;">
+          <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Heure (optionnel)</label>
+          <input type="time" id="event-form-time-picker" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px;" />
         </div>
       </div>
       <div>
@@ -79,8 +83,11 @@
           <input id="event-form-places" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px;" value="120" />
         </div>
         <div style="flex:1; min-width:160px;">
-          <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Date limite d'inscription</label>
-          <input style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px;" placeholder="15/09/2026" />
+          <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Inscriptions</label>
+          <select id="event-form-registration" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px;">
+            <option value="1">Ouvertes</option>
+            <option value="0">Fermées</option>
+          </select>
         </div>
       </div>
       <div style="display:flex; gap:12px; justify-content:flex-end; flex-wrap:wrap; border-top:1px solid rgba(31,41,37,0.07); padding-top:20px;">

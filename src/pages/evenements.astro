@@ -10,22 +10,24 @@ let next = null;
 
 try {
   if (db) {
+    // Un événement Annulé ne doit JAMAIS apparaître sur le site public —
+    // filtré directement dans la requête (pas juste caché en front), pour
+    // qu'il ne fuite même pas dans la réponse/le HTML.
     const { results } = await db.prepare(
-      `SELECT id, title, date, place, category, max_places, status, bg_gradient, tab, created_at,
-        (SELECT COUNT(*) FROM inscriptions i WHERE i.event_id = evenements.id AND i.status != 'Annulé') AS registered_count
-       FROM evenements ORDER BY id ASC`
+      `SELECT id, title, date, place, category, max_places, status, inscriptions_ouvertes, bg_gradient, created_at,
+        (SELECT COUNT(*) FROM inscriptions i WHERE i.event_id = evenements.id) AS registered_count
+       FROM evenements WHERE status != 'Annulé' ORDER BY id ASC`
     ).all();
     events = results.map(e => ({
       ...e,
-      isPast: e.tab === 'Passés' || e.status === 'Terminé',
-      // Le statut "Complet" n'est jamais posé automatiquement (aucune
-      // tâche planifiée dans ce projet) — il faut donc aussi comparer
-      // le nombre d'inscrits à la capacité pour savoir si le bouton
-      // "Je participe" doit vraiment être proposé.
+      // "Terminé" est posé à la main par un admin (bouton dédié) — jamais
+      // déduit automatiquement de la date pour l'instant.
+      isPast: e.status === 'Terminé',
       isFull: e.max_places > 0 && e.registered_count >= e.max_places,
+      isRegistrationClosed: !e.inscriptions_ouvertes,
       desc: e.category === 'Culture' ? "Célébration des traditions nigériennes." : "Rencontre solidaire et conviviale."
     }));
-    
+
     // Find next upcoming event
     const upcoming = events.filter(e => !e.isPast);
     next = upcoming[0] ?? events[0];
@@ -80,15 +82,20 @@ const eventFilters = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 'F
             <h3 style="font-family:'Unbounded',sans-serif; font-size:clamp(1.4rem,2.2vw,1.9rem); font-weight:700; color:#FFFFFF; margin:0 0 12px;">{next.title}</h3>
             <p style="font-size:15.5px; line-height:1.7; color:#F8F4EC; opacity:0.85; margin:0 0 20px;">{next.desc}</p>
 
-            {next.status === 'Complet' || next.isFull ? (
+            {next.isPast ? (
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:26px;">
+                <span style="width:8px; height:8px; border-radius:50%; background:#5a655f;"></span>
+                <span style="font-size:13.5px; font-weight:700; color:#F8F4EC; opacity:0.7;">Terminé</span>
+              </div>
+            ) : next.isFull ? (
               <div style="display:flex; align-items:center; gap:8px; margin-bottom:26px;">
                 <span style="width:8px; height:8px; border-radius:50%; background:#E97824;"></span>
                 <span style="font-size:13.5px; font-weight:700; color:#F8F4EC;">Complet</span>
               </div>
-            ) : next.status === 'Annulé' ? (
+            ) : next.isRegistrationClosed ? (
               <div style="display:flex; align-items:center; gap:8px; margin-bottom:26px;">
                 <span style="width:8px; height:8px; border-radius:50%; background:#5a655f;"></span>
-                <span style="font-size:13.5px; font-weight:700; color:#F8F4EC; opacity:0.7;">Annulé</span>
+                <span style="font-size:13.5px; font-weight:700; color:#F8F4EC; opacity:0.7;">Inscriptions fermées</span>
               </div>
             ) : (
               <div style="margin-bottom:26px; max-width:220px;">
@@ -99,7 +106,7 @@ const eventFilters = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 'F
               </div>
             )}
 
-            {next.status !== 'Complet' && next.status !== 'Annulé' && !next.isPast && !next.isFull && (
+            {!next.isPast && !next.isFull && !next.isRegistrationClosed && (
               <button
                 type="button"
                 class="js-participate"
@@ -133,6 +140,7 @@ const eventFilters = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 'F
               data-past={ev.isPast ? '1' : ''}
               data-registered={ev.registered_count}
               data-max={ev.max_places}
+              data-registration-open={ev.inscriptions_ouvertes ? '1' : ''}
               tabindex="0"
               role="button"
               aria-label={`Voir les détails de ${ev.title}`}
@@ -148,11 +156,11 @@ const eventFilters = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 'F
                   {ev.isPast && (
                     <span style="font-size:11px; font-weight:700; color:#5a655f; background:rgba(31,41,37,0.06); padding:3px 10px; border-radius:999px;">Terminé</span>
                   )}
-                  {(ev.status === 'Complet' || ev.isFull) && (
+                  {!ev.isPast && ev.isFull && (
                     <span style="font-size:11px; font-weight:700; color:#E97824; background:rgba(233,120,36,0.1); padding:3px 10px; border-radius:999px;">Complet</span>
                   )}
-                  {ev.status === 'Annulé' && (
-                    <span style="font-size:11px; font-weight:700; color:#5a655f; background:rgba(31,41,37,0.06); padding:3px 10px; border-radius:999px;">Annulé</span>
+                  {!ev.isPast && !ev.isFull && ev.isRegistrationClosed && (
+                    <span style="font-size:11px; font-weight:700; color:#5a655f; background:rgba(31,41,37,0.06); padding:3px 10px; border-radius:999px;">Inscriptions fermées</span>
                   )}
                 </div>
                 <h3 style="font-size:17px; font-weight:700; color:#1F2925; margin:0 0 6px;">{ev.title}</h3>
@@ -186,6 +194,8 @@ const eventFilters = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 'F
           <p id="participate-event-title" style="font-size:14px; color:#5a655f; margin:0 0 20px;"></p>
           <label for="participate-first-name" style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Prénom <span style="color:#B14524;">*</span></label>
           <input type="text" id="participate-first-name" placeholder="Ex: Fatou" style="width:100%; padding:13px 14px; border-radius:12px; border:1.5px solid #E3DCCB; font-size:14px; outline:none; box-sizing:border-box; margin-bottom:14px;" />
+          <label for="participate-last-name" style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Nom <span style="color:#B14524;">*</span></label>
+          <input type="text" id="participate-last-name" placeholder="Ex: Souley" style="width:100%; padding:13px 14px; border-radius:12px; border:1.5px solid #E3DCCB; font-size:14px; outline:none; box-sizing:border-box; margin-bottom:14px;" />
           <div id="participate-error" class="form-error hidden"></div>
           <div id="participate-success" class="hidden" style="font-size:14.5px; font-weight:700; color:#176B4D; padding:14px 0;">Inscription confirmée, à bientôt !</div>
           <button type="button" id="participate-submit" style="width:100%; background:#E97824; color:#FFFFFF; border:none; padding:14px; border-radius:8px; font-weight:700; font-size:14.5px; cursor:pointer;">Confirmer ma participation</button>
@@ -356,6 +366,7 @@ const eventFilters = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 'F
     const modalGoParticipate = document.getElementById('modal-go-participate');
     const participateTitle = document.getElementById('participate-event-title');
     const participateInput = document.getElementById('participate-first-name') as HTMLInputElement;
+    const participateLastNameInput = document.getElementById('participate-last-name') as HTMLInputElement;
     const participateError = document.getElementById('participate-error');
     const participateSuccess = document.getElementById('participate-success');
     const participateSubmit = document.getElementById('participate-submit') as HTMLButtonElement;
@@ -377,6 +388,7 @@ const eventFilters = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 'F
       participateSubmit.disabled = false;
       participateSubmit.classList.remove('hidden');
       if (participateInput) participateInput.value = '';
+      if (participateLastNameInput) participateLastNameInput.value = '';
     }
 
     function showParticipate(id: string, title: string) {
@@ -404,23 +416,23 @@ const eventFilters = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 'F
         if (modalDesc) modalDesc.textContent = d.desc ?? '';
 
         const isPast = d.past === '1';
-        const status = d.status;
         const registered = Number(d.registered ?? 0);
         const max = Number(d.max ?? 0);
-        // Le statut "Complet" n'est jamais posé automatiquement : on
-        // compare aussi la capacité, sinon le bouton resterait proposé
+        // "Complet" n'est jamais posé automatiquement : on compare
+        // toujours la capacité réelle, sinon le bouton resterait proposé
         // une fois toutes les places prises (le serveur refuserait
         // l'inscription, mais seulement après coup).
         const isFull = max > 0 && registered >= max;
-        let eligible = !isPast && status !== 'Complet' && status !== 'Annulé' && !isFull;
+        const registrationClosed = d.registrationOpen !== '1';
+        let eligible = !isPast && !isFull && !registrationClosed;
 
         if (modalStatus) {
           if (isPast) {
             modalStatus.innerHTML = `<span style="font-size:13px; font-weight:700; color:#5a655f;">Événement terminé</span>`;
-          } else if (status === 'Complet' || isFull) {
+          } else if (isFull) {
             modalStatus.innerHTML = `<span style="font-size:13px; font-weight:700; color:#E97824;">Complet</span>`;
-          } else if (status === 'Annulé') {
-            modalStatus.innerHTML = `<span style="font-size:13px; font-weight:700; color:#5a655f;">Annulé</span>`;
+          } else if (registrationClosed) {
+            modalStatus.innerHTML = `<span style="font-size:13px; font-weight:700; color:#5a655f;">Inscriptions fermées</span>`;
           } else {
             const pct = max > 0 ? Math.min(100, Math.round((registered / max) * 100)) : 0;
             modalStatus.innerHTML = `
@@ -468,9 +480,10 @@ const eventFilters = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 'F
 
     participateSubmit?.addEventListener('click', async () => {
       const firstName = participateInput?.value.trim();
-      if (!firstName) {
+      const lastName = participateLastNameInput?.value.trim();
+      if (!firstName || !lastName) {
         if (participateError) {
-          participateError.textContent = 'Veuillez renseigner votre prénom.';
+          participateError.textContent = 'Veuillez renseigner votre prénom et votre nom.';
           participateError.classList.remove('hidden');
         }
         return;
@@ -482,7 +495,7 @@ const eventFilters = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 'F
         const res = await fetch('/api/inscriptions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ event_id: currentEventId, first_name: firstName })
+          body: JSON.stringify({ event_id: currentEventId, first_name: firstName, last_name: lastName })
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Une erreur est survenue.');

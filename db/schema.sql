@@ -28,6 +28,12 @@ CREATE TABLE IF NOT EXISTS actualites (
 );
 
 -- 3. Table evenements
+-- status : Ouvert (OPEN) | Terminé (COMPLETED) | Annulé (CANCELLED) —
+-- toujours posé manuellement par un admin, jamais déduit automatiquement
+-- de la date. "Complet" n'est PAS un statut stocké : c'est calculé à
+-- l'affichage (registered_count >= max_places), voir requêtes qui lisent
+-- cette table. inscriptions_ouvertes est indépendant du statut de
+-- l'événement (un événement Ouvert peut avoir ses inscriptions fermées).
 CREATE TABLE IF NOT EXISTS evenements (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,
@@ -37,20 +43,21 @@ CREATE TABLE IF NOT EXISTS evenements (
   registered_count INTEGER DEFAULT 0,
   max_places INTEGER DEFAULT 100,
   status TEXT NOT NULL DEFAULT 'Ouvert',
+  inscriptions_ouvertes INTEGER NOT NULL DEFAULT 1,
   bg_gradient TEXT NOT NULL,
-  tab TEXT NOT NULL DEFAULT 'À venir',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 4. Table inscriptions
+-- Une inscription à un événement n'a pas de statut de confirmation : elle
+-- existe ou elle n'existe pas (l'admin la supprime si besoin). Elle ne
+-- collecte que prénom + nom — jamais d'e-mail ni de téléphone (différent
+-- du recensement, qui lui les demande).
 CREATE TABLE IF NOT EXISTS inscriptions (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   event_id INTEGER NOT NULL,
   first_name TEXT NOT NULL,
   last_name TEXT NOT NULL,
-  email TEXT NOT NULL,
-  phone TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'Confirmé',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (event_id) REFERENCES evenements(id) ON DELETE CASCADE
 );
@@ -119,14 +126,13 @@ INSERT OR IGNORE INTO actualites (title, slug, excerpt, content, category, auteu
 ('Bilan de la collecte solidaire 2025', 'bilan-collecte-solidaire-2025', 'Merci à tous les donateurs pour la collecte d''hiver.', 'Grâce à vos dons, nous avons pu aider...', 'Solidarité', 1, 'Archivé', 'linear-gradient(150deg,#5a655f,#1F2925)');
 
 -- Événements
-INSERT OR IGNORE INTO evenements (title, date, place, category, registered_count, max_places, status, bg_gradient, tab) VALUES
-('Journée culturelle nigérienne', '20 sept. 2026', 'Parc Bordelais', 'Culture', 86, 120, 'Ouvert', 'linear-gradient(150deg,#176B4D,#1F2925)', 'À venir'),
-('Tournoi de football amical', '12 oct. 2026', 'Stade Léo Lagrange', 'Sport', 40, 40, 'Complet', 'linear-gradient(150deg,#E97824,#1F2925)', 'À venir'),
-('Soirée d''entraide et collecte solidaire', '8 nov. 2026', 'Salle associative', 'Solidarité', 12, 80, 'Ouvert', 'linear-gradient(150deg,#1F2925,#176B4D)', 'À venir'),
-('Atelier CV et recherche d''emploi', '3 déc. 2026', 'Bordeaux', 'Formation', 0, 30, 'Annulé', 'linear-gradient(150deg,#5a655f,#1F2925)', 'Annulés'),
-('Pique-nique communautaire', 'juin 2026', 'Bords de Garonne', 'Rencontre', 64, 64, 'Terminé', 'linear-gradient(150deg,#E8D8BF,#176B4D)', 'Passés'),
-('Repas de nouvel an', 'janvier 2026', 'Bordeaux', 'Rencontre', 58, 60, 'Terminé', 'linear-gradient(150deg,#E97824,#E8D8BF)', 'Passés'),
-('Soirée musique — édition 2027', 'à définir', '—', 'Culture', 0, 100, 'Brouillon', 'linear-gradient(150deg,#1F2925,#E8D8BF)', 'Brouillons');
+INSERT OR IGNORE INTO evenements (title, date, place, category, registered_count, max_places, status, inscriptions_ouvertes, bg_gradient) VALUES
+('Journée culturelle nigérienne', '20 sept. 2026', 'Parc Bordelais', 'Culture', 86, 120, 'Ouvert', 1, 'linear-gradient(150deg,#176B4D,#1F2925)'),
+('Tournoi de football amical', '12 oct. 2026', 'Stade Léo Lagrange', 'Sport', 40, 40, 'Ouvert', 1, 'linear-gradient(150deg,#E97824,#1F2925)'),
+('Soirée d''entraide et collecte solidaire', '8 nov. 2026', 'Salle associative', 'Solidarité', 12, 80, 'Ouvert', 1, 'linear-gradient(150deg,#1F2925,#176B4D)'),
+('Atelier CV et recherche d''emploi', '3 déc. 2026', 'Bordeaux', 'Formation', 0, 30, 'Annulé', 1, 'linear-gradient(150deg,#5a655f,#1F2925)'),
+('Pique-nique communautaire', 'juin 2026', 'Bords de Garonne', 'Rencontre', 64, 64, 'Terminé', 1, 'linear-gradient(150deg,#E8D8BF,#176B4D)'),
+('Repas de nouvel an', 'janvier 2026', 'Bordeaux', 'Rencontre', 58, 60, 'Terminé', 1, 'linear-gradient(150deg,#E97824,#E8D8BF)');
 
 -- Adhésions
 INSERT OR IGNORE INTO adhesions (name, email, motivation, status) VALUES
@@ -144,13 +150,12 @@ INSERT OR IGNORE INTO messages (from_name, subject, category, status, content) V
 ('Mariam D.', 'Question générale', 'Autre', 'Archivé', 'Bonjour, à quelle heure se termine la journée culturelle ?');
 
 -- Inscriptions
-INSERT OR IGNORE INTO inscriptions (event_id, first_name, last_name, email, phone, status) VALUES
-(1, 'Aïcha', 'Boubacar', 'aicha.b@email.fr', '06 12 34 56 78', 'Confirmé'),
-(1, 'Ibrahim', 'Moussa', 'ibrahim.m@email.fr', '06 23 45 67 89', 'Confirmé'),
-(1, 'Fatouma', 'Idrissa', 'fatouma.i@email.fr', '06 34 56 78 90', 'En attente'),
-(1, 'Souley', 'Hassane', 'souley.h@email.fr', '06 45 67 89 01', 'Confirmé'),
-(1, 'Mariam', 'Diallo', 'mariam.d@email.fr', '06 56 78 90 12', 'Liste d''attente'),
-(1, 'Assane', 'Traoré', 'assane.t@email.fr', '06 67 89 01 23', 'Annulé');
+INSERT OR IGNORE INTO inscriptions (event_id, first_name, last_name) VALUES
+(1, 'Aïcha', 'Boubacar'),
+(1, 'Ibrahim', 'Moussa'),
+(1, 'Fatouma', 'Idrissa'),
+(1, 'Souley', 'Hassane'),
+(1, 'Mariam', 'Diallo');
 
 -- Journal d'activité (Audit Logs)
 INSERT OR IGNORE INTO journal_activite (utilisateur_email, role, action, details, adresse_ip) VALUES

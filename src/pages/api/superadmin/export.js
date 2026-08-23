@@ -19,7 +19,7 @@ const SOURCES = {
   },
   inscriptions: {
     label: 'Inscriptions aux événements',
-    columns: ['event_id', 'first_name', 'last_name', 'email', 'phone', 'status', 'created_at'],
+    columns: ['event_id', 'first_name', 'last_name', 'created_at'],
   },
   messages: {
     label: 'Messages de contact',

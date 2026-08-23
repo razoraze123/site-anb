@@ -22,12 +22,27 @@
  *   « Inscrits » d'un événement. Si absent, le bouton n'est pas affiché — /superadmin
  *   n'a pas de vue Inscriptions, contrairement à /admin.
  */
+// "Complet" n'est pas un statut stocké : un événement Ouvert dont le
+// nombre d'inscrits atteint la capacité est complet, point — ça se
+// recalcule à chaque lecture, rien à mettre à jour manuellement quand une
+// inscription est ajoutée/supprimée. Terminé/Annulé restent des statuts
+// posés à la main par un admin (boutons dédiés dans renderEvenements).
+// Exporté (et pas seulement interne à createAdminContent) car des pages
+// hôtes comme /admin en ont aussi besoin en dehors des vues partagées
+// (ex. l'encart "prochain événement" du tableau de bord).
+export function eventBucket(ev) {
+  if (ev.status === 'Annulé') return 'Annulé';
+  if (ev.status === 'Terminé') return 'Terminé';
+  const full = ev.max_places > 0 && ev.registered_count >= ev.max_places;
+  return full ? 'Complet' : 'Ouvert';
+}
+
 export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) {
   const data = { actualites: [], evenements: [], messages: [] };
 
   const state = {
     newsTab: 'Publiées',
-    eventsFilter: 'À venir',
+    eventsFilter: 'Ouvert',
     messagesTab: 'Tous',
     messageSelectedIdx: 0,
     editingNewsId: null,
@@ -272,19 +287,57 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
 
   // ------------------------------------------------------------ Événements
 
+  // Le backend attend toujours `date` comme un simple texte affiché tel
+  // quel (aucun changement de schéma pour ce champ) — ces deux fonctions
+  // ne servent qu'à donner à l'admin un vrai calendrier/horaire en
+  // interface, tout en produisant/relisant le même format texte qu'avant
+  // ("20 sept. 2026 — 11h00").
+  const FRENCH_MONTHS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+  const FRENCH_MONTH_LOOKUP = {
+    'janv': 0, 'janvier': 0, 'févr': 1, 'fevrier': 1, 'février': 1, 'mars': 2,
+    'avr': 3, 'avril': 3, 'mai': 4, 'juin': 5, 'juil': 6, 'juillet': 6,
+    'août': 7, 'aout': 7, 'sept': 8, 'septembre': 8, 'oct': 9, 'octobre': 9,
+    'nov': 10, 'novembre': 10, 'déc': 11, 'decembre': 11, 'décembre': 11,
+  };
+
+  function formatEventDateText(dateValue, timeValue) {
+    if (!dateValue) return '';
+    const [y, m, d] = dateValue.split('-').map(Number);
+    const base = `${d} ${FRENCH_MONTHS[m - 1]} ${y}`;
+    return timeValue ? `${base} — ${timeValue.replace(':', 'h')}` : base;
+  }
+
+  // Best-effort : les événements créés avant ce formulaire (ou via le seed)
+  // ont des dates en texte libre pas toujours structurées ("juin 2026",
+  // "à définir"...). Quand on n'arrive pas à en extraire un jour exact, le
+  // sélecteur de date reste vide plutôt que de deviner — l'admin repart
+  // d'une sélection propre au lieu d'un texte non fiable.
+  function parseEventDateText(text) {
+    if (!text) return { date: '', time: '' };
+    const m = text.match(/^(\d{1,2})\s+([a-zA-Zéûîôâêàäëïöü]+)\.?\s+(\d{4})(?:\s*—\s*(\d{1,2})h(\d{2}))?/i);
+    if (!m) return { date: '', time: '' };
+    const [, day, monthWord, year, hh, mm] = m;
+    const monthIdx = FRENCH_MONTH_LOOKUP[monthWord.toLowerCase().replace(/\.$/, '')];
+    if (monthIdx === undefined) return { date: '', time: '' };
+    const date = `${year}-${String(monthIdx + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const time = hh !== undefined ? `${hh.padStart(2, '0')}:${mm}` : '';
+    return { date, time };
+  }
+
   function renderEvenements() {
-    renderTabs('.events-tab-container', ['À venir', 'Passés', 'Brouillons', 'Annulés'], state.eventsFilter, (label) => {
+    renderTabs('.events-tab-container', ['Ouvert', 'Complet', 'Terminé', 'Annulé'], state.eventsFilter, (label) => {
       state.eventsFilter = label;
       renderEvenements();
     });
 
-    // Encart « Mis en avant » : le prochain événement à venir.
-    const promo = data.evenements.find((e) => e.tab === 'À venir');
+    // Encart « Mis en avant » : le premier événement encore ouvert (ni
+    // complet, ni terminé, ni annulé).
+    const promo = data.evenements.find((e) => eventBucket(e) === 'Ouvert');
     const promoTitle = document.getElementById('promo-event-title');
     const promoDetails = document.getElementById('promo-event-details');
     const promoCover = document.getElementById('promo-event-cover');
     if (promoTitle && promoDetails) {
-      promoTitle.textContent = promo ? promo.title : 'Aucun événement à venir';
+      promoTitle.textContent = promo ? promo.title : 'Aucun événement ouvert';
       promoDetails.textContent = promo ? `${promo.date} · ${promo.place}` : '—';
       if (promoCover && promo) promoCover.style.cssText += coverStyleFor(promo.bg_gradient);
     }
@@ -293,13 +346,15 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     if (!container) return;
     container.innerHTML = '';
 
-    const filtered = data.evenements.filter((e) => e.tab === state.eventsFilter);
+    const filtered = data.evenements.filter((e) => eventBucket(e) === state.eventsFilter);
     if (filtered.length === 0) {
       container.innerHTML = '<div style="grid-column: 1/-1; padding: 30px; text-align: center; color: var(--color-muted-text); font-size: 14.5px;">Aucun événement dans cette rubrique.</div>';
       return;
     }
 
     filtered.forEach((ev) => {
+      const bucket = eventBucket(ev);
+      const tone = { Ouvert: 'g', Complet: 'o', Terminé: 'n', Annulé: 'r' }[bucket];
       const card = document.createElement('div');
       card.style.cssText = 'background:#FFFFFF; border-radius:20px; overflow:hidden; box-shadow:0 8px 24px rgba(31,41,37,0.05); display: flex; flex-direction: column;';
       card.innerHTML = `
@@ -308,22 +363,62 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
           <div>
             <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:8px;">
               <div style="font-size:12px; font-weight:700; color:#E97824; text-transform:uppercase;">${ev.category} · ${ev.date}</div>
-              ${getBadgeHtml(ev.status, ev.status === 'Ouvert' ? 'g' : 'o')}
+              ${getBadgeHtml(bucket, tone)}
             </div>
             <h3 style="font-size:16px; font-weight:700; color:#1F2925; margin:0 0 6px;">${ev.title}</h3>
-            <p style="font-size:13px; color:#5a655f; margin:0 0 16px;">${ev.place} · ${ev.registered_count}/${ev.max_places} inscrits</p>
+            <p style="font-size:13px; color:#5a655f; margin:0 0 4px;">${ev.place} · ${ev.registered_count}/${ev.max_places} inscrits</p>
+            <p style="font-size:12.5px; margin:0 0 16px;">${getBadgeHtml(ev.inscriptions_ouvertes ? 'Inscriptions ouvertes' : 'Inscriptions fermées', ev.inscriptions_ouvertes ? 'g' : 'n')}</p>
           </div>
-          <div style="display:flex; gap:8px;">
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
             ${onViewRegistrants ? '<button class="view-registrants-btn" style="flex:1; background:#F8F4EC; border:none; padding:10px; border-radius:999px; font-size:12.5px; font-weight:700; cursor:pointer; color:#1F2925;">Inscrits</button>' : ''}
             <button class="edit-event-btn" style="flex:1; background:#176B4D; border:none; padding:10px; border-radius:999px; font-size:12.5px; font-weight:700; cursor:pointer; color:#FFFFFF;">Modifier</button>
             <button class="delete-event-btn" style="background:rgba(177,69,36,0.08); border:none; padding:10px 14px; border-radius:999px; font-size:12.5px; font-weight:700; cursor:pointer; color:#B14524;">Supprimer</button>
           </div>
+          ${ev.status === 'Ouvert' ? `
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <button class="complete-event-btn" style="flex:1; background:#F8F4EC; border:none; padding:9px; border-radius:999px; font-size:12px; font-weight:700; cursor:pointer; color:#5a655f;">Marquer comme terminé</button>
+            <button class="cancel-event-btn" style="flex:1; background:#F8F4EC; border:none; padding:9px; border-radius:999px; font-size:12px; font-weight:700; cursor:pointer; color:#B14524;">Annuler l'événement</button>
+          </div>` : ''}
         </div>
       `;
 
       card.querySelector('.view-registrants-btn')?.addEventListener('click', (e) => {
         e.stopPropagation();
         onViewRegistrants(ev.id);
+      });
+
+      // Bascule de statut : envoie toujours la ligne complète (comme
+      // "Modifier" le ferait), avec juste `status` en plus — même
+      // architecture que le bouton Archiver/Publier des actualités.
+      async function setEventStatus(newStatus) {
+        try {
+          const res = await fetch('/api/admin/events', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: ev.id, title: ev.title, date: ev.date, place: ev.place,
+              category: ev.category, max_places: ev.max_places,
+              inscriptions_ouvertes: ev.inscriptions_ouvertes, status: newStatus,
+            }),
+          });
+          const payload = await res.json();
+          if (!res.ok) throw new Error(payload.error || 'Erreur serveur');
+          await refresh(renderEvenements);
+        } catch (err) {
+          alert(err.message);
+        }
+      }
+
+      card.querySelector('.complete-event-btn')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!confirm(`Marquer « ${ev.title} » comme terminé ? Il restera visible publiquement mais ne sera plus inscriptible.`)) return;
+        setEventStatus('Terminé');
+      });
+
+      card.querySelector('.cancel-event-btn')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!confirm(`Annuler « ${ev.title} » ? Il disparaîtra du site public mais restera visible ici, et ses inscriptions existantes sont conservées.`)) return;
+        setEventStatus('Annulé');
       });
 
       // L'API refuse en 409 tant que la perte des inscriptions liées n'est
@@ -353,11 +448,14 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
         state.editingEventId = ev.id;
         goPage('evenements-new');
         document.getElementById('event-form-title').value = ev.title;
-        document.getElementById('event-form-date').value = ev.date;
+        const { date, time } = parseEventDateText(ev.date);
+        document.getElementById('event-form-date-picker').value = date;
+        document.getElementById('event-form-time-picker').value = time;
         document.getElementById('event-form-place').value = ev.place;
         document.getElementById('event-form-category').value = ev.category;
         document.getElementById('event-form-places').value = ev.max_places;
         document.getElementById('event-form-desc').value = ev.desc || '';
+        document.getElementById('event-form-registration').value = ev.inscriptions_ouvertes ? '1' : '0';
         if (isImageUrl(ev.bg_gradient)) setUploadPreview('event', ev.bg_gradient);
         else resetUploadZone('event');
         document.querySelector('#view-evenements-new h1').textContent = "Modifier l'événement";
@@ -370,10 +468,12 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
 
   function resetEventForm() {
     state.editingEventId = null;
-    ['event-form-title', 'event-form-date', 'event-form-place', 'event-form-desc'].forEach((id) => {
+    ['event-form-title', 'event-form-date-picker', 'event-form-time-picker', 'event-form-place', 'event-form-desc'].forEach((id) => {
       const el = document.getElementById(id);
       if (el) el.value = '';
     });
+    const regSelect = document.getElementById('event-form-registration');
+    if (regSelect) regSelect.value = '1';
     resetUploadZone('event');
     const heading = document.querySelector('#view-evenements-new h1');
     if (heading) heading.textContent = 'Créer un événement';
@@ -608,13 +708,16 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
   function wireEventForm() {
     document.getElementById('publish-event-submit-btn')?.addEventListener('click', async () => {
       const title = document.getElementById('event-form-title').value.trim();
-      const date = document.getElementById('event-form-date').value.trim();
+      const datePicker = document.getElementById('event-form-date-picker').value;
+      const timePicker = document.getElementById('event-form-time-picker').value;
+      const date = formatEventDateText(datePicker, timePicker);
       const place = document.getElementById('event-form-place').value.trim();
       const category = document.getElementById('event-form-category').value;
       const maxPlaces = parseInt(document.getElementById('event-form-places').value, 10) || 100;
+      const inscriptionsOuvertes = document.getElementById('event-form-registration').value === '1';
       const imageUrl = document.getElementById('event-form-image-url').value;
 
-      if (!title || !date || !place) {
+      if (!title || !datePicker || !place) {
         alert('Veuillez remplir le titre, la date et le lieu du nouvel événement.');
         return;
       }
@@ -631,7 +734,11 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
             place,
             category,
             max_places: maxPlaces,
-            status: 'Ouvert',
+            inscriptions_ouvertes: inscriptionsOuvertes,
+            // Statut jamais envoyé ici : la création démarre toujours
+            // "Ouvert" côté serveur, et "Modifier" ne doit jamais changer
+            // le statut tout seul (voir boutons dédiés Annuler/Marquer
+            // comme terminé sur la liste).
             bg_gradient: imageUrl || 'linear-gradient(150deg,#E97824,#1F2925)',
           }),
         });

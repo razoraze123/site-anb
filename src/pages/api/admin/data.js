@@ -19,8 +19,8 @@ export async function GET(context) {
     // Retrieve all datasets
     const actualitesRes = await db.prepare("SELECT * FROM actualites ORDER BY created_at DESC").all();
     const evenementsRes = await db.prepare(
-      `SELECT id, title, date, place, category, max_places, status, bg_gradient, tab, created_at,
-        (SELECT COUNT(*) FROM inscriptions i WHERE i.event_id = evenements.id AND i.status != 'Annulé') AS registered_count
+      `SELECT id, title, date, place, category, max_places, status, inscriptions_ouvertes, bg_gradient, created_at,
+        (SELECT COUNT(*) FROM inscriptions i WHERE i.event_id = evenements.id) AS registered_count
        FROM evenements ORDER BY created_at DESC`
     ).all();
     const inscriptionsRes = await db.prepare("SELECT * FROM inscriptions ORDER BY created_at DESC").all();

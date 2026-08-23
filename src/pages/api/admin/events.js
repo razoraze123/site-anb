@@ -96,7 +96,7 @@ export async function POST(context) {
     }
 
     const body = await context.request.json();
-    const { title, date, place, category, max_places, status, bg_gradient, tab } = body;
+    const { title, date, place, category, max_places, bg_gradient, inscriptions_ouvertes } = body;
 
     if (!title || !date || !place) {
       return new Response(JSON.stringify({ error: "Les paramètres title, date et place sont requis." }), {
@@ -108,14 +108,19 @@ export async function POST(context) {
     // Default values if omitted
     const cat = category || "Culture";
     const maxPl = max_places !== undefined ? max_places : 100;
-    const stat = status || "Ouvert";
     const bg = bg_gradient || "linear-gradient(150deg,#E97824,#1F2925)";
-    const tb = tab || "À venir";
+    const regOpen = inscriptions_ouvertes === false || inscriptions_ouvertes === 0 ? 0 : 1;
+    // Un admin/super-admin publie toujours directement (même principe que
+    // pour les actualités) : un événement nouvellement créé démarre
+    // toujours "Ouvert", quoi que le client envoie. Le statut ne change
+    // ensuite que via les actions dédiées "Annuler" / "Marquer comme
+    // terminé" (voir PUT), jamais via ce formulaire de création.
+    const stat = "Ouvert";
 
     // Insert into D1 (registered_count is derived live from `inscriptions`, not stored)
     const statement = db.prepare(
-      "INSERT INTO evenements (title, date, place, category, max_places, status, bg_gradient, tab) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-    ).bind(title, date, place, cat, maxPl, stat, bg, tb);
+      "INSERT INTO evenements (title, date, place, category, max_places, status, inscriptions_ouvertes, bg_gradient) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+    ).bind(title, date, place, cat, maxPl, stat, regOpen, bg);
 
     const result = await statement.run();
 
@@ -150,7 +155,7 @@ export async function PUT(context) {
     }
 
     const body = await context.request.json();
-    const { id, title, date, place, category, max_places, status } = body;
+    const { id, title, date, place, category, max_places, status, inscriptions_ouvertes } = body;
 
     if (!id || !title || !date || !place) {
       return new Response(JSON.stringify({ error: "Les paramètres id, title, date et place sont requis." }), {
@@ -161,12 +166,27 @@ export async function PUT(context) {
 
     const cat = category || "Culture";
     const maxPl = max_places !== undefined ? max_places : 100;
-    const stat = status || "Ouvert";
+    // inscriptions_ouvertes est un champ normal du formulaire d'édition
+    // (contrairement à `status`, voir plus bas) : s'il n'est pas fourni on
+    // garde la valeur par défaut "ouvertes" plutôt que de deviner.
+    const regOpen = inscriptions_ouvertes === false || inscriptions_ouvertes === 0 ? 0 : 1;
 
-    // Update in D1
-    const statement = db.prepare(
-      "UPDATE evenements SET title = ?, date = ?, place = ?, category = ?, max_places = ?, status = ? WHERE id = ?"
-    ).bind(title, date, place, cat, maxPl, stat, id);
+    // IMPORTANT : modifier le contenu d'un événement ne doit JAMAIS changer
+    // son statut tout seul (c'était le bug — "Modifier" envoyait status:
+    // 'Ouvert' en dur à chaque sauvegarde, ce qui réouvrait silencieusement
+    // un événement annulé ou terminé). `status` n'est donc mis à jour que
+    // si le body en fournit un explicitement ET que c'est une vraie
+    // transition métier ('Annulé' ou 'Terminé', posées par les actions
+    // dédiées "Annuler l'événement" / "Marquer comme terminé"). Dans tous
+    // les autres cas (édition normale du contenu), la colonne status n'est
+    // même pas présente dans l'UPDATE : elle garde sa valeur actuelle.
+    const allowStatusChange = ['Annulé', 'Terminé'].includes(status);
+
+    const statement = allowStatusChange
+      ? db.prepare("UPDATE evenements SET title = ?, date = ?, place = ?, category = ?, max_places = ?, inscriptions_ouvertes = ?, status = ? WHERE id = ?")
+          .bind(title, date, place, cat, maxPl, regOpen, status, id)
+      : db.prepare("UPDATE evenements SET title = ?, date = ?, place = ?, category = ?, max_places = ?, inscriptions_ouvertes = ? WHERE id = ?")
+          .bind(title, date, place, cat, maxPl, regOpen, id);
 
     const result = await statement.run();
 

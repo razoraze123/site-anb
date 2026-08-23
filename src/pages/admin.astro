@@ -362,7 +362,7 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
             <p style="font-size:12.5px; color:#9aa39c; margin:0;">Basé uniquement sur les données de la plateforme — aucun outil de mesure d'audience (pages vues, visiteurs) n'est branché sur le site pour l'instant.</p>
             <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px;">
               <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stats-articles-publies" style="font-size:22px; font-weight:800; color:#176B4D;">—</div><div style="font-size:13px; color:#5a655f;">Articles publiés</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stats-inscriptions-confirmees" style="font-size:22px; font-weight:800; color:#E97824;">—</div><div style="font-size:13px; color:#5a655f;">Inscriptions confirmées</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stats-inscriptions-confirmees" style="font-size:22px; font-weight:800; color:#E97824;">—</div><div style="font-size:13px; color:#5a655f;">Inscriptions aux événements</div></div>
               <div id="stats-recensement-card" style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stats-recensement" style="font-size:22px; font-weight:800; color:#176B4D;">—</div><div style="font-size:13px; color:#5a655f;">Membres recensés</div></div>
               <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stats-messages-a-traiter" style="font-size:22px; font-weight:800; color:#E97824;">—</div><div style="font-size:13px; color:#5a655f;">Messages à traiter</div></div>
             </div>
@@ -435,7 +435,7 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
   <button id="mobile-fab-btn" class="nav-mobile-only" aria-label="Créer" style="position:fixed; bottom:26px; right:22px; z-index:120; width:60px; height:60px; border-radius:50%; background:#E97824; border:none; color:#FFFFFF; font-size:28px; font-weight:700; cursor:pointer; box-shadow:0 14px 30px rgba(233,120,36,0.4); display:flex; align-items:center; justify-content:center;">+</button>
 
   <script>
-    import { createAdminContent } from '../lib/adminContent.js';
+    import { createAdminContent, eventBucket } from '../lib/adminContent.js';
 
     // Vues Actualités / Événements / Messages : markup dans
     // src/components/admin/View*.astro, logique dans lib/adminContent.js —
@@ -510,7 +510,7 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
         // Populate statistics indicators
         document.getElementById('stat-events-count').textContent = eventsAdmin.length;
         document.getElementById('stat-news-count').textContent = newsArticles.filter(n => n.status === 'Publié').length;
-        document.getElementById('stat-members-count').textContent = registrants.filter(r => r.status === 'Confirmé').length;
+        document.getElementById('stat-members-count').textContent = registrants.length;
         document.getElementById('stat-census-count').textContent = recensementList.length;
 
         // Update priority items
@@ -531,7 +531,7 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
 
         // Encart « prochain événement » du tableau de bord. (L'encart
         // équivalent de la vue Événements est géré par le module partagé.)
-        const nextEvent = eventsAdmin.find(e => e.tab === 'À venir');
+        const nextEvent = eventsAdmin.find(e => eventBucket(e) === 'Ouvert');
         if (nextEvent) {
           document.getElementById('next-event-title').textContent = nextEvent.title;
           document.getElementById('next-event-date').textContent = nextEvent.date;
@@ -771,6 +771,15 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
         remainingEl.textContent = activeEvent.max_places - activeEvent.registered_count;
       }
 
+      // Bind select change — fait AVANT le "return" anticipé ci-dessous :
+      // sinon, dès que l'événement affiché par défaut n'a aucun inscrit
+      // (fréquent : c'est souvent le plus récent), le sélecteur ne
+      // déclenchait plus jamais renderInscriptions() et restait figé
+      // (bug préexistant, corrigé au passage).
+      select.onchange = () => {
+        renderInscriptions();
+      };
+
       // Filter registrants for selected event
       const container = document.getElementById('registrants-list-container');
       container.innerHTML = '';
@@ -783,22 +792,27 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
       }
 
       filtered.forEach(p => {
-        const tone = p.status === 'Confirmé' ? 'g' : (p.status === 'Annulé' ? 'r' : 'o');
         const row = document.createElement('div');
         row.style.cssText = 'display:flex; align-items:center; gap:16px; padding:14px 16px; border-bottom:1px solid rgba(31,41,37,0.06); flex-wrap:wrap;';
         row.innerHTML = `
           <div style="flex:1; min-width:160px; font-size:14px; font-weight:700; color:#1F2925;">${p.first_name} ${p.last_name}</div>
-          <div style="flex:1; min-width:180px; font-size:13px; color:#5a655f;">${p.email}</div>
-          <div style="min-width:120px; font-size:13px; color:#5a655f;">${p.phone}</div>
-          ${getBadgeHtml(p.status, tone)}
+          <div style="min-width:120px; font-size:13px; color:#5a655f;">${p.created_at ? p.created_at.split(' ')[0] : '—'}</div>
+          <button class="delete-registrant-btn" data-id="${p.id}" style="background:rgba(177,69,36,0.08); border:none; padding:7px 14px; border-radius:999px; font-size:12px; font-weight:700; cursor:pointer; color:#B14524;">Supprimer</button>
         `;
+        row.querySelector('.delete-registrant-btn').addEventListener('click', async () => {
+          if (!confirm(`Supprimer l'inscription de ${p.first_name} ${p.last_name} ?`)) return;
+          try {
+            const res = await fetch(`/api/admin/inscriptions?id=${p.id}`, { method: 'DELETE' });
+            const payload = await res.json();
+            if (!res.ok) throw new Error(payload.error || 'Erreur lors de la suppression.');
+            await fetchAdminData();
+            renderInscriptions();
+          } catch (err) {
+            alert(err.message);
+          }
+        });
         container.appendChild(row);
       });
-
-      // Bind select change
-      select.onchange = () => {
-        renderInscriptions();
-      };
     }
 
     // Recensement render
@@ -928,12 +942,12 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
       document.getElementById('stats-articles-publies').textContent =
         newsArticles.filter((a) => a.status === 'Publié').length;
       document.getElementById('stats-inscriptions-confirmees').textContent =
-        registrants.filter((r) => r.status === 'Confirmé').length;
+        registrants.length;
       document.getElementById('stats-recensement').textContent = recensementList.length;
       document.getElementById('stats-messages-a-traiter').textContent =
         messages.filter((m) => m.status === 'Non lu' || m.status === 'À traiter').length;
 
-      const upcoming = eventsAdmin.filter((e) => e.tab === 'À venir').slice(0, 5);
+      const upcoming = eventsAdmin.filter((e) => eventBucket(e) === 'Ouvert' || eventBucket(e) === 'Complet').slice(0, 5);
       const upcomingWrapper = document.getElementById('stats-upcoming-events');
       upcomingWrapper.innerHTML = upcoming.length
         ? ''
