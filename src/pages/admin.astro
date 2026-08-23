@@ -5,6 +5,9 @@ const user = await Astro.session?.get('user');
 if (!user || !['admin', 'super_admin'].includes(user.role)) {
   return Astro.redirect('/connexion');
 }
+
+const ROLE_LABELS = { admin: 'Admin', super_admin: 'Super Admin' };
+const roleLabel = ROLE_LABELS[user.role] || user.role;
 ---
 <!DOCTYPE html>
 <html lang="fr">
@@ -107,8 +110,8 @@ if (!user || !['admin', 'super_admin'].includes(user.role)) {
       <div style="padding:16px; border-top:1px solid rgba(31,41,37,0.06); display:flex; align-items:center; gap:12px;">
         <div style="width:38px; height:38px; border-radius:50%; background:linear-gradient(150deg,#176B4D,#E97824); flex-shrink:0;"></div>
         <div style="flex:1; min-width:0;">
-          <div style="font-size:13.5px; font-weight:700; color:#1F2925; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Mariama Souley</div>
-          <div style="font-size:11.5px; color:#5a655f;">Admin</div>
+          <div style="font-size:13.5px; font-weight:700; color:#1F2925; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{user.nom}</div>
+          <div style="font-size:11.5px; color:#5a655f;">{roleLabel}</div>
         </div>
         <button class="logout-btn" aria-label="Déconnexion" style="width:34px; height:34px; border-radius:10px; background:#F8F4EC; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1F2925" stroke-width="1.8"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>
@@ -171,7 +174,7 @@ if (!user || !['admin', 'super_admin'].includes(user.role)) {
           <div style="display:flex; flex-direction:column; gap:24px;">
             <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:16px;">
               <div>
-                <h1 style="font-size:24px; font-weight:800; color:#1F2925; margin:0 0 6px;">Bonjour Mariama 👋</h1>
+                <h1 style="font-size:24px; font-weight:800; color:#1F2925; margin:0 0 6px;">Bonjour {user.nom.split(' ')[0]} 👋</h1>
                 <p style="font-size:14.5px; color:#5a655f; margin:0;">Voici ce qui se passe pour l'ANB aujourd'hui.</p>
               </div>
               <div style="display:flex; gap:12px; flex-wrap:wrap;">
@@ -308,7 +311,7 @@ if (!user || !['admin', 'super_admin'].includes(user.role)) {
                 </div>
                 <div style="flex:1; min-width:180px;">
                   <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Rédacteur</label>
-                  <input id="news-form-author" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px; color:#9aa39c;" value="Mariama Souley" readonly />
+                  <input id="news-form-author" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px; color:#9aa39c;" value={user.nom} readonly />
                 </div>
               </div>
               <div style="display:flex; gap:12px; justify-content:flex-end; flex-wrap:wrap; border-top:1px solid rgba(31,41,37,0.07); padding-top:20px;">
@@ -553,21 +556,21 @@ if (!user || !['admin', 'super_admin'].includes(user.role)) {
               <div style="display:flex; align-items:center; gap:16px;">
                 <div style="width:56px; height:56px; border-radius:50%; background:linear-gradient(150deg,#176B4D,#E97824);"></div>
                 <div>
-                  <div style="font-size:16px; font-weight:700; color:#1F2925;">Mariama Souley</div>
-                  <div style="font-size:13px; color:#5a655f;">Admin</div>
+                  <div style="font-size:16px; font-weight:700; color:#1F2925;">{user.nom}</div>
+                  <div style="font-size:13px; color:#5a655f;">{roleLabel}</div>
                 </div>
               </div>
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Nom complet</label>
-                <input id="profile-form-name" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" value="Mariama Souley" />
+                <input id="profile-form-name" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" value={user.nom} />
               </div>
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">E-mail</label>
-                <input id="profile-form-email" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="vous@anb-bordeaux.fr" value="mariama.souley@anb-bordeaux.fr" />
+                <input id="profile-form-email" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="vous@anb-bordeaux.fr" value={user.email} />
               </div>
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Rôle</label>
-                <input readonly style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px; color:#9aa39c;" value="Admin" />
+                <input readonly style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px; color:#9aa39c;" value={roleLabel} />
               </div>
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Nouveau mot de passe</label>
@@ -1700,7 +1703,6 @@ if (!user || !['admin', 'super_admin'].includes(user.role)) {
                 excerpt: excerptVal,
                 content: contentVal,
                 category: categoryVal,
-                auteur_id: 2, // Mariama Souley
                 status: 'Publié',
                 bg_gradient: finalCover
               })

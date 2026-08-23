@@ -17,7 +17,7 @@ export async function POST(context) {
     }
 
     const body = await context.request.json();
-    const { title, slug, excerpt, content, category, auteur_id, status, bg_gradient } = body;
+    const { title, slug, excerpt, content, category, status, bg_gradient } = body;
 
     if (!title || !slug || !excerpt || !content) {
       return new Response(JSON.stringify({ error: "Les paramètres title, slug, excerpt et content sont requis." }), {
@@ -27,7 +27,10 @@ export async function POST(context) {
     }
 
     const cat = category || "Communauté";
-    const authId = auteur_id || 2;
+    // L'auteur est toujours l'utilisateur authentifié en session — jamais
+    // une valeur envoyée par le client (sinon n'importe quel admin pourrait
+    // attribuer un article à quelqu'un d'autre).
+    const authId = user.id;
     const stat = status || "Publié";
     const bg = bg_gradient || "linear-gradient(150deg,#176B4D,#1F2925)";
 
