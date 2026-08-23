@@ -282,7 +282,8 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
     // State management
     const state = {
       user: 'editeur',
-      page: 'edash'
+      page: 'edash',
+      editingDraftId: null
     };
 
     const navigationItems = [
@@ -344,13 +345,20 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
       // Nouveau brouillon : formulaire + slug auto-généré depuis le titre
       const draftFormBox = document.getElementById('draft-form-box');
       document.getElementById('toggle-draft-form-btn').addEventListener('click', () => {
-        draftFormBox.classList.toggle('hidden');
+        if (draftFormBox.classList.contains('hidden')) {
+          clearDraftForm();
+          draftFormBox.classList.remove('hidden');
+        } else {
+          draftFormBox.classList.add('hidden');
+          clearDraftForm();
+        }
       });
       document.getElementById('cancel-draft-btn').addEventListener('click', () => {
         draftFormBox.classList.add('hidden');
         clearDraftForm();
       });
       document.getElementById('draft-form-title').addEventListener('input', (e) => {
+        if (state.editingDraftId) return; // ne pas régénérer le slug d'un contenu existant
         document.getElementById('draft-form-slug').value = '/actualites/' + e.target.value
           .toLowerCase()
           .trim()
@@ -500,7 +508,8 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
             <span style="background:rgba(23,107,77,0.08); color:#176B4D; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700;">Article</span>
             <div style="flex:1; min-width:220px; font-size:14px; font-weight:700; color:#1F2925;">${c.title}</div>
             ${getBadgeHtml(c.status, STATUS_TONE[c.status] || 'n')}
-            ${canSubmit ? `<button class="submit-draft-btn" data-id="${c.id}" style="background:#F8F4EC; border:none; padding:9px 16px; border-radius:9px; font-size:12.5px; font-weight:700; cursor:pointer; color:#1F2925;">Soumettre</button>` : ''}
+            ${canSubmit ? `<button class="edit-draft-btn" data-id="${c.id}" style="background:#F8F4EC; border:none; padding:9px 16px; border-radius:9px; font-size:12.5px; font-weight:700; cursor:pointer; color:#1F2925;">Modifier</button>` : ''}
+            ${canSubmit ? `<button class="submit-draft-btn" data-id="${c.id}" style="background:#176B4D; color:#FFFFFF; border:none; padding:9px 16px; border-radius:9px; font-size:12.5px; font-weight:700; cursor:pointer;">Soumettre</button>` : ''}
           </div>
           ${c.commentaire_retour ? `<div style="font-size:13px; color:#B14524; background:rgba(177,69,36,0.08); padding:10px 14px; border-radius:10px;">💬 ${c.commentaire_retour}</div>` : ''}
         `;
@@ -510,6 +519,28 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
       document.querySelectorAll('.submit-draft-btn').forEach(btn => {
         btn.addEventListener('click', () => submitDraft(Number(btn.dataset.id)));
       });
+      document.querySelectorAll('.edit-draft-btn').forEach(btn => {
+        btn.addEventListener('click', () => editDraft(Number(btn.dataset.id)));
+      });
+    }
+
+    function editDraft(id) {
+      const item = editorContents.find((c) => c.id === id);
+      if (!item) return;
+
+      state.editingDraftId = id;
+      document.getElementById('draft-form-title').value = item.title;
+      document.getElementById('draft-form-slug').value = '/actualites/' + item.slug;
+      document.getElementById('draft-form-excerpt').value = item.excerpt;
+      document.getElementById('draft-form-content').value = item.content;
+      const categorySelect = document.getElementById('draft-form-category');
+      const optionIndex = [...categorySelect.options].findIndex((o) => o.value === item.category);
+      categorySelect.selectedIndex = optionIndex >= 0 ? optionIndex : 0;
+
+      document.querySelector('#draft-form-box h3').textContent = 'Modifier le brouillon';
+      document.getElementById('save-draft-btn').textContent = 'Enregistrer les modifications';
+      document.getElementById('draft-form-box').classList.remove('hidden');
+      document.getElementById('draft-form-box').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
     async function submitDraft(id) {
@@ -534,6 +565,9 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
         document.getElementById(id).value = '';
       });
       document.getElementById('draft-form-category').selectedIndex = 0;
+      state.editingDraftId = null;
+      document.querySelector('#draft-form-box h3').textContent = "Nouveau brouillon d'article";
+      document.getElementById('save-draft-btn').textContent = 'Enregistrer le brouillon';
     }
 
     async function saveDraft() {
@@ -548,11 +582,16 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
         return;
       }
 
+      const isEdit = state.editingDraftId !== null;
       try {
         const res = await fetch('/api/admin/news', {
-          method: 'POST',
+          method: isEdit ? 'PUT' : 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title, slug, excerpt, content, category })
+          body: JSON.stringify(
+            isEdit
+              ? { id: state.editingDraftId, title, slug, excerpt, content, category }
+              : { title, slug, excerpt, content, category }
+          )
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Erreur.');

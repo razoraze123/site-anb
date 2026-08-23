@@ -18,8 +18,10 @@ export async function GET(context) {
       });
     }
 
+    // slug/excerpt/content inclus pour pouvoir pré-remplir le formulaire de
+    // modification d'un brouillon/contenu renvoyé sans requête séparée.
     const result = await db.prepare(
-      "SELECT id, title, category, status, commentaire_retour, created_at FROM actualites WHERE auteur_id = ? ORDER BY created_at DESC"
+      "SELECT id, title, slug, excerpt, content, category, status, commentaire_retour, created_at FROM actualites WHERE auteur_id = ? ORDER BY created_at DESC"
     ).bind(user.id).all();
 
     const items = result.results;
