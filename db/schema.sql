@@ -38,6 +38,10 @@ CREATE TABLE IF NOT EXISTS evenements (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,
   date TEXT NOT NULL,
+  -- Date ISO (AAAA-MM-JJ) issue du sélecteur de date, uniquement pour le
+  -- tri chronologique. `date` reste le texte affiché (peut différer du
+  -- format ISO, ex. avec l'heure incluse).
+  event_date TEXT,
   place TEXT NOT NULL,
   category TEXT NOT NULL,
   registered_count INTEGER DEFAULT 0,
@@ -126,13 +130,13 @@ INSERT OR IGNORE INTO actualites (title, slug, excerpt, content, category, auteu
 ('Bilan de la collecte solidaire 2025', 'bilan-collecte-solidaire-2025', 'Merci à tous les donateurs pour la collecte d''hiver.', 'Grâce à vos dons, nous avons pu aider...', 'Solidarité', 1, 'Archivé', 'linear-gradient(150deg,#5a655f,#1F2925)');
 
 -- Événements
-INSERT OR IGNORE INTO evenements (title, date, place, category, registered_count, max_places, status, inscriptions_ouvertes, bg_gradient) VALUES
-('Journée culturelle nigérienne', '20 sept. 2026', 'Parc Bordelais', 'Culture', 86, 120, 'Ouvert', 1, 'linear-gradient(150deg,#176B4D,#1F2925)'),
-('Tournoi de football amical', '12 oct. 2026', 'Stade Léo Lagrange', 'Sport', 40, 40, 'Ouvert', 1, 'linear-gradient(150deg,#E97824,#1F2925)'),
-('Soirée d''entraide et collecte solidaire', '8 nov. 2026', 'Salle associative', 'Solidarité', 12, 80, 'Ouvert', 1, 'linear-gradient(150deg,#1F2925,#176B4D)'),
-('Atelier CV et recherche d''emploi', '3 déc. 2026', 'Bordeaux', 'Formation', 0, 30, 'Annulé', 1, 'linear-gradient(150deg,#5a655f,#1F2925)'),
-('Pique-nique communautaire', 'juin 2026', 'Bords de Garonne', 'Rencontre', 64, 64, 'Terminé', 1, 'linear-gradient(150deg,#E8D8BF,#176B4D)'),
-('Repas de nouvel an', 'janvier 2026', 'Bordeaux', 'Rencontre', 58, 60, 'Terminé', 1, 'linear-gradient(150deg,#E97824,#E8D8BF)');
+INSERT OR IGNORE INTO evenements (title, date, event_date, place, category, registered_count, max_places, status, inscriptions_ouvertes, bg_gradient) VALUES
+('Journée culturelle nigérienne', '20 sept. 2026', '2026-09-20', 'Parc Bordelais', 'Culture', 86, 120, 'Ouvert', 1, 'linear-gradient(150deg,#176B4D,#1F2925)'),
+('Tournoi de football amical', '12 oct. 2026', '2026-10-12', 'Stade Léo Lagrange', 'Sport', 40, 40, 'Ouvert', 1, 'linear-gradient(150deg,#E97824,#1F2925)'),
+('Soirée d''entraide et collecte solidaire', '8 nov. 2026', '2026-11-08', 'Salle associative', 'Solidarité', 12, 80, 'Ouvert', 1, 'linear-gradient(150deg,#1F2925,#176B4D)'),
+('Atelier CV et recherche d''emploi', '3 déc. 2026', '2026-12-03', 'Bordeaux', 'Formation', 0, 30, 'Annulé', 1, 'linear-gradient(150deg,#5a655f,#1F2925)'),
+('Pique-nique communautaire', 'juin 2026', '2026-06-01', 'Bords de Garonne', 'Rencontre', 64, 64, 'Terminé', 1, 'linear-gradient(150deg,#E8D8BF,#176B4D)'),
+('Repas de nouvel an', 'janvier 2026', '2026-01-01', 'Bordeaux', 'Rencontre', 58, 60, 'Terminé', 1, 'linear-gradient(150deg,#E97824,#E8D8BF)');
 
 -- Adhésions
 INSERT OR IGNORE INTO adhesions (name, email, motivation, status) VALUES

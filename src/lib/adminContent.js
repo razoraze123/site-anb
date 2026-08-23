@@ -397,7 +397,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              id: ev.id, title: ev.title, date: ev.date, place: ev.place,
+              id: ev.id, title: ev.title, date: ev.date, event_date: ev.event_date, place: ev.place,
               category: ev.category, max_places: ev.max_places,
               inscriptions_ouvertes: ev.inscriptions_ouvertes,
               bg_gradient: ev.bg_gradient, status: newStatus,
@@ -733,6 +733,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
             id: state.editingEventId,
             title,
             date,
+            event_date: datePicker, // pour le tri chronologique, cf. api/admin/events.js
             place,
             category,
             max_places: maxPlaces,

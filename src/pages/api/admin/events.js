@@ -96,7 +96,7 @@ export async function POST(context) {
     }
 
     const body = await context.request.json();
-    const { title, date, place, category, max_places, bg_gradient, inscriptions_ouvertes } = body;
+    const { title, date, event_date, place, category, max_places, bg_gradient, inscriptions_ouvertes } = body;
 
     if (!title || !date || !place) {
       return new Response(JSON.stringify({ error: "Les paramètres title, date et place sont requis." }), {
@@ -119,8 +119,8 @@ export async function POST(context) {
 
     // Insert into D1 (registered_count is derived live from `inscriptions`, not stored)
     const statement = db.prepare(
-      "INSERT INTO evenements (title, date, place, category, max_places, status, inscriptions_ouvertes, bg_gradient) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-    ).bind(title, date, place, cat, maxPl, stat, regOpen, bg);
+      "INSERT INTO evenements (title, date, event_date, place, category, max_places, status, inscriptions_ouvertes, bg_gradient) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    ).bind(title, date, event_date || null, place, cat, maxPl, stat, regOpen, bg);
 
     const result = await statement.run();
 
@@ -155,7 +155,7 @@ export async function PUT(context) {
     }
 
     const body = await context.request.json();
-    const { id, title, date, place, category, max_places, status, inscriptions_ouvertes, bg_gradient } = body;
+    const { id, title, date, event_date, place, category, max_places, status, inscriptions_ouvertes, bg_gradient } = body;
 
     if (!id || !title || !date || !place) {
       return new Response(JSON.stringify({ error: "Les paramètres id, title, date et place sont requis." }), {
@@ -187,10 +187,10 @@ export async function PUT(context) {
     const allowStatusChange = ['Annulé', 'Terminé'].includes(status);
 
     const statement = allowStatusChange
-      ? db.prepare("UPDATE evenements SET title = ?, date = ?, place = ?, category = ?, max_places = ?, inscriptions_ouvertes = ?, bg_gradient = ?, status = ? WHERE id = ?")
-          .bind(title, date, place, cat, maxPl, regOpen, bg, status, id)
-      : db.prepare("UPDATE evenements SET title = ?, date = ?, place = ?, category = ?, max_places = ?, inscriptions_ouvertes = ?, bg_gradient = ? WHERE id = ?")
-          .bind(title, date, place, cat, maxPl, regOpen, bg, id);
+      ? db.prepare("UPDATE evenements SET title = ?, date = ?, event_date = ?, place = ?, category = ?, max_places = ?, inscriptions_ouvertes = ?, bg_gradient = ?, status = ? WHERE id = ?")
+          .bind(title, date, event_date || null, place, cat, maxPl, regOpen, bg, status, id)
+      : db.prepare("UPDATE evenements SET title = ?, date = ?, event_date = ?, place = ?, category = ?, max_places = ?, inscriptions_ouvertes = ?, bg_gradient = ? WHERE id = ?")
+          .bind(title, date, event_date || null, place, cat, maxPl, regOpen, bg, id);
 
     const result = await statement.run();
 

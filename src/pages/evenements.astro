@@ -14,9 +14,9 @@ try {
     // filtré directement dans la requête (pas juste caché en front), pour
     // qu'il ne fuite même pas dans la réponse/le HTML.
     const { results } = await db.prepare(
-      `SELECT id, title, date, place, category, max_places, status, inscriptions_ouvertes, bg_gradient, created_at,
+      `SELECT id, title, date, event_date, place, category, max_places, status, inscriptions_ouvertes, bg_gradient, created_at,
         (SELECT COUNT(*) FROM inscriptions i WHERE i.event_id = evenements.id) AS registered_count
-       FROM evenements WHERE status != 'Annulé' ORDER BY id ASC`
+       FROM evenements WHERE status != 'Annulé' ORDER BY event_date IS NULL, event_date ASC`
     ).all();
     events = results.map(e => ({
       ...e,
