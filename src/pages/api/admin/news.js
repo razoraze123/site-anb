@@ -134,7 +134,7 @@ export async function PUT(context) {
     }
 
     const body = await context.request.json();
-    const { id, title, slug, excerpt, content, category } = body;
+    const { id, title, slug, excerpt, content, category, status } = body;
 
     if (!id || !title || !slug || !excerpt || !content) {
       return new Response(JSON.stringify({ error: "Les paramètres id, title, slug, excerpt et content sont requis." }), {
@@ -156,11 +156,17 @@ export async function PUT(context) {
     }
 
     const cat = category || "Communauté";
+    // Bascule Publié <-> Archivé, réservée à admin/super-admin (un éditeur
+    // ne passe jamais par ce champ — son statut suit uniquement le circuit
+    // brouillon -> soumission -> validation, géré par d'autres routes).
+    const allowStatusChange = user.role !== 'editeur' && ['Publié', 'Archivé'].includes(status);
 
     // Update in D1
-    const statement = db.prepare(
-      "UPDATE actualites SET title = ?, slug = ?, excerpt = ?, content = ?, category = ? WHERE id = ?"
-    ).bind(title, slug, excerpt, content, cat, id);
+    const statement = allowStatusChange
+      ? db.prepare("UPDATE actualites SET title = ?, slug = ?, excerpt = ?, content = ?, category = ?, status = ? WHERE id = ?")
+          .bind(title, slug, excerpt, content, cat, status, id)
+      : db.prepare("UPDATE actualites SET title = ?, slug = ?, excerpt = ?, content = ?, category = ? WHERE id = ?")
+          .bind(title, slug, excerpt, content, cat, id);
 
     const result = await statement.run();
 

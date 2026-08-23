@@ -195,6 +195,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
         <div style="font-size:12.5px; color:#5a655f; min-width:120px;">Modifié le ${n.created_at.split(' ')[0]}</div>
         <div style="display:flex; align-items:center; gap:10px; margin-left:auto;">
           ${getBadgeHtml(n.status, tone)}
+          <button class="archive-news-btn" style="background:#F8F4EC; border:none; padding:8px 14px; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; color:#1F2925;">${n.status === 'Archivé' ? 'Publier' : 'Archiver'}</button>
           <button class="edit-news-btn" style="background:#F8F4EC; border:none; padding:8px 14px; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; color:#176B4D;">Modifier</button>
           <button class="delete-news-btn" style="background:rgba(177,69,36,0.08); border:none; padding:8px 14px; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; color:#B14524;">Supprimer</button>
         </div>
@@ -207,6 +208,30 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
           const res = await fetch(`/api/admin/news?id=${n.id}`, { method: 'DELETE' });
           const payload = await res.json();
           if (!res.ok) throw new Error(payload.error || 'Erreur lors de la suppression.');
+          await refresh(renderActualites);
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+
+      // Archiver retire l'article du site public sans le supprimer ; Publier
+      // le fait redevenir visible. Réservé à admin/super-admin côté API (un
+      // éditeur ne peut pas passer par ce bouton — le circuit éditeur reste
+      // brouillon -> soumission -> validation).
+      card.querySelector('.archive-news-btn').addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const nextStatus = n.status === 'Archivé' ? 'Publié' : 'Archivé';
+        try {
+          const res = await fetch('/api/admin/news', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: n.id, title: n.title, slug: n.slug, excerpt: n.excerpt,
+              content: n.content, category: n.category, status: nextStatus,
+            }),
+          });
+          const payload = await res.json();
+          if (!res.ok) throw new Error(payload.error || 'Erreur serveur');
           await refresh(renderActualites);
         } catch (err) {
           alert(err.message);
@@ -553,7 +578,10 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
             excerpt,
             content,
             category,
-            status: 'Publié',
+            // Statut envoyé seulement à la création : "Modifier" ne doit
+            // jamais republier silencieusement un article archivé (le
+            // statut se change via le bouton dédié Archiver/Publier).
+            ...(isEdit ? {} : { status: 'Publié' }),
             bg_gradient: imageUrl || 'linear-gradient(150deg,#176B4D,#1F2925)',
           }),
         });
