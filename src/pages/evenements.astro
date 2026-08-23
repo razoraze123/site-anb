@@ -18,6 +18,11 @@ try {
     events = results.map(e => ({
       ...e,
       isPast: e.tab === 'Passés' || e.status === 'Terminé',
+      // Le statut "Complet" n'est jamais posé automatiquement (aucune
+      // tâche planifiée dans ce projet) — il faut donc aussi comparer
+      // le nombre d'inscrits à la capacité pour savoir si le bouton
+      // "Je participe" doit vraiment être proposé.
+      isFull: e.max_places > 0 && e.registered_count >= e.max_places,
       desc: e.category === 'Culture' ? "Célébration des traditions nigériennes." : "Rencontre solidaire et conviviale."
     }));
     
@@ -75,7 +80,7 @@ const eventFilters = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 'F
             <h3 style="font-family:'Unbounded',sans-serif; font-size:clamp(1.4rem,2.2vw,1.9rem); font-weight:700; color:#FFFFFF; margin:0 0 12px;">{next.title}</h3>
             <p style="font-size:15.5px; line-height:1.7; color:#F8F4EC; opacity:0.85; margin:0 0 20px;">{next.desc}</p>
 
-            {next.status === 'Complet' ? (
+            {next.status === 'Complet' || next.isFull ? (
               <div style="display:flex; align-items:center; gap:8px; margin-bottom:26px;">
                 <span style="width:8px; height:8px; border-radius:50%; background:#E97824;"></span>
                 <span style="font-size:13.5px; font-weight:700; color:#F8F4EC;">Complet</span>
@@ -94,7 +99,7 @@ const eventFilters = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 'F
               </div>
             )}
 
-            {next.status !== 'Complet' && next.status !== 'Annulé' && !next.isPast && (
+            {next.status !== 'Complet' && next.status !== 'Annulé' && !next.isPast && !next.isFull && (
               <button
                 type="button"
                 class="js-participate"
@@ -143,7 +148,7 @@ const eventFilters = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 'F
                   {ev.isPast && (
                     <span style="font-size:11px; font-weight:700; color:#5a655f; background:rgba(31,41,37,0.06); padding:3px 10px; border-radius:999px;">Terminé</span>
                   )}
-                  {ev.status === 'Complet' && (
+                  {(ev.status === 'Complet' || ev.isFull) && (
                     <span style="font-size:11px; font-weight:700; color:#E97824; background:rgba(233,120,36,0.1); padding:3px 10px; border-radius:999px;">Complet</span>
                   )}
                   {ev.status === 'Annulé' && (
@@ -400,18 +405,23 @@ const eventFilters = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 'F
 
         const isPast = d.past === '1';
         const status = d.status;
-        let eligible = !isPast && status !== 'Complet' && status !== 'Annulé';
+        const registered = Number(d.registered ?? 0);
+        const max = Number(d.max ?? 0);
+        // Le statut "Complet" n'est jamais posé automatiquement : on
+        // compare aussi la capacité, sinon le bouton resterait proposé
+        // une fois toutes les places prises (le serveur refuserait
+        // l'inscription, mais seulement après coup).
+        const isFull = max > 0 && registered >= max;
+        let eligible = !isPast && status !== 'Complet' && status !== 'Annulé' && !isFull;
 
         if (modalStatus) {
           if (isPast) {
             modalStatus.innerHTML = `<span style="font-size:13px; font-weight:700; color:#5a655f;">Événement terminé</span>`;
-          } else if (status === 'Complet') {
+          } else if (status === 'Complet' || isFull) {
             modalStatus.innerHTML = `<span style="font-size:13px; font-weight:700; color:#E97824;">Complet</span>`;
           } else if (status === 'Annulé') {
             modalStatus.innerHTML = `<span style="font-size:13px; font-weight:700; color:#5a655f;">Annulé</span>`;
           } else {
-            const registered = Number(d.registered ?? 0);
-            const max = Number(d.max ?? 0);
             const pct = max > 0 ? Math.min(100, Math.round((registered / max) * 100)) : 0;
             modalStatus.innerHTML = `
               <div style="height:5px; border-radius:999px; background:rgba(31,41,37,0.08); overflow:hidden; margin-bottom:8px; max-width:220px;">
