@@ -242,7 +242,8 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               id: n.id, title: n.title, slug: n.slug, excerpt: n.excerpt,
-              content: n.content, category: n.category, status: nextStatus,
+              content: n.content, category: n.category, bg_gradient: n.bg_gradient,
+              status: nextStatus,
             }),
           });
           const payload = await res.json();
@@ -398,7 +399,8 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
             body: JSON.stringify({
               id: ev.id, title: ev.title, date: ev.date, place: ev.place,
               category: ev.category, max_places: ev.max_places,
-              inscriptions_ouvertes: ev.inscriptions_ouvertes, status: newStatus,
+              inscriptions_ouvertes: ev.inscriptions_ouvertes,
+              bg_gradient: ev.bg_gradient, status: newStatus,
             }),
           });
           const payload = await res.json();

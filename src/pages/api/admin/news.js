@@ -134,7 +134,7 @@ export async function PUT(context) {
     }
 
     const body = await context.request.json();
-    const { id, title, slug, excerpt, content, category, status } = body;
+    const { id, title, slug, excerpt, content, category, status, bg_gradient } = body;
 
     if (!id || !title || !slug || !excerpt || !content) {
       return new Response(JSON.stringify({ error: "Les paramètres id, title, slug, excerpt et content sont requis." }), {
@@ -156,6 +156,11 @@ export async function PUT(context) {
     }
 
     const cat = category || "Communauté";
+    // bg_gradient : image de couverture (URL R2) ou dégradé CSS. Oubliée à
+    // tort de ce UPDATE jusqu'ici — seule la création (POST) l'enregistrait,
+    // donc changer l'image d'un article existant via "Modifier" n'avait
+    // jamais d'effet réel en base.
+    const bg = bg_gradient || "linear-gradient(150deg,#176B4D,#1F2925)";
     // Bascule Publié <-> Archivé, réservée à admin/super-admin (un éditeur
     // ne passe jamais par ce champ — son statut suit uniquement le circuit
     // brouillon -> soumission -> validation, géré par d'autres routes).
@@ -163,10 +168,10 @@ export async function PUT(context) {
 
     // Update in D1
     const statement = allowStatusChange
-      ? db.prepare("UPDATE actualites SET title = ?, slug = ?, excerpt = ?, content = ?, category = ?, status = ? WHERE id = ?")
-          .bind(title, slug, excerpt, content, cat, status, id)
-      : db.prepare("UPDATE actualites SET title = ?, slug = ?, excerpt = ?, content = ?, category = ? WHERE id = ?")
-          .bind(title, slug, excerpt, content, cat, id);
+      ? db.prepare("UPDATE actualites SET title = ?, slug = ?, excerpt = ?, content = ?, category = ?, bg_gradient = ?, status = ? WHERE id = ?")
+          .bind(title, slug, excerpt, content, cat, bg, status, id)
+      : db.prepare("UPDATE actualites SET title = ?, slug = ?, excerpt = ?, content = ?, category = ?, bg_gradient = ? WHERE id = ?")
+          .bind(title, slug, excerpt, content, cat, bg, id);
 
     const result = await statement.run();
 

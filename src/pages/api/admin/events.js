@@ -155,7 +155,7 @@ export async function PUT(context) {
     }
 
     const body = await context.request.json();
-    const { id, title, date, place, category, max_places, status, inscriptions_ouvertes } = body;
+    const { id, title, date, place, category, max_places, status, inscriptions_ouvertes, bg_gradient } = body;
 
     if (!id || !title || !date || !place) {
       return new Response(JSON.stringify({ error: "Les paramètres id, title, date et place sont requis." }), {
@@ -166,6 +166,10 @@ export async function PUT(context) {
 
     const cat = category || "Culture";
     const maxPl = max_places !== undefined ? max_places : 100;
+    // bg_gradient : image de couverture (URL R2) ou dégradé CSS. Oubliée à
+    // tort de ce UPDATE jusqu'ici (même bug que sur les actualités) — seule
+    // la création (POST) l'enregistrait.
+    const bg = bg_gradient || "linear-gradient(150deg,#E97824,#1F2925)";
     // inscriptions_ouvertes est un champ normal du formulaire d'édition
     // (contrairement à `status`, voir plus bas) : s'il n'est pas fourni on
     // garde la valeur par défaut "ouvertes" plutôt que de deviner.
@@ -183,10 +187,10 @@ export async function PUT(context) {
     const allowStatusChange = ['Annulé', 'Terminé'].includes(status);
 
     const statement = allowStatusChange
-      ? db.prepare("UPDATE evenements SET title = ?, date = ?, place = ?, category = ?, max_places = ?, inscriptions_ouvertes = ?, status = ? WHERE id = ?")
-          .bind(title, date, place, cat, maxPl, regOpen, status, id)
-      : db.prepare("UPDATE evenements SET title = ?, date = ?, place = ?, category = ?, max_places = ?, inscriptions_ouvertes = ? WHERE id = ?")
-          .bind(title, date, place, cat, maxPl, regOpen, id);
+      ? db.prepare("UPDATE evenements SET title = ?, date = ?, place = ?, category = ?, max_places = ?, inscriptions_ouvertes = ?, bg_gradient = ?, status = ? WHERE id = ?")
+          .bind(title, date, place, cat, maxPl, regOpen, bg, status, id)
+      : db.prepare("UPDATE evenements SET title = ?, date = ?, place = ?, category = ?, max_places = ?, inscriptions_ouvertes = ?, bg_gradient = ? WHERE id = ?")
+          .bind(title, date, place, cat, maxPl, regOpen, bg, id);
 
     const result = await statement.run();
 
