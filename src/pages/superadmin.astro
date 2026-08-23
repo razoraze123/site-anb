@@ -1,6 +1,7 @@
 ---
 import ViewActualites from '../components/admin/ViewActualites.astro';
 import ViewEvenements from '../components/admin/ViewEvenements.astro';
+import ViewInscriptions from '../components/admin/ViewInscriptions.astro';
 import ViewMessages from '../components/admin/ViewMessages.astro';
 
 export const prerender = false;
@@ -207,6 +208,7 @@ if (!user) {
         <!-- GESTION DU SITE — vues partagées avec /admin -->
         <ViewActualites authorName={user.nom} />
         <ViewEvenements />
+        <ViewInscriptions />
         <ViewMessages />
 
         <!-- UTILISATEURS ET ROLES VIEW -->
@@ -509,13 +511,17 @@ if (!user) {
   <script>
     import { createAdminContent } from '../lib/adminContent.js';
 
-    // Vues Actualités / Événements / Messages : exactement les mêmes que
-    // dans /admin (markup dans src/components/admin/, logique dans
-    // lib/adminContent.js). Pas de bouton « Inscrits » ici : cet espace n'a
-    // pas de vue Inscriptions, elle reste propre à /admin.
+    // Vues Actualités / Événements / Inscriptions / Messages : exactement
+    // les mêmes que dans /admin (markup dans src/components/admin/,
+    // logique dans lib/adminContent.js) — un super-admin est un admin,
+    // même dans son propre espace.
     const content = createAdminContent({
       goPage: (page) => goPage(page),
       getBadgeHtml: (label, tone) => getBadgeHtml(label, tone),
+      onViewRegistrants: (eventId) => {
+        content.state.pendingInscriptionsEventId = eventId;
+        goPage('inscriptions');
+      },
     });
 
     // State management
@@ -539,6 +545,7 @@ if (!user) {
       { type: 'header', label: 'Gestion du site' },
       { key: 'actualites', label: 'Actualités' },
       { key: 'evenements', label: 'Événements' },
+      { key: 'inscriptions', label: 'Inscriptions' },
       { key: 'messages', label: 'Messages' },
       { type: 'header', label: 'Gouvernance' },
       { key: 'users', label: 'Utilisateurs & rôles' },
@@ -559,6 +566,7 @@ if (!user) {
       overview: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="8" height="8" rx="2"></rect><rect x="13" y="3" width="8" height="8" rx="2"></rect><rect x="3" y="13" width="8" height="8" rx="2"></rect><rect x="13" y="13" width="8" height="8" rx="2"></rect></svg>`,
       actualites: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="7" y1="9" x2="17" y2="9"></line><line x1="7" y1="13" x2="17" y2="13"></line><line x1="7" y1="17" x2="12" y2="17"></line></svg>`,
       evenements: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line></svg>`,
+      inscriptions: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="9"></circle></svg>`,
       messages: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 6l9 6 9-6"></path></svg>`,
       users: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="8" r="3.2"></circle><circle cx="17" cy="9" r="2.4"></circle><path d="M3 20c0-3.4 2.7-5.8 6-5.8s6 2.4 6 5.8"></path></svg>`,
       contenus: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="9"></circle></svg>`,
@@ -828,6 +836,7 @@ if (!user) {
         mentions: 'Mentions & RGPD', stats: 'Statistiques globales', profil: 'Mon profil',
         actualites: 'Actualités', 'actualites-new': 'Nouvelle actualité',
         evenements: 'Événements', 'evenements-new': 'Créer un événement',
+        inscriptions: 'Inscriptions',
         messages: 'Messages'
       };
 
@@ -931,6 +940,8 @@ if (!user) {
         loadContentThen(content.renderActualites);
       } else if (pageKey === 'evenements') {
         loadContentThen(content.renderEvenements);
+      } else if (pageKey === 'inscriptions') {
+        loadContentThen(content.renderInscriptions);
       } else if (pageKey === 'messages') {
         loadContentThen(content.renderMessages);
       }

@@ -25,8 +25,9 @@ Conséquences : un visiteur croit avoir envoyé un message, personne ne le reço
 Le gros de l'audit du 2026-08-23 sur Événements & Inscriptions est traité — voir section 5 (« Refonte Événements & Inscriptions »). Ce qui reste, volontairement laissé de côté (hors du périmètre demandé) :
 
 - La vue Inscrits n'a pas de recherche (contrairement à Recensement, qui en a une) — gênant seulement si un événement a beaucoup d'inscrits.
-- Le Super Admin n'a aucune vue Inscriptions (ni dans son espace, ni de bouton vers celle de `/admin`) — seul l'export CSV agrégé y donne accès. Ça contredit le principe déjà appliqué ailleurs cette session (« un super-admin est un admin, mêmes onglets ») ; à harmoniser si tu veux que le super-admin puisse consulter/gérer les inscrits sans compte admin séparé.
 - Matrice de permissions (Super Admin, ligne « Traitement des inscriptions et adhésions ») affiche `✓` pour admin/super-admin — en réalité on peut seulement consulter/supprimer une inscription (plus de statut à « traiter » depuis la refonte). Formulation à ajuster en même temps que le reste de la matrice.
+
+✅ *Fait le 2026-08-24 : le Super Admin a maintenant sa propre vue Inscriptions (identique à `/admin`, composant partagé `ViewInscriptions.astro` + `content.renderInscriptions()` dans `lib/adminContent.js`) — plus besoin d'un compte admin séparé pour consulter/supprimer une inscription.*
 
 ### 🟠 P3 — « Pages du site » (Admin) est une maquette figée
 

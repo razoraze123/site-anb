@@ -38,7 +38,7 @@ export function eventBucket(ev) {
 }
 
 export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) {
-  const data = { actualites: [], evenements: [], messages: [] };
+  const data = { actualites: [], evenements: [], messages: [], inscriptions: [] };
 
   const state = {
     newsTab: 'Publiées',
@@ -47,6 +47,10 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     messageSelectedIdx: 0,
     editingNewsId: null,
     editingEventId: null,
+    // Id d'événement à présélectionner la prochaine fois que la vue
+    // Inscrits s'affiche (posé par le bouton "Inscrits" d'une carte
+    // événement, consommé une fois par renderInscriptions()).
+    pendingInscriptionsEventId: null,
   };
 
   // ---------------------------------------------------------------- données
@@ -61,6 +65,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     data.actualites = payload.actualites || [];
     data.evenements = payload.evenements || [];
     data.messages = payload.messages || [];
+    data.inscriptions = payload.inscriptions || [];
   }
 
   /** Recharge les données depuis l'API puis rejoue le rendu demandé. */
@@ -577,6 +582,79 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     if (submitBtn) submitBtn.textContent = "Publier l'événement";
   }
 
+  // --------------------------------------------------------- Inscriptions
+
+  // Une inscription n'a pas de statut (existe ou n'existe pas) — cette vue
+  // est donc juste : choisir un événement, voir qui s'est inscrit, pouvoir
+  // supprimer une inscription (ce qui libère mécaniquement une place,
+  // puisque la capacité restante est toujours recomptée en direct).
+  function renderInscriptions() {
+    const select = document.getElementById('registrants-event-select');
+    if (!select) return;
+
+    const currentVal = select.value;
+    select.innerHTML = '';
+    data.evenements.forEach((e) => {
+      const opt = document.createElement('option');
+      opt.value = e.id;
+      opt.textContent = `${e.title} — ${e.date}`;
+      select.appendChild(opt);
+    });
+    if (state.pendingInscriptionsEventId !== null) {
+      select.value = state.pendingInscriptionsEventId;
+      state.pendingInscriptionsEventId = null;
+    } else if (currentVal) select.value = currentVal;
+    else if (data.evenements.length > 0) select.value = data.evenements[0].id;
+
+    const activeEventId = parseInt(select.value);
+    const activeEvent = data.evenements.find((e) => e.id === activeEventId);
+
+    const countEl = document.getElementById('event-reg-count');
+    const remainingEl = document.getElementById('event-remaining-places');
+    if (activeEvent && countEl && remainingEl) {
+      countEl.textContent = activeEvent.registered_count;
+      remainingEl.textContent = activeEvent.max_places - activeEvent.registered_count;
+    }
+
+    // Bind select change — fait AVANT le "return" anticipé ci-dessous :
+    // sinon, dès que l'événement affiché par défaut n'a aucun inscrit
+    // (fréquent : c'est souvent le plus récent), le sélecteur ne
+    // déclenchait plus jamais renderInscriptions() et restait figé.
+    select.onchange = () => renderInscriptions();
+
+    const container = document.getElementById('registrants-list-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const filtered = data.inscriptions.filter((r) => r.event_id === activeEventId);
+    if (filtered.length === 0) {
+      container.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--color-muted-text); font-size: 13.5px;">Aucune inscription enregistrée pour cet événement.</div>';
+      return;
+    }
+
+    filtered.forEach((p) => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex; align-items:center; gap:16px; padding:14px 16px; border-bottom:1px solid rgba(31,41,37,0.06); flex-wrap:wrap;';
+      row.innerHTML = `
+        <div style="flex:1; min-width:160px; font-size:14px; font-weight:700; color:#1F2925;">${p.first_name} ${p.last_name}</div>
+        <div style="min-width:120px; font-size:13px; color:#5a655f;">${p.created_at ? p.created_at.split(' ')[0] : '—'}</div>
+        <button class="delete-registrant-btn" style="background:rgba(177,69,36,0.08); border:none; padding:7px 14px; border-radius:999px; font-size:12px; font-weight:700; cursor:pointer; color:#B14524;">Supprimer</button>
+      `;
+      row.querySelector('.delete-registrant-btn').addEventListener('click', async () => {
+        if (!confirm(`Supprimer l'inscription de ${p.first_name} ${p.last_name} ?`)) return;
+        try {
+          const res = await fetch(`/api/admin/inscriptions?id=${p.id}`, { method: 'DELETE' });
+          const payload = await res.json();
+          if (!res.ok) throw new Error(payload.error || 'Erreur lors de la suppression.');
+          await refresh(renderInscriptions);
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+      container.appendChild(row);
+    });
+  }
+
   // -------------------------------------------------------------- Messages
 
   function renderMessages() {
@@ -877,6 +955,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     renderActualites,
     renderEvenements,
     renderMessages,
+    renderInscriptions,
     resetNewsForm,
     resetEventForm,
   };
