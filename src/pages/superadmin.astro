@@ -169,12 +169,12 @@ export const prerender = false;
               <p style="font-size:14.5px; color:#5a655f; margin:0;">Vue d'ensemble de la plateforme ANB.</p>
             </div>
             <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px;">
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#176B4D;">248</div><div style="font-size:13px; color:#5a655f;">Membres actifs</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#E97824;">12</div><div style="font-size:13px; color:#5a655f;">Nouvelles adhésions ce mois</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#176B4D;">3</div><div style="font-size:13px; color:#5a655f;">Événements à venir</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#E97824;">12</div><div style="font-size:13px; color:#5a655f;">Demandes à traiter</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#176B4D;">5</div><div style="font-size:13px; color:#5a655f;">Administrateurs actifs</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#B14524;">2</div><div style="font-size:13px; color:#5a655f;">Alertes sécurité / maintenance</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stat-membres" style="font-size:22px; font-weight:800; color:#176B4D;">—</div><div style="font-size:13px; color:#5a655f;">Membres recensés</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stat-adhesions-mois" style="font-size:22px; font-weight:800; color:#E97824;">—</div><div style="font-size:13px; color:#5a655f;">Nouvelles adhésions ce mois</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stat-evenements" style="font-size:22px; font-weight:800; color:#176B4D;">—</div><div style="font-size:13px; color:#5a655f;">Événements à venir</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stat-demandes" style="font-size:22px; font-weight:800; color:#E97824;">—</div><div style="font-size:13px; color:#5a655f;">Demandes à traiter</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stat-admins" style="font-size:22px; font-weight:800; color:#176B4D;">—</div><div style="font-size:13px; color:#5a655f;">Administrateurs actifs</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stat-desactives" style="font-size:22px; font-weight:800; color:#B14524;">—</div><div style="font-size:13px; color:#5a655f;">Comptes désactivés</div></div>
             </div>
 
             <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
@@ -449,26 +449,20 @@ export const prerender = false;
                 <!-- Period options -->
               </div>
             </div>
+            <p style="font-size:12.5px; color:#9aa39c; margin:0;">Basé uniquement sur les données de la plateforme — aucun outil de mesure d'audience (pages vues, visiteurs) n'est branché sur le site pour l'instant.</p>
             <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px;">
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#176B4D;">4 820</div><div style="font-size:13px; color:#5a655f;">Visites du site</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#E97824;">312</div><div style="font-size:13px; color:#5a655f;">Inscriptions aux événements</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#176B4D;">46</div><div style="font-size:13px; color:#5a655f;">Nouvelles demandes d'adhésion</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#E97824;">+18%</div><div style="font-size:13px; color:#5a655f;">Évolution sur la période</div></div>
-            </div>
-            
-            <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
-              <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0 0 20px;">Visites par semaine</h3>
-              <div style="display:flex; align-items:flex-end; gap:14px; height:160px;" id="visit-bars-container">
-                <!-- Bar chart dynamically generated -->
-              </div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stat-period-inscriptions" style="font-size:22px; font-weight:800; color:#176B4D;">—</div><div style="font-size:13px; color:#5a655f;">Inscriptions aux événements</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stat-period-adhesions" style="font-size:22px; font-weight:800; color:#E97824;">—</div><div style="font-size:13px; color:#5a655f;">Nouvelles demandes d'adhésion</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stat-period-membres" style="font-size:22px; font-weight:800; color:#176B4D;">—</div><div style="font-size:13px; color:#5a655f;">Membres recensés (total)</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stat-period-evenements" style="font-size:22px; font-weight:800; color:#E97824;">—</div><div style="font-size:13px; color:#5a655f;">Événements à venir</div></div>
             </div>
             <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px;">
               <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
-                <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0 0 14px;">Pages les plus vues</h3>
+                <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0 0 14px;">Prochains événements</h3>
                 <div id="top-pages-list"></div>
               </div>
               <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
-                <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0 0 14px;">Articles les plus lus</h3>
+                <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0 0 14px;">Derniers articles publiés</h3>
                 <div id="top-articles-list"></div>
               </div>
             </div>
@@ -567,19 +561,9 @@ export const prerender = false;
       profil: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="3.4"></circle><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"></path></svg>`
     };
 
-    const attentionItems = [
-      { text: "3 demandes d'adhésion n'ont pas été traitées depuis plus de 7 jours" },
-      { text: "Un événement à venir ne possède pas encore d'image de couverture" },
-      { text: 'Un compte administrateur est inactif depuis 90 jours' },
-      { text: 'La sauvegarde hebdomadaire doit être vérifiée' }
-    ];
-
-    const govActivity = [
-      { text: 'Mariama a publié l\'actualité « Bienvenue aux nouveaux membres »', time: 'Il y a 3 heures' },
-      { text: "Nasser a configuré la double authentification de sécurité", time: 'Ce matin' },
-      { text: 'Export de données des adhésions effectué par Nasser', time: 'Hier' },
-      { text: 'Connexion administrateur établie depuis l\'IP 82.1XX.XX.XX', time: 'Hier' }
-    ];
+    // Remplis par loadOverview() depuis GET /api/superadmin/stats.
+    let attentionItems = [];
+    let govActivity = [];
 
     // Rempli par loadUsers() depuis GET /api/superadmin/users — plus de données figées.
     let users = [];
@@ -863,7 +847,7 @@ export const prerender = false;
 
     function renderPageDetails(pageKey) {
       if (pageKey === 'overview') {
-        renderOverview();
+        loadOverview();
       } else if (pageKey === 'users') {
         loadUsers();
       } else if (pageKey === 'contenus') {
@@ -881,14 +865,41 @@ export const prerender = false;
       } else if (pageKey === 'mentions') {
         renderMentions();
       } else if (pageKey === 'stats') {
-        renderStats();
+        loadStats();
       }
     }
 
     // 1. Overview
+    async function loadOverview() {
+      try {
+        const res = await fetch('/api/superadmin/stats');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur de chargement.');
+
+        document.getElementById('stat-membres').textContent = data.overview.membres;
+        document.getElementById('stat-adhesions-mois').textContent = data.overview.adhesions_ce_mois;
+        document.getElementById('stat-evenements').textContent = data.overview.evenements_a_venir;
+        document.getElementById('stat-demandes').textContent = data.overview.demandes_a_traiter;
+        document.getElementById('stat-admins').textContent = data.overview.admins_actifs;
+        document.getElementById('stat-desactives').textContent = data.overview.comptes_desactives;
+
+        attentionItems = data.attention.map(text => ({ text }));
+        govActivity = data.recent_activity.map(l => ({
+          text: `${firstNameFromEmail(l.utilisateur_email)} — ${l.action} : ${l.details}`,
+          time: formatJournalDate(l.created_at)
+        }));
+        renderOverview();
+      } catch (err) {
+        document.getElementById('overview-attention-list').innerHTML = `<div style="font-size:13.5px; color:#B14524;">${err.message}</div>`;
+      }
+    }
+
     function renderOverview() {
       const attWrapper = document.getElementById('overview-attention-list');
       attWrapper.innerHTML = '';
+      if (attentionItems.length === 0) {
+        attWrapper.innerHTML = '<div style="font-size:13.5px; color:#5a655f;">Rien à signaler.</div>';
+      }
       attentionItems.forEach(a => {
         const item = document.createElement('div');
         item.style.cssText = 'display:flex; align-items:center; gap:12px; padding:12px 14px; background:rgba(233,120,36,0.08); border-radius:12px;';
@@ -901,6 +912,9 @@ export const prerender = false;
 
       const actWrapper = document.getElementById('overview-activity-list');
       actWrapper.innerHTML = '';
+      if (govActivity.length === 0) {
+        actWrapper.innerHTML = '<div style="font-size:13.5px; color:#5a655f;">Aucune activité récente.</div>';
+      }
       govActivity.forEach(a => {
         const item = document.createElement('div');
         item.style.cssText = 'display:flex; gap:12px; align-items:flex-start; font-size:14px; color:#3f4a45;';
@@ -1377,79 +1391,74 @@ export const prerender = false;
     }
 
     // 10. Statistiques
-    function renderStats() {
+    const STATS_PERIODS = [
+      { label: '7 jours', days: '7' },
+      { label: '30 jours', days: '30' },
+      { label: '3 mois', days: '90' },
+      { label: '1 an', days: '365' }
+    ];
+
+    function renderStatsPeriodButtons() {
       const periodsWrapper = document.querySelector('.stats-period-container');
       periodsWrapper.innerHTML = '';
-      const periodDefs = ['7 jours', '30 jours', '3 mois', '1 an'];
-
-      periodDefs.forEach(p => {
+      STATS_PERIODS.forEach(p => {
         const btn = document.createElement('button');
         btn.style.cssText = `border:2px solid #176B4D; padding:8px 16px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;`;
-        if (state.statsPeriod === p) {
+        if (state.statsPeriod === p.label) {
           btn.style.background = '#176B4D';
           btn.style.color = '#FFFFFF';
         } else {
           btn.style.background = 'transparent';
           btn.style.color = '#176B4D';
         }
-        btn.textContent = p;
+        btn.textContent = p.label;
         btn.addEventListener('click', () => {
-          state.statsPeriod = p;
-          renderStats();
+          state.statsPeriod = p.label;
+          loadStats();
         });
         periodsWrapper.appendChild(btn);
       });
+    }
 
-      const barsWrapper = document.getElementById('visit-bars-container');
-      barsWrapper.innerHTML = '';
-      const visitHeights = {
-        '7 jours': [45, 60, 50, 75, 60, 90, 70],
-        '30 jours': [65, 80, 55, 90, 75, 100, 85],
-        '3 mois': [50, 55, 45, 70, 65, 80, 75],
-        '1 an': [30, 45, 40, 60, 50, 75, 65]
-      };
-      
-      const heights = visitHeights[state.statsPeriod] || visitHeights['30 jours'];
-      const days = ['L','M','M','J','V','S','D'];
+    async function loadStats() {
+      renderStatsPeriodButtons();
+      const periodDef = STATS_PERIODS.find(p => p.label === state.statsPeriod) || STATS_PERIODS[1];
+      try {
+        const res = await fetch(`/api/superadmin/stats?period=${periodDef.days}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur de chargement.');
 
-      heights.forEach((h, idx) => {
-        const barCol = document.createElement('div');
-        barCol.style.cssText = 'flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; height:100%; justify-content:flex-end;';
-        barCol.innerHTML = `
-          <div style="width:100%; max-width:32px; height:${h}%; background:#176B4D; border-radius:8px 8px 0 0; transition: height 0.3s ease;"></div>
-          <span style="font-size:11px; color:#9aa39c;">${days[idx]}</span>
-        `;
-        barsWrapper.appendChild(barCol);
-      });
+        document.getElementById('stat-period-inscriptions').textContent = data.period_stats.inscriptions;
+        document.getElementById('stat-period-adhesions').textContent = data.period_stats.adhesions;
+        document.getElementById('stat-period-membres').textContent = data.overview.membres;
+        document.getElementById('stat-period-evenements').textContent = data.overview.evenements_a_venir;
 
-      const pagesList = document.getElementById('top-pages-list');
-      pagesList.innerHTML = '';
-      const pData = [
-        { name: 'Accueil', views: state.statsPeriod === '7 jours' ? '410' : '2 140' },
-        { name: 'Événements', views: state.statsPeriod === '7 jours' ? '180' : '980' },
-        { name: "L'association", views: state.statsPeriod === '7 jours' ? '120' : '640' },
-        { name: 'Culture nigérienne', views: state.statsPeriod === '7 jours' ? '82' : '410' }
-      ];
-      pData.forEach(tp => {
-        const item = document.createElement('div');
-        item.style.cssText = 'display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid rgba(31,41,37,0.06); font-size:13.5px;';
-        item.innerHTML = `<span style="color:#1F2925;">${tp.name}</span><span style="font-weight:700; color:#176B4D;">${tp.views}</span>`;
-        pagesList.appendChild(item);
-      });
+        const eventsList = document.getElementById('top-pages-list');
+        eventsList.innerHTML = '';
+        if (data.upcoming_events.length === 0) {
+          eventsList.innerHTML = '<div style="font-size:13.5px; color:#5a655f;">Aucun événement à venir.</div>';
+        }
+        data.upcoming_events.forEach(ev => {
+          const item = document.createElement('div');
+          item.style.cssText = 'display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid rgba(31,41,37,0.06); font-size:13.5px; gap:10px;';
+          item.innerHTML = `<span style="color:#1F2925;">${ev.title}</span><span style="font-weight:700; color:#176B4D; white-space:nowrap;">${ev.date}</span>`;
+          eventsList.appendChild(item);
+        });
 
-      const articlesList = document.getElementById('top-articles-list');
-      articlesList.innerHTML = '';
-      const aData = [
-        { name: 'Retour sur notre rencontre', views: state.statsPeriod === '7 jours' ? '92' : '520' },
-        { name: 'Bienvenue aux membres', views: state.statsPeriod === '7 jours' ? '70' : '380' },
-        { name: 'Appel à bénévoles', views: state.statsPeriod === '7 jours' ? '54' : '310' }
-      ];
-      aData.forEach(ta => {
-        const item = document.createElement('div');
-        item.style.cssText = 'display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid rgba(31,41,37,0.06); font-size:13.5px;';
-        item.innerHTML = `<span style="color:#1F2925;">${ta.name}</span><span style="font-weight:700; color:#176B4D;">${ta.views}</span>`;
-        articlesList.appendChild(item);
-      });
+        const articlesList = document.getElementById('top-articles-list');
+        articlesList.innerHTML = '';
+        if (data.latest_articles.length === 0) {
+          articlesList.innerHTML = '<div style="font-size:13.5px; color:#5a655f;">Aucun article.</div>';
+        }
+        data.latest_articles.forEach(a => {
+          const item = document.createElement('div');
+          item.style.cssText = 'display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid rgba(31,41,37,0.06); font-size:13.5px; gap:10px;';
+          item.innerHTML = `<span style="color:#1F2925;">${a.title}</span>${getBadgeHtml(a.status, a.status === 'Publié' ? 'g' : 'n')}`;
+          articlesList.appendChild(item);
+        });
+      } catch (err) {
+        document.getElementById('top-pages-list').innerHTML = `<div style="font-size:13.5px; color:#B14524;">${err.message}</div>`;
+      }
     }
   </script>
 
