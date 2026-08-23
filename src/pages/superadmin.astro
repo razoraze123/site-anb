@@ -318,25 +318,24 @@ export const prerender = false;
               <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
                 <h3 style="font-size:15.5px; font-weight:700; color:#1F2925; margin:0 0 16px;">Identité de l'association</h3>
                 <div style="display:flex; flex-direction:column; gap:14px;">
-                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Nom</label><input value="Association des Nigériens à Bordeaux" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" /><div style="font-size:11.5px; color:#9aa39c; margin-top:4px;">Affiché dans l'en-tête et le pied de page du site.</div></div>
-                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Slogan</label><input value="Ensemble, faire vivre la communauté nigérienne à Bordeaux." style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" /></div>
-                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">E-mail officiel</label><input value="anbordeaux33@outlook.fr" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" /></div>
-                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Téléphone</label><input value="07 58 62 42 84" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" /></div>
+                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Nom</label><input id="settings-identite-nom" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" /><div style="font-size:11.5px; color:#9aa39c; margin-top:4px;">Enregistré en base — pas encore affiché automatiquement sur le site public.</div></div>
+                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Slogan</label><input id="settings-identite-slogan" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" /></div>
+                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">E-mail officiel</label><input id="settings-identite-email" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" /></div>
+                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Téléphone</label><input id="settings-identite-telephone" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" /></div>
                 </div>
-                <button style="margin-top:16px; background:#176B4D; color:#FFFFFF; border:none; padding:10px 20px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;" onclick="alert('Identité sauvegardée !')">Enregistrer</button>
+                <button id="save-identite-btn" style="margin-top:16px; background:#176B4D; color:#FFFFFF; border:none; padding:10px 20px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;">Enregistrer</button>
               </div>
               <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
                 <h3 style="font-size:15.5px; font-weight:700; color:#1F2925; margin:0 0 16px;">Navigation et pages</h3>
-                <div style="font-size:13px; color:#5a655f; line-height:1.7;">Menus, pied de page, pages principales et redirections du site public.<br/><span style="font-size:11.5px; color:#9aa39c;">Modifiez l'ordre et la visibilité des rubriques du menu.</span></div>
-                <button style="margin-top:16px; background:#F8F4EC; color:#1F2925; border:none; padding:10px 20px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;">Gérer les menus</button>
+                <div style="font-size:13px; color:#5a655f; line-height:1.7;">Menus, pied de page, pages principales et redirections du site public.<br/><span style="font-size:11.5px; color:#9aa39c;">Pas encore disponible — aucune structure de menu éditable n'existe côté serveur.</span></div>
               </div>
               <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
                 <h3 style="font-size:15.5px; font-weight:700; color:#1F2925; margin:0 0 16px;">Référencement</h3>
                 <div style="display:flex; flex-direction:column; gap:14px;">
-                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Titre du site</label><input value="ANB — Association des Nigériens à Bordeaux" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" /></div>
-                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Description SEO</label><textarea rows="2" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px; resize:vertical;">Communauté nigérienne à Bordeaux : événements, entraide et accompagnement.</textarea><div style="font-size:11.5px; color:#9aa39c; margin-top:4px;">Affichée dans les résultats de recherche.</div></div>
+                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Titre du site</label><input id="settings-seo-titre" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" /></div>
+                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Description SEO</label><textarea id="settings-seo-description" rows="2" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px; resize:vertical;"></textarea><div style="font-size:11.5px; color:#9aa39c; margin-top:4px;">Enregistré en base — pas encore lu par les balises SEO des pages publiques.</div></div>
                 </div>
-                <button style="margin-top:16px; background:#176B4D; color:#FFFFFF; border:none; padding:10px 20px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;" onclick="alert('Paramètres SEO enregistrés !')">Enregistrer</button>
+                <button id="save-seo-btn" style="margin-top:16px; background:#176B4D; color:#FFFFFF; border:none; padding:10px 20px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;">Enregistrer</button>
               </div>
             </div>
           </div>
@@ -845,6 +844,8 @@ export const prerender = false;
         loadValidations();
       } else if (pageKey === 'journal') {
         loadJournal();
+      } else if (pageKey === 'reglages') {
+        loadSettings();
       } else if (pageKey === 'integrations') {
         renderIntegrations();
       } else if (pageKey === 'securite') {
@@ -1242,6 +1243,48 @@ export const prerender = false;
         container.appendChild(row);
       });
     }
+
+    // 5bis. Réglages du site (identité + SEO -> site_settings)
+    async function loadSettings() {
+      try {
+        const res = await fetch('/api/superadmin/settings');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur de chargement.');
+        const s = data.settings;
+        document.getElementById('settings-identite-nom').value = s.identite_nom || '';
+        document.getElementById('settings-identite-slogan').value = s.identite_slogan || '';
+        document.getElementById('settings-identite-email').value = s.identite_email || '';
+        document.getElementById('settings-identite-telephone').value = s.identite_telephone || '';
+        document.getElementById('settings-seo-titre').value = s.seo_titre || '';
+        document.getElementById('settings-seo-description').value = s.seo_description || '';
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function saveSettings(keys) {
+      const payload = {};
+      keys.forEach((k) => { payload[k] = document.getElementById(`settings-${k.replace(/_/g, '-')}`).value.trim(); });
+      try {
+        const res = await fetch('/api/superadmin/settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur.');
+        alert('Réglages enregistrés.');
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    document.getElementById('save-identite-btn').addEventListener('click', () => {
+      saveSettings(['identite_nom', 'identite_slogan', 'identite_email', 'identite_telephone']);
+    });
+    document.getElementById('save-seo-btn').addEventListener('click', () => {
+      saveSettings(['seo_titre', 'seo_description']);
+    });
 
     // 6. Intégrations
     function renderIntegrations() {
