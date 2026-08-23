@@ -4,6 +4,25 @@
 // src/lib/adminContent.js, commune aux deux espaces.
 ---
 
+<style>
+  /* 3 colonnes fixes, quel que soit le nombre de cartes : contrairement à
+     auto-fit/auto-fill, `repeat(3, 1fr)` ne recalcule jamais la largeur des
+     colonnes en fonction du nombre de résultats — avec 2 cartes sur 3
+     colonnes, la 3e reste un espace vide plutôt que de laisser les 2
+     premières s'étirer pour combler la largeur. */
+  #events-list-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  @media (max-width: 980px) {
+    #events-list-container { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 640px) {
+    #events-list-container { grid-template-columns: 1fr; }
+  }
+</style>
+
 <section id="view-evenements" class="hidden fade-in">
   <div style="display:flex; flex-direction:column; gap:20px;">
     <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:14px;">
@@ -24,7 +43,7 @@
       <!-- onglets générés dynamiquement -->
     </div>
 
-    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px;" id="events-list-container">
+    <div id="events-list-container">
       <!-- cartes générées dynamiquement -->
     </div>
   </div>
