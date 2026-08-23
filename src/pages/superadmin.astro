@@ -392,36 +392,10 @@ export const prerender = false;
         <section id="view-sauvegardes" class="hidden fade-in">
           <div style="display:flex; flex-direction:column; gap:20px;">
             <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Sauvegardes</h1>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px;">
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:12.5px; color:#5a655f; margin-bottom:6px;">Dernière sauvegarde réussie</div><div style="font-size:16px; font-weight:700; color:#176B4D;">12 juillet 2026, 03:00</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:12.5px; color:#5a655f; margin-bottom:6px;">Prochaine sauvegarde</div><div style="font-size:16px; font-weight:700; color:#1F2925;">13 juillet 2026, 03:00</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:12.5px; color:#5a655f; margin-bottom:6px;">Statut</div><span style="background:rgba(23,107,77,0.1); color:#176B4D; padding:4px 12px; border-radius:999px; font-size:12.5px; font-weight:700; width: fit-content; display: inline-block;">Opérationnel</span></div>
-            </div>
-            <div style="display:flex; gap:12px; flex-wrap:wrap;">
-              <button id="run-backup-btn" style="background:#176B4D; color:#FFFFFF; border:none; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Lancer une sauvegarde maintenant</button>
-              <button id="open-restore-btn" style="background:#FFFFFF; color:#B14524; border:2px solid rgba(177,69,36,0.3); padding:11px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Restaurer</button>
-            </div>
-            
-            <div id="backup-running-alert" class="hidden" style="background:rgba(23,107,77,0.08); color:#176B4D; padding:12px 16px; border-radius:10px; font-size:13px; font-weight:700; max-width: 320px;">✓ Sauvegarde lancée avec succès.</div>
-            
-            <div id="restore-confirm-box" class="hidden" style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:12px; max-width:480px;">
-              <div style="font-size:13.5px; color:#B14524; font-weight:700;">⚠ La restauration remplace le contenu actuel. Vérifiez votre choix avant de continuer.</div>
-              <select style="padding:10px 14px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px; background: transparent;">
-                <option>12 juillet 2026, 03:00</option>
-                <option>11 juillet 2026, 03:00</option>
-                <option>10 juillet 2026, 03:00</option>
-              </select>
-              <div style="display:flex; gap:10px;">
-                <button id="confirm-restore-action" style="background:#B14524; color:#FFFFFF; border:none; padding:10px 20px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;">Confirmer la restauration</button>
-                <button id="cancel-restore-action" style="background:#F8F4EC; color:#1F2925; border:none; padding:10px 20px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;">Annuler</button>
-              </div>
-            </div>
-            
-            <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
-              <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0 0 14px;">Historique des sauvegardes</h3>
-              <div id="backup-history-list">
-                <!-- dynamic history -->
-              </div>
+            <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:14px; max-width:640px;">
+              <div style="font-size:14px; color:#1F2925; line-height:1.7;">La base de données (Cloudflare D1) sauvegarde en continu son historique. Pas de système de sauvegarde maison ici : la restauration se fait directement via l'outil <strong>Time Travel</strong> de Cloudflare, jusqu'à 30 jours en arrière.</div>
+              <a href="https://developers.cloudflare.com/d1/reference/time-travel/" target="_blank" rel="noopener" style="align-self:flex-start; background:#176B4D; color:#FFFFFF; border:none; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Voir la procédure Time Travel ↗</a>
+              <div style="font-size:12.5px; color:#9aa39c;">Commande de restauration : <code>wrangler d1 time-travel restore anb-db --timestamp=...</code></div>
             </div>
           </div>
         </section>
@@ -688,20 +662,15 @@ export const prerender = false;
       }
     }
 
+    // État honnête : aucun outil tiers n'est réellement branché pour
+    // l'instant (à part la réception des formulaires, déjà en D1).
     const integrations = [
-      { name: 'Google Maps', desc: 'Affiche la carte sur la page Contact', status: 'Connecté', tone: 'g', sync: "Aujourd'hui, 07:00", actionLabel: 'Configurer' },
-      { name: 'Outil newsletter', desc: 'Envoi des actualités par e-mail', status: 'Connecté', tone: 'g', sync: 'Hier, 22:00', actionLabel: 'Configurer' },
-      { name: 'Paiement / adhésion en ligne', desc: 'Paiement de la cotisation en ligne', status: 'Non connecté', tone: 'n', sync: '—', actionLabel: 'Connecter' },
-      { name: 'Analytics', desc: 'Statistiques de fréquentation du site', status: 'Connecté', tone: 'g', sync: "Aujourd'hui, 06:00", actionLabel: 'Configurer' },
-      { name: 'Réseaux sociaux', desc: 'Partage automatique sur Facebook et Instagram', status: 'Connecté', tone: 'g', sync: 'Il y a 3h', actionLabel: 'Configurer' },
-      { name: 'Formulaires', desc: 'Réception des formulaires du site', status: 'Connecté', tone: 'g', sync: "Aujourd'hui, 09:00", actionLabel: 'Configurer' }
-    ];
-
-    const backupHistory = [
-      { date: '12 juillet 2026, 03:00', status: 'Réussie', tone: 'g', size: '482 Mo' },
-      { date: '11 juillet 2026, 03:00', status: 'Réussie', tone: 'g', size: '480 Mo' },
-      { date: '10 juillet 2026, 03:00', status: 'Réussie', tone: 'g', size: '479 Mo' },
-      { date: '09 juillet 2026, 03:00', status: 'Échouée', tone: 'r', size: '—' }
+      { name: 'Google Maps', desc: 'Affiche la carte sur la page Contact', status: 'À venir', tone: 'n', sync: '—', actionLabel: 'Bientôt' },
+      { name: 'Outil newsletter', desc: 'Envoi des actualités par e-mail', status: 'À venir', tone: 'n', sync: '—', actionLabel: 'Bientôt' },
+      { name: 'Paiement / adhésion en ligne', desc: 'Paiement de la cotisation en ligne', status: 'À venir', tone: 'n', sync: '—', actionLabel: 'Bientôt' },
+      { name: 'Analytics', desc: 'Statistiques de fréquentation du site', status: 'À venir', tone: 'n', sync: '—', actionLabel: 'Bientôt' },
+      { name: 'Réseaux sociaux', desc: 'Partage automatique sur Facebook et Instagram', status: 'À venir', tone: 'n', sync: '—', actionLabel: 'Bientôt' },
+      { name: 'Formulaires', desc: 'Réception des formulaires du site (recensement, adhésion, contact)', status: 'Connecté', tone: 'g', sync: 'En continu', actionLabel: 'Voir' }
     ];
 
     const legalSections = [
@@ -850,8 +819,6 @@ export const prerender = false;
         renderIntegrations();
       } else if (pageKey === 'securite') {
         renderSecurite();
-      } else if (pageKey === 'sauvegardes') {
-        renderSauvegardes();
       } else if (pageKey === 'mentions') {
         renderMentions();
       } else if (pageKey === 'stats') {
@@ -1399,62 +1366,6 @@ export const prerender = false;
         logActivity('Nasser', 'Super Admin', 'Déconnexion sessions actives', 'Toutes sessions tierces révoquées');
       };
     }
-
-    // 8. Sauvegardes
-    function renderSauvegardes() {
-      const historyList = document.getElementById('backup-history-list');
-      historyList.innerHTML = '';
-
-      backupHistory.forEach(b => {
-        const row = document.createElement('div');
-        row.style.cssText = 'display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid rgba(31,41,37,0.06); font-size:13.5px; flex-wrap:wrap; gap:8px;';
-        row.innerHTML = `
-          <span style="color:#1F2925;">${b.date}</span>
-          ${getBadgeHtml(b.status, b.tone)}
-          <span style="color:#9aa39c;">${b.size}</span>
-        `;
-        historyList.appendChild(row);
-      });
-    }
-
-    const runBackupBtn = document.getElementById('run-backup-btn');
-    const backupAlert = document.getElementById('backup-running-alert');
-    runBackupBtn.addEventListener('click', () => {
-      backupAlert.classList.remove('hidden');
-      const date = new Date();
-      const pad = (n) => String(n).padStart(2, '0');
-      const dateStr = `${date.getDate()} juillet 2026, ${pad(date.getHours())}:${pad(date.getMinutes())}`;
-      
-      backupHistory.unshift({
-        date: dateStr,
-        status: 'Réussie',
-        tone: 'g',
-        size: '483 Mo'
-      });
-
-      logActivity('Nasser', 'Super Admin', 'Lancement de sauvegarde', 'Sauvegarde manuelle du système');
-
-      setTimeout(() => {
-        backupAlert.classList.add('hidden');
-        renderSauvegardes();
-      }, 1500);
-    });
-
-    const openRestoreBtn = document.getElementById('open-restore-btn');
-    const restoreBox = document.getElementById('restore-confirm-box');
-
-    openRestoreBtn.addEventListener('click', () => {
-      restoreBox.classList.remove('hidden');
-    });
-    document.getElementById('cancel-restore-action').addEventListener('click', () => {
-      restoreBox.classList.add('hidden');
-    });
-    document.getElementById('confirm-restore-action').addEventListener('click', () => {
-      restoreBox.classList.add('hidden');
-      alert('Restauration système complétée.');
-      logActivity('Nasser', 'Super Admin', 'Restauration système', 'Restauration effectuée avec succès');
-      renderSauvegardes();
-    });
 
     // 9. Mentions
     function renderMentions() {
