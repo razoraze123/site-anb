@@ -161,7 +161,12 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
   // ------------------------------------------------------------ Actualités
 
   function renderActualites() {
-    const statusMap = { Publiées: 'Publié', Brouillons: 'Brouillon', Programmées: 'Programmé', Archivées: 'Archivé' };
+    // Un admin/super-admin publie toujours directement (le formulaire n'a
+    // pas de champ statut) — pas de notion de brouillon ni de programmation
+    // ici. Les statuts intermédiaires de l'éditeur (Brouillon/En attente/
+    // Renvoyé) restent gérés dans son propre espace et dans la vue
+    // "Contenus & validations" du super-admin, pas dans cette liste.
+    const statusMap = { Publiées: 'Publié', Archivées: 'Archivé' };
     renderTabs('.news-tab-container', Object.keys(statusMap), state.newsTab, (label) => {
       state.newsTab = label;
       renderActualites();
@@ -400,22 +405,25 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     if (!selected) return;
 
     const alreadyDone = selected.status === 'Traité';
+    const isArchived = selected.status === 'Archivé';
     detailBox.innerHTML = `
       <h3 style="font-size:16px; font-weight:700; color:#1F2925; margin:0 0 4px;">${selected.subject}</h3>
       <div style="font-size:13px; color:#5a655f; margin-bottom:16px;">De ${selected.from_name} · Catégorie : ${selected.category}</div>
       <p style="font-size:13.5px; line-height:1.6; color:#3f4a45; margin:0 0 18px; background: rgba(31,41,37,0.02); padding: 12px; border-radius: 8px;">${selected.content}</p>
       <textarea id="message-reply-text" rows="3" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:13.5px; resize:vertical; margin-bottom:14px;" placeholder="Votre réponse…"></textarea>
-      <div style="display:flex; gap:10px;">
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button id="message-reply-btn" style="background:#176B4D; color:#FFFFFF; border:none; padding:11px 20px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">Répondre</button>
         <button id="message-done-btn" ${alreadyDone ? 'disabled' : ''} style="background:#F8F4EC; color:#1F2925; border:none; padding:11px 20px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:${alreadyDone ? 'default' : 'pointer'}; opacity:${alreadyDone ? '0.5' : '1'};">Marquer comme traité</button>
+        <button id="message-archive-btn" ${isArchived ? 'disabled' : ''} style="background:#F8F4EC; color:#1F2925; border:none; padding:11px 20px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:${isArchived ? 'default' : 'pointer'}; opacity:${isArchived ? '0.5' : '1'};">Archiver</button>
+        ${isArchived ? '<button id="message-delete-btn" style="background:#c0392b; color:#FFFFFF; border:none; padding:11px 20px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">Supprimer définitivement</button>' : ''}
       </div>
     `;
 
-    async function markAsHandled(successMessage) {
+    async function updateStatus(status, successMessage) {
       const res = await fetch('/api/admin/messages', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: selected.id, status: 'Traité' }),
+        body: JSON.stringify({ id: selected.id, status }),
       });
       if (!res.ok) throw new Error('Erreur serveur');
       alert(successMessage);
@@ -431,7 +439,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
       try {
         // Aucun envoi d'e-mail n'est branché : on trace seulement le
         // traitement côté base, la réponse se fait hors de l'outil.
-        await markAsHandled('Message marqué comme traité. (Aucun e-mail n\'est envoyé par l\'outil : répondez depuis votre messagerie.)');
+        await updateStatus('Traité', 'Message marqué comme traité. (Aucun e-mail n\'est envoyé par l\'outil : répondez depuis votre messagerie.)');
       } catch (err) {
         alert(err.message);
       }
@@ -440,11 +448,39 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     document.getElementById('message-done-btn').addEventListener('click', async () => {
       if (alreadyDone) return;
       try {
-        await markAsHandled('Message marqué comme traité.');
+        await updateStatus('Traité', 'Message marqué comme traité.');
       } catch (err) {
         alert(err.message);
       }
     });
+
+    document.getElementById('message-archive-btn').addEventListener('click', async () => {
+      if (isArchived) return;
+      try {
+        await updateStatus('Archivé', 'Message archivé.');
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+
+    // Suppression définitive : réservée aux messages déjà archivés (garde-fou
+    // volontaire, cf. bouton non affiché sinon).
+    const deleteBtn = document.getElementById('message-delete-btn');
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', async () => {
+        if (!confirm(`Supprimer définitivement le message de ${selected.from_name} ? Cette action est irréversible.`)) return;
+        try {
+          const res = await fetch(`/api/admin/messages?id=${selected.id}`, { method: 'DELETE' });
+          const result = await res.json();
+          if (!res.ok) throw new Error(result.error || 'Erreur serveur');
+          alert('Message supprimé.');
+          state.messageSelectedIdx = 0;
+          await refresh(renderMessages);
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+    }
   }
 
   // ------------------------------------------- câblage des zones statiques

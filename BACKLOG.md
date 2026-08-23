@@ -4,7 +4,7 @@
 
 Ce document remplace le backlog précédent, qui contenait des affirmations non vérifiées.
 
-**État git :** 32 commits sur la branche `content/contacts-legal-info`, dont **31 non poussés**. Aucune migration appliquée sur la base distante `anb-db` — tout le travail est local.
+**État git :** 51 commits sur la branche `content/contacts-legal-info`, dont **34 non poussés** vers `origin`. Aucune migration appliquée sur la base distante `anb-db` — tout le travail est local.
 
 Légende : 🔴 Bloquant lancement · 🟠 Important · 🟡 Peut attendre
 
@@ -42,7 +42,6 @@ Options : supprimer la vue, ou la remplacer par une vraie liste des pages avec u
 
 ### 🟡 P5 — Suppressions et corrections secondaires
 
-- [ ] `DELETE /api/admin/messages` — supprimer/archiver un message
 - [ ] `DELETE /api/admin/inscriptions` — désinscrire quelqu'un
 - [ ] `PUT /api/admin/recensement` — corriger la fiche d'un membre recensé (aujourd'hui : suppression uniquement)
 
@@ -67,7 +66,7 @@ Tableau vérifié route par route.
 | **Utilisateurs** | ✅ | ✅ | ✅ | ✅ |
 | **Actualités** | ✅ | ✅ | ✅ | ✅ |
 | **Événements** | ✅ | ✅ | ✅ | ✅ (avec garde-fou sur les inscrits) |
-| **Messages** | ❌ formulaire cassé (P1) | ✅ | ✅ statut | ❌ (P5) |
+| **Messages** | ❌ formulaire cassé (P1) | ✅ | ✅ statut | ✅ (uniquement après archivage) |
 | **Inscriptions événements** | ✅ public | ✅ | ❌ (P2) | ❌ (P5) |
 | **Recensement / adhésions** | ✅ public | ✅ | ❌ (P5) | ✅ |
 | **Réglages du site** | — | ✅ | ✅ | — (clé/valeur, normal) |
@@ -108,6 +107,10 @@ Deux bugs réels trouvés en le faisant volontairement échouer (pas en relisant
 - **Message d'erreur illisible sur un titre en double** — créer/modifier un article dont le titre génère la même adresse qu'un article existant renvoyait l'erreur SQLite brute (`D1_ERROR: UNIQUE constraint failed...`). Le slug étant généré automatiquement (non modifiable à la main), l'admin n'avait aucun moyen de comprendre. Traduit en message clair + code 409.
 - **Un événement complet propose quand même « Je participe »** — aucune tâche planifiée ne fait jamais passer un événement à « Complet » automatiquement (statut posé à la main uniquement). Un visiteur pouvait donc s'inscrire à un événement déjà plein et se faire refuser après coup par l'API (qui, elle, bloquait déjà correctement toute surinscription). Le badge et le bouton comparent désormais aussi la capacité réelle, pas seulement le statut.
 - **Limite acceptée, pas un bug** : le statut « Programmé » d'un article n'a pas de vrai système de publication planifiée (aucune tâche cron dans ce projet) — c'est un simple statut manuel, cohérent avec le reste de l'app (aucune automatisation nulle part ailleurs non plus).
+
+### Simplification du workflow Actualités (Admin/Super Admin) + suppression des messages
+- **Actualités** — un admin/super-admin publiait déjà toujours directement (le formulaire n'a pas de champ statut), mais la liste affichait 4 onglets (Publiées/Brouillons/Programmées/Archivées) alors que rien, dans ce workflow, ne produit réellement un « Brouillon » ou un « Programmé » côté admin — ces statuts n'existaient que via le circuit éditeur (Brouillon → soumission → validation, géré ailleurs, dans son propre espace et dans « Contenus & validations ») ou via des données de test. Simplifié à **2 onglets : Publiées / Archivées**. Le circuit éditeur n'est pas touché. Les 3 articles restés au statut « Programmé » (dont 2 créés pour la démonstration du 2026-08-23) sont repassés en « Publié ». Vérifié en exécution sur `/admin` et `/superadmin`.
+- **Messages** — suppression désormais possible, mais uniquement pour un message déjà archivé (nouveau bouton « Archiver », puis « Supprimer définitivement » qui n'apparaît qu'une fois archivé). Garde-fou appliqué aussi côté serveur (`DELETE /api/admin/messages` refuse un message qui n'est pas au statut Archivé), pas seulement caché dans l'interface. Vérifié en exécution (archiver → supprimer → disparu de la liste).
 
 ### Architecture partagée
 - **`src/components/admin/View{Actualites,Evenements,Messages}.astro`** + **`src/lib/adminContent.js`** : les 3 vues de gestion de contenu existent en **un seul exemplaire**, utilisées à l'identique par `/admin` et `/superadmin`. La page hôte injecte ce dont le module a besoin d'elle (navigation, rendu des badges) et lui fournit les données ; le module ignore tout de la navigation propre à chaque espace. Le bouton « Inscrits » n'apparaît que là où une vue Inscriptions existe.

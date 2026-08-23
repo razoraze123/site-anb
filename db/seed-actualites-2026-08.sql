@@ -1,7 +1,11 @@
 -- 5 actualités réelles ajoutées le 2026-08-23, à la demande du client :
--- 3 déjà publiées (dates passées), 2 programmées (dates futures).
+-- 3 dates passées, 2 dates futures (rentrée 2026).
 -- Catégories limitées à celles réellement proposées dans le formulaire
 -- admin (Communauté, Vie associative, Bénévolat, Culture, Solidarité).
+-- MAJ 2026-08-23 : le statut "Programmé" a été retiré du fonctionnement de
+-- l'app (un admin/super-admin publie toujours directement) — les 2 articles
+-- à date future sont donc en "Publié" comme les autres, malgré leur date de
+-- création future affichée dans le tri.
 
 INSERT INTO actualites (title, slug, excerpt, content, category, auteur_id, status, bg_gradient, created_at) VALUES
 (
@@ -44,7 +48,7 @@ INSERT INTO actualites (title, slug, excerpt, content, category, auteur_id, stat
   'Comme chaque année, l''association tiendra des permanences pour accompagner les nouveaux arrivants dans leurs premières démarches : logement, inscription universitaire, ouverture de compte bancaire et titre de séjour. Ces permanences seront animées par des bénévoles expérimentés, disponibles pour répondre aux questions et orienter chacun vers les bonnes ressources. Toutes les informations pratiques seront prochainement publiées sur la page Vie pratique du site.',
   'Communauté',
   2,
-  'Programmé',
+  'Publié',
   'linear-gradient(150deg,#176B4D,#E97824)',
   '2026-09-18 08:00:00'
 ),
@@ -55,7 +59,7 @@ INSERT INTO actualites (title, slug, excerpt, content, category, auteur_id, stat
   'Ce nouveau partenariat doit permettre de simplifier l''orientation des étudiants membres de l''ANB vers les dispositifs d''aide du CROUS : logement en résidence universitaire, bourses et aides d''urgence. Une session d''information conjointe sera organisée à la rentrée pour présenter ces dispositifs à l''ensemble de la communauté. L''association continue ainsi de développer ses partenariats locaux au bénéfice de ses membres.',
   'Vie associative',
   1,
-  'Programmé',
+  'Publié',
   'linear-gradient(150deg,#E8D8BF,#176B4D)',
   '2026-10-10 14:00:00'
 );
