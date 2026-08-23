@@ -5,7 +5,12 @@ export const prerender = false;
 
 export async function POST(context) {
   try {
-    const user = await requireRole(context, ['admin', 'super_admin']);
+    // Un éditeur doit pouvoir illustrer son propre brouillon avant de le
+    // soumettre à validation — c'est juste "stocke ce fichier, donne-moi son
+    // URL", pas un droit d'administration sur R2 (pas de liste, pas de
+    // suppression). L'API news.js contrôle déjà, séparément, qu'un éditeur
+    // ne peut rattacher une image qu'à son propre brouillon/renvoyé.
+    const user = await requireRole(context, ['admin', 'super_admin', 'editeur']);
     if (!user) return unauthorized();
 
     const r2 = env.R2;

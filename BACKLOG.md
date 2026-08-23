@@ -104,6 +104,14 @@ Tableau vérifié route par route.
 
 ## 5. Fait et vérifié
 
+### Formulaires Actualités Admin/Éditeur harmonisés (2026-08-24)
+Même socle de champs, même ordre (Titre → Catégorie/Rédacteur → Image de couverture → Résumé court → Contenu) — seules les actions finales changent selon le rôle (Admin : Publier · Éditeur : Enregistrer le brouillon / Soumettre à validation, cette dernière enchaînant sauvegarde + `PUT /api/editeur/submit` en un clic).
+- **Bug corrigé** : `POST /api/admin/upload` était réservé à `['admin', 'super_admin']` — un éditeur ne pouvait pas illustrer son propre brouillon (le formulaire proposait l'upload, l'API le refusait). Ouvert à `editeur` — reste une simple permission d'upload, pas un droit d'administration R2 (pas de liste/suppression). Vérifié : upload par un compte éditeur → 200.
+- Le slug n'était déjà pas modifiable (champ readonly), mais ressemblait visuellement à un champ de saisie. Remplacé par une ligne d'information (« URL : /actualites/... ») sur les deux formulaires.
+- `api/editeur/dashboard.js` ne renvoyait pas `bg_gradient` — corrigé, sinon l'image d'un brouillon disparaissait de l'écran à la réouverture pour modification.
+- Système d'upload (compression, glisser-déposer, aperçu) factorisé en exports du module partagé (`lib/adminContent.js`) au lieu d'être dupliqué : l'espace Éditeur (qui n'utilise pas le reste de ce module) réutilise les mêmes fonctions.
+- Vérifié en exécution : upload éditeur, brouillon créé avec image, image conservée à la réouverture pour modification, « Soumettre à validation » passe bien `Brouillon → En attente` en conservant l'image, édition d'un article existant côté admin toujours fonctionnelle.
+
 ### Tri chronologique des événements (2026-08-24)
 Public et admin affichent désormais les événements dans l'ordre des dates (nouvelle colonne `event_date`, ISO, dédiée au tri — `date` reste le texte affiché). Corrigé aussi au passage : « Modifier une actualité/un événement » ne sauvegardait jamais la nouvelle image de couverture (seule la création l'enregistrait) — vérifié et corrigé.
 

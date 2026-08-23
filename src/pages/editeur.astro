@@ -184,11 +184,13 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
               <button id="toggle-draft-form-btn" style="background:#E97824; color:#FFFFFF; border:none; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Nouveau brouillon</button>
             </div>
 
-            <div id="draft-form-box" class="hidden" style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:14px;">
+            <div id="draft-form-box" class="hidden" style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:18px;">
               <h3 style="font-size:16px; font-weight:700; color:#1F2925; margin:0;">Nouveau brouillon d'article</h3>
               <div>
                 <label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Titre</label>
                 <input id="draft-form-title" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px;" placeholder="Titre de l'article" />
+                <div style="font-size:12px; color:#9aa39c; margin-top:8px;">URL : <span id="draft-form-slug">/actualites/</span></div>
+                <div style="font-size:11px; color:#9aa39c; margin-top:2px;">Générée automatiquement à partir du titre.</div>
               </div>
               <div style="display:flex; gap:12px; flex-wrap:wrap;">
                 <div style="flex:1; min-width:180px;">
@@ -203,21 +205,30 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
                   </select>
                 </div>
                 <div style="flex:1; min-width:180px;">
-                  <label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Adresse (générée)</label>
-                  <input id="draft-form-slug" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px; color:#9aa39c;" placeholder="/actualites/titre-de-larticle" readonly />
+                  <label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Rédacteur</label>
+                  <input style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px; color:#9aa39c;" value={user.nom} readonly />
                 </div>
               </div>
               <div>
-                <label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Résumé</label>
+                <label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:8px;">Image de couverture</label>
+                <div id="draft-upload-zone" style="border:2px dashed #d8cfb8; border-radius:14px; padding:40px 30px; text-align:center; color:#9aa39c; font-size:13.5px; cursor:pointer; background:#FFFFFF; position:relative; overflow:hidden; transition:all 0.15s ease; display:flex; align-items:center; justify-content:center; min-height:140px;">
+                  <span id="draft-upload-placeholder" style="z-index:10;">Glissez-déposez une image ici, ou cliquez pour parcourir</span>
+                </div>
+                <input type="file" id="draft-image-input" accept="image/*" style="display:none;" />
+                <input type="hidden" id="draft-form-image-url" />
+              </div>
+              <div>
+                <label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Résumé court</label>
                 <textarea id="draft-form-excerpt" rows="2" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px; resize:vertical;" placeholder="Résumé court affiché dans les listes"></textarea>
               </div>
               <div>
                 <label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Contenu</label>
                 <textarea id="draft-form-content" rows="6" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px; resize:vertical;" placeholder="Contenu complet de l'article"></textarea>
               </div>
-              <div style="display:flex; gap:10px;">
-                <button id="save-draft-btn" style="background:#176B4D; color:#FFFFFF; border:none; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Enregistrer le brouillon</button>
-                <button id="cancel-draft-btn" style="background:#F8F4EC; color:#1F2925; border:none; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Annuler</button>
+              <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; border-top:1px solid rgba(31,41,37,0.07); padding-top:18px;">
+                <button id="cancel-draft-btn" style="background:#FFFFFF; color:#1F2925; border:2px solid rgba(31,41,37,0.15); padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Annuler</button>
+                <button id="save-draft-btn" style="background:#F8F4EC; color:#1F2925; border:none; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Enregistrer le brouillon</button>
+                <button id="submit-draft-form-btn" style="background:#176B4D; color:#FFFFFF; border:none; padding:12px 26px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Soumettre à validation</button>
               </div>
             </div>
 
@@ -283,6 +294,11 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
   </div>
 
   <script>
+    // Système d'upload d'image partagé avec /admin et /superadmin (voir
+    // lib/adminContent.js) — pas de second système d'upload ici, juste le
+    // même câblage sur les ids "draft-*" du formulaire éditeur.
+    import { wireUploadZone, handleImageUpload, setUploadPreview, resetUploadZone, isImageUrl } from '../lib/adminContent.js';
+
     // State management
     const state = {
       user: 'editeur',
@@ -364,14 +380,16 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
       });
       document.getElementById('draft-form-title').addEventListener('input', (e) => {
         if (state.editingDraftId) return; // ne pas régénérer le slug d'un contenu existant
-        document.getElementById('draft-form-slug').value = '/actualites/' + e.target.value
+        document.getElementById('draft-form-slug').textContent = '/actualites/' + e.target.value
           .toLowerCase()
           .trim()
           .normalize('NFD')
           .replace(/[\u0300-\u036f]/g, '')
           .replace(/[^a-z0-9]+/g, '-');
       });
-      document.getElementById('save-draft-btn').addEventListener('click', saveDraft);
+      wireUploadZone('draft');
+      document.getElementById('save-draft-btn').addEventListener('click', () => saveDraft(false));
+      document.getElementById('submit-draft-form-btn').addEventListener('click', () => saveDraft(true));
 
       // Afficher/masquer un champ mot de passe (délégation, couvre les
       // boutons injectés plus tard).
@@ -577,15 +595,16 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
 
       state.editingDraftId = id;
       document.getElementById('draft-form-title').value = item.title;
-      document.getElementById('draft-form-slug').value = '/actualites/' + item.slug;
+      document.getElementById('draft-form-slug').textContent = '/actualites/' + item.slug;
       document.getElementById('draft-form-excerpt').value = item.excerpt;
       document.getElementById('draft-form-content').value = item.content;
       const categorySelect = document.getElementById('draft-form-category');
       const optionIndex = [...categorySelect.options].findIndex((o) => o.value === item.category);
       categorySelect.selectedIndex = optionIndex >= 0 ? optionIndex : 0;
+      if (isImageUrl(item.bg_gradient)) setUploadPreview('draft', item.bg_gradient);
+      else resetUploadZone('draft');
 
       document.querySelector('#draft-form-box h3').textContent = 'Modifier le brouillon';
-      document.getElementById('save-draft-btn').textContent = 'Enregistrer les modifications';
       document.getElementById('draft-form-box').classList.remove('hidden');
       document.getElementById('draft-form-box').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
@@ -608,21 +627,27 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
     }
 
     function clearDraftForm() {
-      ['draft-form-title', 'draft-form-slug', 'draft-form-excerpt', 'draft-form-content'].forEach((id) => {
+      ['draft-form-title', 'draft-form-excerpt', 'draft-form-content'].forEach((id) => {
         document.getElementById(id).value = '';
       });
+      document.getElementById('draft-form-slug').textContent = '/actualites/';
       document.getElementById('draft-form-category').selectedIndex = 0;
+      resetUploadZone('draft');
       state.editingDraftId = null;
       document.querySelector('#draft-form-box h3').textContent = "Nouveau brouillon d'article";
-      document.getElementById('save-draft-btn').textContent = 'Enregistrer le brouillon';
     }
 
-    async function saveDraft() {
+    // alsoSubmit=false : "Enregistrer le brouillon" (sauvegarde sans
+    // soumettre). alsoSubmit=true : "Soumettre à validation" (sauvegarde
+    // puis passage en attente via submitDraft, même route/mêmes règles que
+    // le bouton "Soumettre" de la liste — pas de logique dupliquée).
+    async function saveDraft(alsoSubmit) {
       const title = document.getElementById('draft-form-title').value.trim();
-      const slug = document.getElementById('draft-form-slug').value.replace('/actualites/', '');
+      const slug = document.getElementById('draft-form-slug').textContent.trim().replace('/actualites/', '');
       const excerpt = document.getElementById('draft-form-excerpt').value.trim();
       const content = document.getElementById('draft-form-content').value.trim();
       const category = document.getElementById('draft-form-category').value;
+      const bgGradient = document.getElementById('draft-form-image-url').value;
 
       if (!title || !excerpt || !content) {
         alert('Veuillez remplir le titre, le résumé et le contenu.');
@@ -630,22 +655,25 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
       }
 
       const isEdit = state.editingDraftId !== null;
+      const editingId = state.editingDraftId;
       try {
         const res = await fetch('/api/admin/news', {
           method: isEdit ? 'PUT' : 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(
             isEdit
-              ? { id: state.editingDraftId, title, slug, excerpt, content, category }
-              : { title, slug, excerpt, content, category }
+              ? { id: editingId, title, slug, excerpt, content, category, bg_gradient: bgGradient }
+              : { title, slug, excerpt, content, category, bg_gradient: bgGradient }
           )
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Erreur.');
+        const savedId = isEdit ? editingId : data.data?.meta?.last_row_id;
         document.getElementById('draft-form-box').classList.add('hidden');
         clearDraftForm();
         await loadEcontenus();
         await loadEdashCounts();
+        if (alsoSubmit && savedId) await submitDraft(savedId);
       } catch (err) {
         alert(err.message);
       }

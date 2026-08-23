@@ -37,6 +37,118 @@ export function eventBucket(ev) {
   return full ? 'Complet' : 'Ouvert';
 }
 
+// ------------------------------------------------ upload d'image (partagé)
+//
+// Générique par `type` (ex. "news", "event", "draft" pour l'éditeur) —
+// n'importe quelle page peut s'en servir tant qu'elle a les éléments
+// `${type}-upload-zone`, `${type}-upload-placeholder`, `${type}-image-input`
+// et `${type}-form-image-url` dans le DOM. Exporté (pas seulement interne à
+// createAdminContent) pour que l'espace Éditeur, qui n'utilise pas le reste
+// du module partagé, réutilise quand même le même système d'upload plutôt
+// que d'en refaire un second.
+
+export function isImageUrl(value) {
+  return typeof value === 'string' && (value.startsWith('/') || value.startsWith('http'));
+}
+
+export function resetUploadZone(type) {
+  const zone = document.getElementById(`${type}-upload-zone`);
+  const placeholder = document.getElementById(`${type}-upload-placeholder`);
+  const urlInput = document.getElementById(`${type}-form-image-url`);
+  if (urlInput) urlInput.value = '';
+  if (zone && placeholder) {
+    zone.style.background = '#FFFFFF';
+    placeholder.innerHTML = 'Glissez-déposez une image ici, ou cliquez pour parcourir';
+  }
+}
+
+export function setUploadPreview(type, url) {
+  const zone = document.getElementById(`${type}-upload-zone`);
+  const placeholder = document.getElementById(`${type}-upload-placeholder`);
+  const urlInput = document.getElementById(`${type}-form-image-url`);
+  if (urlInput) urlInput.value = url;
+  if (zone && placeholder) {
+    zone.style.background = `url('${url}') center/cover no-repeat`;
+    placeholder.innerHTML = '<span style="background:rgba(31,41,37,0.75); color:#FFFFFF; padding:6px 14px; border-radius:999px; font-weight:700;">Image chargée — cliquez pour remplacer</span>';
+  }
+}
+
+// Réduit l'image côté navigateur avant l'envoi vers R2 (économise la bande
+// passante et le stockage). En cas d'échec, on renvoie le fichier d'origine.
+export async function compressImage(file, maxDimension = 1600, quality = 0.82) {
+  try {
+    if (!file.type.startsWith('image/') || file.type === 'image/gif') return file;
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
+    if (scale === 1 && file.size < 400_000) return file;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close?.();
+
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', quality));
+    if (!blob || blob.size >= file.size) return file;
+    return new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' });
+  } catch {
+    return file;
+  }
+}
+
+export async function handleImageUpload(file, type) {
+  const zone = document.getElementById(`${type}-upload-zone`);
+  const placeholder = document.getElementById(`${type}-upload-placeholder`);
+  const urlInput = document.getElementById(`${type}-form-image-url`);
+  if (!zone || !placeholder || !urlInput) return;
+
+  placeholder.innerHTML = '<span style="color:#176B4D; font-weight:700;">Compression de l\'image…</span>';
+  zone.style.opacity = '0.7';
+  const compressed = await compressImage(file);
+  placeholder.innerHTML = '<span style="color:#176B4D; font-weight:700;">Téléversement en cours…</span>';
+
+  const formData = new FormData();
+  formData.append('file', compressed);
+
+  try {
+    const res = await fetch('/api/admin/upload', { method: 'POST', body: formData });
+    if (!res.ok) throw new Error('Erreur de téléversement R2');
+    const payload = await res.json();
+    zone.style.opacity = '1';
+    setUploadPreview(type, payload.url);
+  } catch (err) {
+    zone.style.opacity = '1';
+    zone.style.background = '#FFFFFF';
+    placeholder.innerHTML = `<span style="color:#B14524; font-weight:700;">❌ Échec : ${err.message}</span>`;
+  }
+}
+
+export function wireUploadZone(type) {
+  const zone = document.getElementById(`${type}-upload-zone`);
+  const input = document.getElementById(`${type}-image-input`);
+  if (!zone || !input) return;
+
+  zone.addEventListener('click', () => input.click());
+  zone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    zone.style.borderColor = '#176B4D';
+    zone.style.background = 'rgba(23,107,77,0.03)';
+  });
+  zone.addEventListener('dragleave', () => {
+    zone.style.borderColor = '#d8cfb8';
+    zone.style.background = '#FFFFFF';
+  });
+  zone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    zone.style.borderColor = '#d8cfb8';
+    zone.style.background = '#FFFFFF';
+    if (e.dataTransfer.files?.[0]) handleImageUpload(e.dataTransfer.files[0], type);
+  });
+  input.addEventListener('change', (e) => {
+    if (e.target.files?.[0]) handleImageUpload(e.target.files[0], type);
+  });
+}
+
 export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) {
   const data = { actualites: [], evenements: [], messages: [], inscriptions: [] };
 
@@ -75,10 +187,9 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
   }
 
   // ------------------------------------------------------- helpers partagés
-
-  function isImageUrl(value) {
-    return typeof value === 'string' && (value.startsWith('/') || value.startsWith('http'));
-  }
+  // isImageUrl / resetUploadZone / setUploadPreview / compressImage /
+  // handleImageUpload / wireUploadZone sont désormais des exports du module
+  // (voir plus haut) — accessibles ici tels quels par portée lexicale.
 
   function coverStyleFor(value) {
     return isImageUrl(value)
@@ -188,77 +299,6 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     closeOpenActionsMenu = close;
   }
 
-  function resetUploadZone(type) {
-    const zone = document.getElementById(`${type}-upload-zone`);
-    const placeholder = document.getElementById(`${type}-upload-placeholder`);
-    const urlInput = document.getElementById(`${type}-form-image-url`);
-    if (urlInput) urlInput.value = '';
-    if (zone && placeholder) {
-      zone.style.background = '#FFFFFF';
-      placeholder.innerHTML = 'Glissez-déposez une image ici, ou cliquez pour parcourir';
-    }
-  }
-
-  function setUploadPreview(type, url) {
-    const zone = document.getElementById(`${type}-upload-zone`);
-    const placeholder = document.getElementById(`${type}-upload-placeholder`);
-    const urlInput = document.getElementById(`${type}-form-image-url`);
-    if (urlInput) urlInput.value = url;
-    if (zone && placeholder) {
-      zone.style.background = `url('${url}') center/cover no-repeat`;
-      placeholder.innerHTML = '<span style="background:rgba(31,41,37,0.75); color:#FFFFFF; padding:6px 14px; border-radius:999px; font-weight:700;">Image chargée — cliquez pour remplacer</span>';
-    }
-  }
-
-  // Réduit l'image côté navigateur avant l'envoi vers R2 (économise la bande
-  // passante et le stockage). En cas d'échec, on renvoie le fichier d'origine.
-  async function compressImage(file, maxDimension = 1600, quality = 0.82) {
-    try {
-      if (!file.type.startsWith('image/') || file.type === 'image/gif') return file;
-      const bitmap = await createImageBitmap(file);
-      const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
-      if (scale === 1 && file.size < 400_000) return file;
-
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.round(bitmap.width * scale);
-      canvas.height = Math.round(bitmap.height * scale);
-      canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-      bitmap.close?.();
-
-      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', quality));
-      if (!blob || blob.size >= file.size) return file;
-      return new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' });
-    } catch {
-      return file;
-    }
-  }
-
-  async function handleImageUpload(file, type) {
-    const zone = document.getElementById(`${type}-upload-zone`);
-    const placeholder = document.getElementById(`${type}-upload-placeholder`);
-    const urlInput = document.getElementById(`${type}-form-image-url`);
-    if (!zone || !placeholder || !urlInput) return;
-
-    placeholder.innerHTML = '<span style="color:#176B4D; font-weight:700;">Compression de l\'image…</span>';
-    zone.style.opacity = '0.7';
-    const compressed = await compressImage(file);
-    placeholder.innerHTML = '<span style="color:#176B4D; font-weight:700;">Téléversement en cours…</span>';
-
-    const formData = new FormData();
-    formData.append('file', compressed);
-
-    try {
-      const res = await fetch('/api/admin/upload', { method: 'POST', body: formData });
-      if (!res.ok) throw new Error('Erreur de téléversement R2');
-      const payload = await res.json();
-      zone.style.opacity = '1';
-      setUploadPreview(type, payload.url);
-    } catch (err) {
-      zone.style.opacity = '1';
-      zone.style.background = '#FFFFFF';
-      placeholder.innerHTML = `<span style="color:#B14524; font-weight:700;">❌ Échec : ${err.message}</span>`;
-    }
-  }
 
   // ------------------------------------------------------------ Actualités
 
@@ -346,7 +386,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
         state.editingNewsId = n.id;
         goPage('actualites-new');
         document.getElementById('news-form-title').value = n.title;
-        document.getElementById('news-form-slug').value = '/actualites/' + n.slug;
+        document.getElementById('news-form-slug').textContent = '/actualites/' + n.slug;
         document.getElementById('news-form-excerpt').value = n.excerpt;
         document.getElementById('news-form-content').value = n.content;
         document.getElementById('news-form-category').value = n.category;
@@ -362,10 +402,12 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
 
   function resetNewsForm() {
     state.editingNewsId = null;
-    ['news-form-title', 'news-form-slug', 'news-form-excerpt', 'news-form-content'].forEach((id) => {
+    ['news-form-title', 'news-form-excerpt', 'news-form-content'].forEach((id) => {
       const el = document.getElementById(id);
       if (el) el.value = '';
     });
+    const slugDisplay = document.getElementById('news-form-slug');
+    if (slugDisplay) slugDisplay.textContent = '/actualites/';
     resetUploadZone('news');
     const heading = document.querySelector('#view-actualites-new h1');
     if (heading) heading.textContent = 'Nouvelle actualité';
@@ -783,32 +825,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
   }
 
   // ------------------------------------------- câblage des zones statiques
-
-  function wireUploadZone(type) {
-    const zone = document.getElementById(`${type}-upload-zone`);
-    const input = document.getElementById(`${type}-image-input`);
-    if (!zone || !input) return;
-
-    zone.addEventListener('click', () => input.click());
-    zone.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      zone.style.borderColor = '#176B4D';
-      zone.style.background = 'rgba(23,107,77,0.03)';
-    });
-    zone.addEventListener('dragleave', () => {
-      zone.style.borderColor = '#d8cfb8';
-      zone.style.background = '#FFFFFF';
-    });
-    zone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      zone.style.borderColor = '#d8cfb8';
-      zone.style.background = '#FFFFFF';
-      if (e.dataTransfer.files?.[0]) handleImageUpload(e.dataTransfer.files[0], type);
-    });
-    input.addEventListener('change', (e) => {
-      if (e.target.files?.[0]) handleImageUpload(e.target.files[0], type);
-    });
-  }
+  // wireUploadZone est désormais un export du module (voir plus haut).
 
   function wireNewsForm() {
     const titleInput = document.getElementById('news-form-title');
@@ -818,7 +835,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
         // On ne régénère pas le slug d'un article existant : il fait partie
         // de son URL publique.
         if (state.editingNewsId) return;
-        slugInput.value = '/actualites/' + e.target.value
+        slugInput.textContent = '/actualites/' + e.target.value
           .toLowerCase()
           .trim()
           .normalize('NFD')
@@ -829,7 +846,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
 
     document.getElementById('publish-news-submit-btn')?.addEventListener('click', async () => {
       const title = document.getElementById('news-form-title').value.trim();
-      const slug = document.getElementById('news-form-slug').value.trim().replace('/actualites/', '');
+      const slug = document.getElementById('news-form-slug').textContent.trim().replace('/actualites/', '');
       const excerpt = document.getElementById('news-form-excerpt').value.trim();
       const content = document.getElementById('news-form-content').value.trim();
       const category = document.getElementById('news-form-category').value;
