@@ -265,7 +265,7 @@ export const prerender = false;
             <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
               <h3 style="font-size:15.5px; font-weight:700; color:#1F2925; margin:0 0 16px;">Générer un export sécurisé</h3>
               <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;">
-                <label style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:#1F2925;"><input type="checkbox" id="export-check-adhesions" checked />Demandes d'adhésion</label>
+                <label style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:#1F2925;"><input type="checkbox" id="export-check-recensement" checked />Recensement (adhésions)</label>
                 <label style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:#1F2925;"><input type="checkbox" id="export-check-inscriptions" checked />Inscriptions aux événements</label>
                 <label style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:#1F2925;"><input type="checkbox" id="export-check-messages" />Messages de contact</label>
               </div>
@@ -685,7 +685,7 @@ export const prerender = false;
       { name: 'Paiement / adhésion en ligne', desc: 'Paiement de la cotisation en ligne', status: 'À venir', tone: 'n', sync: '—', actionLabel: 'Bientôt' },
       { name: 'Analytics', desc: 'Statistiques de fréquentation du site', status: 'À venir', tone: 'n', sync: '—', actionLabel: 'Bientôt' },
       { name: 'Réseaux sociaux', desc: 'Partage automatique sur Facebook et Instagram', status: 'À venir', tone: 'n', sync: '—', actionLabel: 'Bientôt' },
-      { name: 'Formulaires', desc: 'Réception des formulaires du site (recensement, adhésion, contact)', status: 'Connecté', tone: 'g', sync: 'En continu', actionLabel: 'Voir' }
+      { name: 'Formulaires', desc: 'Réception des formulaires du site (recensement/adhésion, contact)', status: 'Connecté', tone: 'g', sync: 'En continu', actionLabel: 'Voir' }
     ];
 
     const legalSections = [
@@ -1198,7 +1198,7 @@ export const prerender = false;
     document.getElementById('confirm-export-action').addEventListener('click', async () => {
       const reason = document.getElementById('export-reason').value.trim();
       const period = document.getElementById('export-period').value;
-      const include = ['adhesions', 'inscriptions', 'messages'].filter(
+      const include = ['recensement', 'inscriptions', 'messages'].filter(
         (k) => document.getElementById(`export-check-${k}`).checked
       );
 

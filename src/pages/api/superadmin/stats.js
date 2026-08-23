@@ -7,6 +7,11 @@ export const prerender = false;
 // aucun outil d'analytics n'est branché sur le site, donc rien n'est inventé
 // ici — voir latest_articles/upcoming_events en remplacement des "pages les
 // plus vues" fictives du mock d'origine).
+//
+// "Adhésion" et "recensement" désignent la même démarche côté site public
+// (/adherer poste vers /api/recensement, table `recensement`) — la table
+// `adhesions` n'est alimentée par aucun formulaire réel (seulement 4 lignes
+// de seed figées) et n'est donc jamais utilisée ici.
 const PERIOD_DAYS = { '7': 7, '30': 30, '90': 90, '365': 365 };
 
 export async function GET(context) {
@@ -27,28 +32,26 @@ export async function GET(context) {
     const sinceExpr = `datetime('now', '-${days} days')`;
 
     const [
-      membres, adhesionsCeMois, evenementsAVenir, messagesATraiter, adhesionsATraiter,
-      adminsActifs, comptesDesactives, inscriptionsPeriode, adhesionsPeriode,
+      membres, recensementCeMois, evenementsAVenir, messagesATraiter,
+      adminsActifs, comptesDesactives, inscriptionsPeriode, recensementPeriode,
       recentJournal, latestArticles, upcomingEvents
     ] = await Promise.all([
       db.prepare("SELECT COUNT(*) AS n FROM recensement").first(),
-      db.prepare("SELECT COUNT(*) AS n FROM adhesions WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')").first(),
+      db.prepare("SELECT COUNT(*) AS n FROM recensement WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')").first(),
       db.prepare("SELECT COUNT(*) AS n FROM evenements WHERE tab = 'À venir'").first(),
       db.prepare("SELECT COUNT(*) AS n FROM messages WHERE status IN ('Non lu', 'À traiter')").first(),
-      db.prepare("SELECT COUNT(*) AS n FROM adhesions WHERE status IN ('Nouvelle', 'En attente')").first(),
       db.prepare("SELECT COUNT(*) AS n FROM utilisateurs WHERE role IN ('admin','super_admin') AND statut = 'actif'").first(),
       db.prepare("SELECT COUNT(*) AS n FROM utilisateurs WHERE statut = 'desactive'").first(),
       db.prepare(`SELECT COUNT(*) AS n FROM inscriptions WHERE created_at >= ${sinceExpr}`).first(),
-      db.prepare(`SELECT COUNT(*) AS n FROM adhesions WHERE created_at >= ${sinceExpr}`).first(),
+      db.prepare(`SELECT COUNT(*) AS n FROM recensement WHERE created_at >= ${sinceExpr}`).first(),
       db.prepare("SELECT utilisateur_email, role, action, details, created_at FROM journal_activite ORDER BY created_at DESC LIMIT 5").all(),
       db.prepare("SELECT title, category, status, created_at FROM actualites ORDER BY created_at DESC LIMIT 5").all(),
       db.prepare("SELECT title, date, place FROM evenements WHERE tab = 'À venir' ORDER BY created_at DESC LIMIT 5").all(),
     ]);
 
+    // Pas de file d'attente pour le recensement (contrairement aux messages) :
+    // chaque soumission est enregistrée directement, il n'y a rien à valider.
     const attention = [];
-    if (adhesionsATraiter.n > 0) {
-      attention.push(`${adhesionsATraiter.n} demande(s) d'adhésion en attente de traitement.`);
-    }
     if (messagesATraiter.n > 0) {
       attention.push(`${messagesATraiter.n} message(s) non lu(s) ou à traiter.`);
     }
@@ -59,9 +62,9 @@ export async function GET(context) {
     return new Response(JSON.stringify({
       overview: {
         membres: membres.n,
-        adhesions_ce_mois: adhesionsCeMois.n,
+        adhesions_ce_mois: recensementCeMois.n,
         evenements_a_venir: evenementsAVenir.n,
-        demandes_a_traiter: messagesATraiter.n + adhesionsATraiter.n,
+        demandes_a_traiter: messagesATraiter.n,
         admins_actifs: adminsActifs.n,
         comptes_desactives: comptesDesactives.n,
       },
@@ -70,7 +73,7 @@ export async function GET(context) {
       period_days: days,
       period_stats: {
         inscriptions: inscriptionsPeriode.n,
-        adhesions: adhesionsPeriode.n,
+        adhesions: recensementPeriode.n,
       },
       latest_articles: latestArticles.results,
       upcoming_events: upcomingEvents.results,

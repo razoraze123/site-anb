@@ -6,10 +6,16 @@ export const prerender = false;
 
 const PERIOD_DAYS = { '30': 30, '90': 90, '365': 365 };
 
+// Note : "adhésion" et "recensement" sont la même démarche côté site
+// public — /adherer poste vers /api/recensement (voir la table
+// `recensement`). L'ancienne table `adhesions` n'est plus alimentée par
+// aucun formulaire réel (seulement 4 lignes de seed figées depuis le
+// début) ; l'export ci-dessous porte donc sur `recensement`, la vraie
+// source de données.
 const SOURCES = {
-  adhesions: {
-    label: 'Demandes d\'adhésion',
-    columns: ['name', 'email', 'motivation', 'status', 'created_at'],
+  recensement: {
+    label: 'Recensement (adhésions)',
+    columns: ['first_name', 'last_name', 'status', 'phone', 'email', 'origine', 'annee_arrivee', 'domaine', 'benevole', 'rgpd_consent', 'created_at'],
   },
   inscriptions: {
     label: 'Inscriptions aux événements',
