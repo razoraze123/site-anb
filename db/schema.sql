@@ -100,13 +100,13 @@ CREATE TABLE IF NOT EXISTS media_galerie (
 
 
 -- SEED DEMO DATA
--- Utilisateurs (Passwords hashed roughly in mock or plaintext for demo, here 'demo1234')
+-- Utilisateurs (mot de passe démo pour tous : "demo1234", hashé PBKDF2 comme l'exige src/lib/password.js)
 INSERT OR IGNORE INTO utilisateurs (id, nom, email, mot_de_passe, role, statut) VALUES
-(1, 'Nasser Diallo', 'nasser.diallo@anb-bordeaux.fr', 'demo1234', 'super_admin', 'actif'),
-(2, 'Mariama Souley', 'mariama.souley@anb-bordeaux.fr', 'demo1234', 'admin', 'actif'),
-(3, 'Fatou Ibrahim', 'fatou.ibrahim@anb-bordeaux.fr', 'demo1234', 'editeur', 'actif'),
-(4, 'Aïcha Boubacar', 'aicha.boubacar@anb-bordeaux.fr', 'demo1234', 'admin', 'actif'),
-(5, 'Ibrahim Moussa', 'ibrahim.moussa@anb-bordeaux.fr', 'demo1234', 'super_admin', 'desactive');
+(1, 'Nasser Diallo', 'nasser.diallo@anb-bordeaux.fr', 'd803102d05cd5be2eea11649b3bd22e1:5759a250f0864d379e256ab35156ba3cc4218b261c74310432595e661b946cf2', 'super_admin', 'actif'),
+(2, 'Mariama Souley', 'mariama.souley@anb-bordeaux.fr', 'd803102d05cd5be2eea11649b3bd22e1:5759a250f0864d379e256ab35156ba3cc4218b261c74310432595e661b946cf2', 'admin', 'actif'),
+(3, 'Fatou Ibrahim', 'fatou.ibrahim@anb-bordeaux.fr', 'd803102d05cd5be2eea11649b3bd22e1:5759a250f0864d379e256ab35156ba3cc4218b261c74310432595e661b946cf2', 'editeur', 'actif'),
+(4, 'Aïcha Boubacar', 'aicha.boubacar@anb-bordeaux.fr', 'd803102d05cd5be2eea11649b3bd22e1:5759a250f0864d379e256ab35156ba3cc4218b261c74310432595e661b946cf2', 'admin', 'actif'),
+(5, 'Ibrahim Moussa', 'ibrahim.moussa@anb-bordeaux.fr', 'd803102d05cd5be2eea11649b3bd22e1:5759a250f0864d379e256ab35156ba3cc4218b261c74310432595e661b946cf2', 'super_admin', 'desactive');
 
 -- Actualités
 INSERT OR IGNORE INTO actualites (title, slug, excerpt, content, category, auteur_id, status, bg_gradient) VALUES
