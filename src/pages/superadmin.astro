@@ -648,14 +648,49 @@ export const prerender = false;
       { type: 'Demande de rectification', requester: 'Ibrahim Moussa', status: 'Traitée', tone: 'g', responsable: 'Mariama S.', deadline: 'Clôturée' }
     ];
 
-    const journalLogs = [
-      { date: '12 juillet 2026, 14:32', user: 'Mariama', role: 'Admin', roleT: 'o', action: "Publication d'une actualité", detail: 'Bienvenue aux nouveaux membres', ip: '82.1XX.XX.XX' },
-      { date: '12 juillet 2026, 11:18', user: 'Nasser', role: 'Super Admin', roleT: 'g', action: 'Modification du rôle utilisateur', detail: "Fatou passe d'Éditeur à Admin", ip: '90.4XX.XX.XX' },
-      { date: '11 juillet 2026, 16:03', user: 'Nasser', role: 'Super Admin', roleT: 'g', action: 'Export de données', detail: 'Inscriptions à la Journée culturelle', ip: '90.4XX.XX.XX' },
-      { date: '10 juillet 2026, 09:47', user: 'Mariama', role: 'Admin', roleT: 'o', action: "Création d'un événement", detail: 'Tournoi de football amical', ip: '82.1XX.XX.XX' },
-      { date: '9 juillet 2026, 19:05', user: 'Fatou', role: 'Éditeur', roleT: 'n', action: 'Soumission pour validation', detail: "Portrait : parcours d'une étudiante", ip: '78.2XX.XX.XX' },
-      { date: '8 juillet 2026, 08:15', user: 'Nasser', role: 'Super Admin', roleT: 'g', action: 'Connexion administrateur', detail: 'Connexion depuis Bordeaux', ip: '90.4XX.XX.XX' }
-    ];
+    // Rempli par loadJournal() depuis GET /api/superadmin/journal.
+    let journalLogs = [];
+
+    const JOURNAL_ROLE_T = { Admin: 'o', 'Super Admin': 'g', 'Éditeur': 'n' };
+    const MONTHS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+
+    function firstNameFromEmail(email) {
+      const local = (email || '').split('@')[0] || '';
+      const first = local.split('.')[0] || local;
+      return first ? first.charAt(0).toUpperCase() + first.slice(1) : 'Inconnu';
+    }
+
+    function formatJournalDate(sqlDate) {
+      // "YYYY-MM-DD HH:MM:SS" (UTC, tel que stocké par D1) -> "12 juillet 2026, 14:32"
+      if (!sqlDate) return '—';
+      const [datePart, timePart] = sqlDate.split(' ');
+      const [y, m, d] = (datePart || '').split('-').map(Number);
+      const [h, min] = (timePart || '').split(':');
+      if (!y || !m || !d) return sqlDate;
+      return `${d} ${MONTHS_FR[m - 1]} ${y}, ${h}:${min}`;
+    }
+
+    async function loadJournal() {
+      const container = document.getElementById('journal-list-container');
+      container.innerHTML = '<div style="padding:24px; font-size:13.5px; color:#5a655f;">Chargement…</div>';
+      try {
+        const res = await fetch('/api/superadmin/journal');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur de chargement.');
+        journalLogs = data.logs.map(l => ({
+          date: formatJournalDate(l.created_at),
+          user: firstNameFromEmail(l.utilisateur_email),
+          role: l.role,
+          roleT: JOURNAL_ROLE_T[l.role] || 'n',
+          action: l.action,
+          detail: l.details,
+          ip: l.adresse_ip
+        }));
+        renderJournal();
+      } catch (err) {
+        container.innerHTML = `<div style="padding:24px; font-size:13.5px; color:#B14524;">${err.message}</div>`;
+      }
+    }
 
     const integrations = [
       { name: 'Google Maps', desc: 'Affiche la carte sur la page Contact', status: 'Connecté', tone: 'g', sync: "Aujourd'hui, 07:00", actionLabel: 'Configurer' },
@@ -814,7 +849,7 @@ export const prerender = false;
       } else if (pageKey === 'donnees') {
         renderDonnees();
       } else if (pageKey === 'journal') {
-        renderJournal();
+        loadJournal();
       } else if (pageKey === 'integrations') {
         renderIntegrations();
       } else if (pageKey === 'securite') {
@@ -1113,7 +1148,7 @@ export const prerender = false;
     function renderJournal() {
       const tabsWrapper = document.querySelector('.journal-tab-container');
       tabsWrapper.innerHTML = '';
-      const filters = ['Tous', 'Mariama', 'Nasser', 'Fatou'];
+      const filters = ['Tous', ...new Set(journalLogs.map(j => j.user))];
 
       filters.forEach(f => {
         const btn = document.createElement('button');
