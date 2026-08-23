@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS actualites (
   auteur_id INTEGER,
   status TEXT NOT NULL DEFAULT 'Brouillon',
   bg_gradient TEXT NOT NULL,
+  commentaire_retour TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (auteur_id) REFERENCES utilisateurs(id) ON DELETE SET NULL
 );

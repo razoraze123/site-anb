@@ -5,7 +5,7 @@ import { logActivity } from "../../../lib/journal.js";
 export const prerender = false;
 
 // File d'attente : actualités soumises par un éditeur (statut 'En attente',
-// posé par POST /api/editeur/submit.js — Phase 2, pas encore branchée).
+// posé par PUT /api/editeur/submit.js).
 export async function GET(context) {
   try {
     const user = await requireRole(context, ['super_admin']);
@@ -40,8 +40,9 @@ export async function GET(context) {
   }
 }
 
-// action: 'approve' -> publie ; 'return' -> renvoie en brouillon avec un
-// commentaire tracé dans le journal (pas de colonne dédiée sur actualites).
+// action: 'approve' -> publie ; 'return' -> renvoie à l'éditeur (statut
+// 'Renvoyé') avec un commentaire stocké sur l'article (actualites.
+// commentaire_retour) pour qu'il le voie sur son tableau de bord.
 export async function PUT(context) {
   try {
     const user = await requireRole(context, ['super_admin']);
@@ -74,11 +75,12 @@ export async function PUT(context) {
     }
 
     if (action === 'approve') {
-      await db.prepare("UPDATE actualites SET status = 'Publié' WHERE id = ?").bind(id).run();
+      await db.prepare("UPDATE actualites SET status = 'Publié', commentaire_retour = NULL WHERE id = ?").bind(id).run();
       await logActivity(db, context, user, "Validation de contenu", article.title);
     } else {
-      await db.prepare("UPDATE actualites SET status = 'Brouillon' WHERE id = ?").bind(id).run();
-      await logActivity(db, context, user, "Retour de contenu", `${article.title} : ${comment || 'Des ajustements sont requis.'}`);
+      const finalComment = comment || 'Des ajustements sont requis.';
+      await db.prepare("UPDATE actualites SET status = 'Renvoyé', commentaire_retour = ? WHERE id = ?").bind(finalComment, id).run();
+      await logActivity(db, context, user, "Retour de contenu", `${article.title} : ${finalComment}`);
     }
 
     return new Response(JSON.stringify({ success: true, message: action === 'approve' ? 'Contenu approuvé et publié.' : 'Contenu renvoyé avec commentaire.' }), {

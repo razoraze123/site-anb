@@ -5,7 +5,7 @@ export const prerender = false;
 
 export async function POST(context) {
   try {
-    const user = await requireRole(context, ['admin', 'super_admin']);
+    const user = await requireRole(context, ['admin', 'super_admin', 'editeur']);
     if (!user) return unauthorized();
 
     const db = env.DB;
@@ -31,7 +31,9 @@ export async function POST(context) {
     // une valeur envoyée par le client (sinon n'importe quel admin pourrait
     // attribuer un article à quelqu'un d'autre).
     const authId = user.id;
-    const stat = status || "Publié";
+    // Un éditeur ne peut créer que des brouillons — jamais publier
+    // directement, quoi que le client envoie dans `status`.
+    const stat = user.role === 'editeur' ? 'Brouillon' : (status || "Publié");
     const bg = bg_gradient || "linear-gradient(150deg,#176B4D,#1F2925)";
 
     const statement = db.prepare(
@@ -59,7 +61,7 @@ export async function POST(context) {
 
 export async function PUT(context) {
   try {
-    const user = await requireRole(context, ['admin', 'super_admin']);
+    const user = await requireRole(context, ['admin', 'super_admin', 'editeur']);
     if (!user) return unauthorized();
 
     const db = env.DB;
@@ -78,6 +80,18 @@ export async function PUT(context) {
         status: 400,
         headers: { "Content-Type": "application/json" }
       });
+    }
+
+    // Un éditeur ne peut modifier que ses propres brouillons/retours — pas
+    // un contenu déjà soumis, publié, ou appartenant à quelqu'un d'autre.
+    if (user.role === 'editeur') {
+      const existing = await db.prepare("SELECT auteur_id, status FROM actualites WHERE id = ?").bind(id).first();
+      if (!existing || existing.auteur_id !== user.id || !['Brouillon', 'Renvoyé'].includes(existing.status)) {
+        return new Response(JSON.stringify({ error: "Vous ne pouvez modifier que vos propres brouillons." }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
     }
 
     const cat = category || "Communauté";

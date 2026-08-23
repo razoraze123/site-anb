@@ -6,7 +6,7 @@ import { logActivity } from "../../../lib/journal.js";
 export const prerender = false;
 
 export async function GET(context) {
-  const user = await requireRole(context, ['super_admin']);
+  const user = await requireRole(context, ['super_admin', 'admin', 'editeur']);
   if (!user) return unauthorized();
   return new Response(JSON.stringify({ id: user.id, nom: user.nom, email: user.email, role: user.role }), {
     status: 200,
@@ -18,7 +18,7 @@ export async function GET(context) {
 // paramètre id : c'est délibérément limité au compte en session).
 export async function PUT(context) {
   try {
-    const user = await requireRole(context, ['super_admin']);
+    const user = await requireRole(context, ['super_admin', 'admin', 'editeur']);
     if (!user) return unauthorized();
 
     const db = env.DB;
