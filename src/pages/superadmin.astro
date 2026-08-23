@@ -265,16 +265,15 @@ export const prerender = false;
             <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
               <h3 style="font-size:15.5px; font-weight:700; color:#1F2925; margin:0 0 16px;">Générer un export sécurisé</h3>
               <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;">
-                <label style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:#1F2925;"><input type="checkbox" checked />Demandes d'adhésion</label>
-                <label style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:#1F2925;"><input type="checkbox" checked />Inscriptions aux événements</label>
-                <label style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:#1F2925;"><input type="checkbox" />Messages de contact</label>
-                <label style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:#1F2925;"><input type="checkbox" />Newsletter</label>
+                <label style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:#1F2925;"><input type="checkbox" id="export-check-adhesions" checked />Demandes d'adhésion</label>
+                <label style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:#1F2925;"><input type="checkbox" id="export-check-inscriptions" checked />Inscriptions aux événements</label>
+                <label style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:#1F2925;"><input type="checkbox" id="export-check-messages" />Messages de contact</label>
               </div>
               <div style="display:flex; gap:14px; flex-wrap:wrap; margin-bottom:16px;">
-                <select style="flex:1; min-width:180px; padding:11px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:13.5px; background: transparent;">
-                  <option>30 derniers jours</option>
-                  <option>3 derniers mois</option>
-                  <option>Cette année</option>
+                <select id="export-period" style="flex:1; min-width:180px; padding:11px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:13.5px; background: transparent;">
+                  <option value="30">30 derniers jours</option>
+                  <option value="90">3 derniers mois</option>
+                  <option value="">Tout l'historique</option>
                 </select>
                 <input id="export-reason" style="flex:2; min-width:220px; padding:11px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:13.5px;" placeholder="Raison de l'export (obligatoire)" />
               </div>
@@ -290,11 +289,9 @@ export const prerender = false;
               <div id="export-success-alert" class="hidden" style="margin-top:16px; background:rgba(23,107,77,0.08); color:#176B4D; padding:12px 16px; border-radius:10px; font-size:13px; font-weight:700;">✓ Export généré et tracé dans le journal d'activité.</div>
             </div>
 
-            <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05); overflow-x:auto;">
-              <h3 style="font-size:15.5px; font-weight:700; color:#1F2925; margin:0 0 16px;">Demandes liées aux données personnelles</h3>
-              <div style="min-width:560px;" id="personal-data-requests-container">
-                <!-- personal data requests lists -->
-              </div>
+            <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
+              <h3 style="font-size:15.5px; font-weight:700; color:#1F2925; margin:0 0 10px;">Demandes liées aux données personnelles</h3>
+              <div style="font-size:13px; color:#5a655f; line-height:1.7;">Ces demandes (accès, suppression, rectification) ne sont pas encore suivies dans l'outil — elles arrivent par e-mail à <a href="mailto:anbordeaux33@outlook.fr" style="color:#176B4D;">anbordeaux33@outlook.fr</a> et sont traitées manuellement.</div>
             </div>
           </div>
         </section>
@@ -648,12 +645,6 @@ export const prerender = false;
       }
     }
 
-    const dataRequests = [
-      { type: "Demande d'accès", requester: 'Aïcha Boubacar', status: 'Reçue', tone: 'o', responsable: 'Nasser D.', deadline: '25 juillet 2026' },
-      { type: 'Demande de suppression', requester: 'Ancien membre', status: 'En cours', tone: 'o', responsable: 'Nasser D.', deadline: '18 juillet 2026' },
-      { type: 'Demande de rectification', requester: 'Ibrahim Moussa', status: 'Traitée', tone: 'g', responsable: 'Mariama S.', deadline: 'Clôturée' }
-    ];
-
     // Rempli par loadJournal() depuis GET /api/superadmin/journal.
     let journalLogs = [];
 
@@ -852,8 +843,6 @@ export const prerender = false;
         loadUsers();
       } else if (pageKey === 'contenus') {
         loadValidations();
-      } else if (pageKey === 'donnees') {
-        renderDonnees();
       } else if (pageKey === 'journal') {
         loadJournal();
       } else if (pageKey === 'integrations') {
@@ -1149,25 +1138,6 @@ export const prerender = false;
       });
     }
 
-    // 4. Données
-    function renderDonnees() {
-      const wrapper = document.getElementById('personal-data-requests-container');
-      wrapper.innerHTML = '';
-      
-      dataRequests.forEach(r => {
-        const row = document.createElement('div');
-        row.style.cssText = 'display:flex; align-items:center; gap:16px; padding:14px 0; border-bottom:1px solid rgba(31,41,37,0.06); flex-wrap:wrap;';
-        row.innerHTML = `
-          <div style="flex:1; min-width:180px; font-size:14px; font-weight:700; color:#1F2925;">${r.type}</div>
-          <div style="min-width:140px; font-size:13px; color:#5a655f;">${r.requester}</div>
-          ${getBadgeHtml(r.status, r.tone)}
-          <div style="min-width:140px; font-size:13px; color:#5a655f;">Resp. : ${r.responsable}</div>
-          <div style="min-width:140px; font-size:13px; color:#5a655f;">Échéance : ${r.deadline}</div>
-        `;
-        wrapper.appendChild(row);
-      });
-    }
-
     const generateExportBtn = document.getElementById('generate-export-btn');
     const exportConfirmBox = document.getElementById('export-confirm-box');
     const exportSuccessAlert = document.getElementById('export-success-alert');
@@ -1182,15 +1152,48 @@ export const prerender = false;
       exportSuccessAlert.classList.add('hidden');
     });
 
-    document.getElementById('confirm-export-action').addEventListener('click', () => {
+    document.getElementById('confirm-export-action').addEventListener('click', async () => {
       const reason = document.getElementById('export-reason').value.trim();
-      exportConfirmBox.classList.add('hidden');
-      exportSuccessAlert.classList.remove('hidden');
-      logActivity('Nasser', 'Super Admin', 'Export de données sécurisé', reason);
-      setTimeout(() => {
-        exportSuccessAlert.classList.add('hidden');
-        document.getElementById('export-reason').value = '';
-      }, 2000);
+      const period = document.getElementById('export-period').value;
+      const include = ['adhesions', 'inscriptions', 'messages'].filter(
+        (k) => document.getElementById(`export-check-${k}`).checked
+      );
+
+      if (include.length === 0) {
+        alert('Sélectionnez au moins une source de données.');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/superadmin/export', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ include, period, reason })
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || 'Erreur lors de la génération de l\'export.');
+        }
+        const csv = await res.text();
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `export-anb-${Date.now()}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+
+        exportConfirmBox.classList.add('hidden');
+        exportSuccessAlert.classList.remove('hidden');
+        setTimeout(() => {
+          exportSuccessAlert.classList.add('hidden');
+          document.getElementById('export-reason').value = '';
+        }, 3000);
+      } catch (err) {
+        alert(err.message);
+      }
     });
 
     document.getElementById('cancel-export-action').addEventListener('click', () => {
