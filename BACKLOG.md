@@ -91,7 +91,7 @@ Tableau vérifié route par route.
 
 ## 4. Contenu attendu du client
 
-- [ ] 🔴 Remplacer `src/lib/demo-data.ts` (équipe, événements, actualités), utilisé dans `association.astro`, `index.astro`, `Header.astro`, `galerie.astro`
+- [ ] 🔴 Remplacer les données restantes de `src/lib/demo-data.ts` : bureau/équipe (`association.astro`), galerie photo (`galerie.astro`), photo de couverture + prochain événement mis en avant sur la home (`index.astro`). *(Les actualités de la home sont désormais branchées sur la vraie base — voir section 5.)*
 - [ ] 🔴 Photos des membres du bureau + photos de l'association
 - [ ] 🟠 Adresse du siège social (toujours absente)
 - [ ] 🟠 Numéro WhatsApp
@@ -107,6 +107,9 @@ Deux bugs réels trouvés en le faisant volontairement échouer (pas en relisant
 - **Message d'erreur illisible sur un titre en double** — créer/modifier un article dont le titre génère la même adresse qu'un article existant renvoyait l'erreur SQLite brute (`D1_ERROR: UNIQUE constraint failed...`). Le slug étant généré automatiquement (non modifiable à la main), l'admin n'avait aucun moyen de comprendre. Traduit en message clair + code 409.
 - **Un événement complet propose quand même « Je participe »** — aucune tâche planifiée ne fait jamais passer un événement à « Complet » automatiquement (statut posé à la main uniquement). Un visiteur pouvait donc s'inscrire à un événement déjà plein et se faire refuser après coup par l'API (qui, elle, bloquait déjà correctement toute surinscription). Le badge et le bouton comparent désormais aussi la capacité réelle, pas seulement le statut.
 - **Limite acceptée, pas un bug** : le statut « Programmé » d'un article n'a pas de vrai système de publication planifiée (aucune tâche cron dans ce projet) — c'est un simple statut manuel, cohérent avec le reste de l'app (aucune automatisation nulle part ailleurs non plus).
+
+### Actualités de la page d'accueil branchées sur la vraie base
+`index.astro` affichait 3 actualités bidons codées en dur (`src/lib/demo-data.ts`), y compris quand la base contenait déjà les 5 vrais articles ajoutés le 2026-08-23 — ils n'apparaissaient jamais sur la home. La page passe désormais en rendu dynamique (comme `/actualites`) et affiche les 3 derniers articles réellement publiés, avec lien vers le vrai article, image de couverture (ou dégradé) réelle, et date formatée. Vérifié en exécution après nettoyage de deux articles de test qui traînaient en base locale suite à mes propres tests.
 
 ### Simplification du workflow Actualités (Admin/Super Admin) + suppression des messages
 - **Actualités** — un admin/super-admin publiait déjà toujours directement (le formulaire n'a pas de champ statut), mais la liste affichait 4 onglets (Publiées/Brouillons/Programmées/Archivées) alors que rien, dans ce workflow, ne produit réellement un « Brouillon » ou un « Programmé » côté admin — ces statuts n'existaient que via le circuit éditeur (Brouillon → soumission → validation, géré ailleurs, dans son propre espace et dans « Contenus & validations ») ou via des données de test. Simplifié à **2 onglets : Publiées / Archivées**. Le circuit éditeur n'est pas touché. Les 3 articles restés au statut « Programmé » (dont 2 créés pour la démonstration du 2026-08-23) sont repassés en « Publié ». Vérifié en exécution sur `/admin` et `/superadmin`.

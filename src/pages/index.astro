@@ -1,6 +1,31 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { homeGallery, newsArticles, nextEvent } from '../lib/demo-data';
+import { homeGallery, nextEvent } from '../lib/demo-data';
+import { env } from "cloudflare:workers";
+
+// La home doit refléter les vraies actualités publiées (pas de mock) — ça
+// nécessite un accès D1, donc un rendu dynamique (comme /actualites).
+export const prerender = false;
+
+const db = env.DB;
+let newsArticles = [];
+
+try {
+  if (db) {
+    const { results } = await db.prepare(
+      "SELECT title, slug, excerpt, category, bg_gradient, created_at FROM actualites WHERE status = 'Publié' ORDER BY created_at DESC LIMIT 3"
+    ).all();
+    newsArticles = results;
+  }
+} catch (error) {
+  console.error("Erreur de récupération D1 pour les actualités (home) :", error);
+}
+
+const dateFormatter = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+function formatArticleDate(created_at) {
+  // "2026-07-28 09:15:00" -> objet Date fiable (format ISO avec 'T')
+  return dateFormatter.format(new Date(created_at.replace(' ', 'T')));
+}
 ---
 
 <Layout title="Accueil">
@@ -200,19 +225,29 @@ import { homeGallery, newsArticles, nextEvent } from '../lib/demo-data';
           <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.9rem,3.2vw,2.5rem); color:#1F2925; margin:0;">Actualités de l'ANB</h2>
           <a href="/actualites" style="background:transparent; border:2px solid #176B4D; color:#176B4D; padding:13px 26px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer; white-space:nowrap; display:inline-block;">Toutes les actualités</a>
         </div>
-        <div class="mobile-shelf" data-reveal-group style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:28px;">
-          {newsArticles.map((article) => (
-            <div style="background:#F8F4EC; border-radius:24px; overflow:hidden;">
-              <div style={`aspect-ratio:16/10; background:${article.bg};`}></div>
-              <div style="padding:26px;">
-                <div style="font-size:12px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">{article.category} · {article.date}</div>
-                <h3 style="font-size:18px; font-weight:700; color:#1F2925; margin:0 0 12px; line-height:1.35;">{article.title}</h3>
-                <p style="font-size:14.5px; line-height:1.6; color:#5a655f; margin:0 0 18px;">{article.excerpt}</p>
-                <a href="/actualites" style="font-size:14px; font-weight:700; color:#176B4D; cursor:pointer;">Lire l'article →</a>
-              </div>
-            </div>
-          ))}
-        </div>
+        {newsArticles.length === 0 ? (
+          <div style="text-align:center; padding:50px; color:#5a655f; font-size:1.1rem;">
+            Aucune actualité publiée pour le moment. Revenez bientôt !
+          </div>
+        ) : (
+          <div class="mobile-shelf" data-reveal-group style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:28px;">
+            {newsArticles.map((article) => (
+              <a href={`/actualites/${article.slug}`} style="background:#F8F4EC; border-radius:24px; overflow:hidden; display:block; color:inherit; text-decoration:none;">
+                {article.bg_gradient.startsWith('/') || article.bg_gradient.startsWith('http') ? (
+                  <div style={`aspect-ratio:16/10; background:url('${article.bg_gradient}') center/cover no-repeat;`}></div>
+                ) : (
+                  <div style={`aspect-ratio:16/10; background:${article.bg_gradient};`}></div>
+                )}
+                <div style="padding:26px;">
+                  <div style="font-size:12px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">{article.category} · {formatArticleDate(article.created_at)}</div>
+                  <h3 style="font-size:18px; font-weight:700; color:#1F2925; margin:0 0 12px; line-height:1.35;">{article.title}</h3>
+                  <p style="font-size:14.5px; line-height:1.6; color:#5a655f; margin:0 0 18px;">{article.excerpt}</p>
+                  <span style="font-size:14px; font-weight:700; color:#176B4D;">Lire l'article →</span>
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
         <div class="shelf-thread"><span></span></div>
       </div>
     </section>
