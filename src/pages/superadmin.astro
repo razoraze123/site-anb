@@ -265,13 +265,18 @@ if (!user) {
         <section id="view-contenus" class="hidden fade-in">
           <div style="display:flex; flex-direction:column; gap:20px;">
             <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Contenus et validations</h1>
-            <div style="display:grid; grid-template-columns:1fr 1.2fr; gap:20px; align-items:start; flex-wrap:wrap;">
+            <div id="validations-columns" style="display:grid; grid-template-columns:1fr 1.2fr; gap:20px; align-items:start; flex-wrap:wrap;">
               <div style="background:#FFFFFF; border-radius:20px; padding:8px; box-shadow:0 8px 24px rgba(31,41,37,0.05); min-width:0;" id="validations-queue-list">
                 <!-- Dynamic -->
               </div>
               <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05); min-width:0;" id="validation-detail-box">
                 <!-- Dynamic -->
               </div>
+            </div>
+            <div id="validations-empty-state" class="hidden" style="background:#FFFFFF; border-radius:20px; padding:70px 24px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; align-items:center; text-align:center; gap:14px;">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#9aa39c" stroke-width="1.6"><path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="9"></circle></svg>
+              <div style="font-size:15.5px; font-weight:700; color:#1F2925;">Aucune validation en attente</div>
+              <div style="font-size:13.5px; color:#5a655f; max-width:360px;">Les contenus soumis par les éditeurs apparaîtront ici lorsqu'ils seront prêts à être examinés.</div>
             </div>
           </div>
         </section>
@@ -1183,6 +1188,13 @@ if (!user) {
 
     // 3. Validations
     function renderValidations() {
+      const columns = document.getElementById('validations-columns');
+      const emptyState = document.getElementById('validations-empty-state');
+      const isEmpty = validationQueue.length === 0;
+      columns.classList.toggle('hidden', isEmpty);
+      emptyState.classList.toggle('hidden', !isEmpty);
+      if (isEmpty) return;
+
       const listWrapper = document.getElementById('validations-queue-list');
       listWrapper.innerHTML = '';
 
