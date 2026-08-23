@@ -317,7 +317,12 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
 
     document.addEventListener('DOMContentLoaded', () => {
       generateNav();
-      goPage('edash');
+      let initialPage = 'edash';
+      try {
+        const saved = sessionStorage.getItem('editeur-current-page');
+        if (saved && document.getElementById(`view-${saved}`)) initialPage = saved;
+      } catch {}
+      goPage(initialPage);
 
       document.querySelectorAll('.logout-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -393,7 +398,12 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
       });
       
       const targetView = document.getElementById(`view-${pageKey}`);
-      if (targetView) targetView.classList.remove('hidden');
+      if (targetView) {
+        targetView.classList.remove('hidden');
+        // Retient l'onglet courant pour qu'un rechargement de page (F5) y
+        // revienne au lieu de repartir sur Tableau de bord.
+        try { sessionStorage.setItem('editeur-current-page', pageKey); } catch {}
+      }
 
       document.getElementById('mobile-sidebar-drawer').classList.add('hidden');
 

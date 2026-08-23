@@ -710,7 +710,12 @@ export const prerender = false;
 
     document.addEventListener('DOMContentLoaded', () => {
       generateNav();
-      goPage('overview');
+      let initialPage = 'overview';
+      try {
+        const saved = sessionStorage.getItem('superadmin-current-page');
+        if (saved && document.getElementById(`view-${saved}`)) initialPage = saved;
+      } catch {}
+      goPage(initialPage);
       loadSessionIdentity();
 
       document.querySelectorAll('.logout-btn').forEach(btn => {
@@ -790,7 +795,12 @@ export const prerender = false;
       });
       
       const targetView = document.getElementById(`view-${pageKey}`);
-      if (targetView) targetView.classList.remove('hidden');
+      if (targetView) {
+        targetView.classList.remove('hidden');
+        // Retient l'onglet courant pour qu'un rechargement de page (F5) y
+        // revienne au lieu de repartir sur Vue d'ensemble.
+        try { sessionStorage.setItem('superadmin-current-page', pageKey); } catch {}
+      }
 
       document.getElementById('mobile-sidebar-drawer').classList.add('hidden');
 

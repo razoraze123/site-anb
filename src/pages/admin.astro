@@ -740,7 +740,12 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
       });
       
       const targetView = document.getElementById(`view-${pageKey}`);
-      if (targetView) targetView.classList.remove('hidden');
+      if (targetView) {
+        targetView.classList.remove('hidden');
+        // Retient l'onglet courant pour qu'un rechargement de page (F5) y
+        // revienne au lieu de repartir sur Tableau de bord.
+        try { sessionStorage.setItem('admin-current-page', pageKey); } catch {}
+      }
 
       document.getElementById('mobile-sidebar-drawer').classList.add('hidden');
 
@@ -1511,8 +1516,13 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
       // Load D1 data
       await fetchAdminData();
       
-      // Open dashboard
-      goPage('dashboard');
+      // Open dashboard (ou l'onglet où on était avant un rechargement)
+      let initialPage = 'dashboard';
+      try {
+        const saved = sessionStorage.getItem('admin-current-page');
+        if (saved && document.getElementById(`view-${saved}`)) initialPage = saved;
+      } catch {}
+      goPage(initialPage);
 
       // Logout handler
       document.querySelectorAll('.logout-btn').forEach(btn => {
