@@ -1,97 +1,147 @@
-# Backlog — Backend ANB Bordeaux
+# Backlog réel — ANB Bordeaux
 
-Backlog de ce qu'il reste à implémenter côté backend pour que le front (déjà terminé) soit pleinement opérationnel.
-État de référence : audit du 2026-08-21, revérifié le 2026-08-23 sur la branche `content/contacts-legal-info`.
-**Mise à jour du 2026-08-23 (soir)** : Phase 1 (Super-admin) implémentée et testée en local — voir détail ci-dessous. Rien n'a encore été appliqué sur la base D1 distante (`anb-db`) ni poussé sur `origin` (hors le tout premier commit de fix de hash) : tout est en local en attente de votre feu vert.
+**Audit complet du code fait le 2026-08-23.** Chaque ligne ci-dessous a été vérifiée dans le code source (routes API, sections HTML, appels `fetch`), et les points marqués « vérifié en exécution » ont été testés en lançant réellement l'application.
 
-Légende priorité : 🔴 Bloquant lancement · 🟠 Important · 🟡 Nice-to-have / peut attendre
-Légende statut : ✅ Fait (testé en local) · 🚧 Partiel · ⏳ Reporté (décision explicite) · ⬜ Pas commencé
+Ce document remplace le backlog précédent, qui contenait des affirmations non vérifiées.
 
----
+**État git :** 25 commits sur la branche `content/contacts-legal-info`, dont **24 non poussés**. Aucune migration appliquée sur la base distante `anb-db` — tout le travail est local.
 
-## Phase 0 — Préparer la base de données
-
-- [x] ✅ 🔴 Ajouter la table `site_settings` (clé/valeur) dans [`db/schema.sql`](db/schema.sql) — créée, seedée avec les 6 clés identité/SEO. Commit `ed9ce45`.
-- [ ] ⏳ 🟡 Ajouter la table `sessions` — reporté (décision explicite : la vue "Sécurité" reste factice pour l'instant).
-- [ ] 🚧 🔴 Appliquer les migrations avec `wrangler d1 execute` — **fait en local uniquement** (`--local`). **Pas encore appliqué sur `anb-db` distant** : le fix de hash des mots de passe et la table `site_settings` doivent être poussés sur la base réelle avant toute mise en prod.
-- [ ] ⬜ 🟡 **Nouveau** : `db/schema.sql` n'est pas idempotent pour les tables sans contrainte `UNIQUE` (`evenements`, `adhesions`, `messages`, `inscriptions`, `journal_activite`) — chaque réapplication du fichier duplique leurs lignes de seed (déjà constaté en local : `evenements` a 2x ses lignes "À venir"). Ajouter des contraintes `UNIQUE` ou séparer schéma/seed avant de rejouer ce fichier sur une base qui a déjà des données.
+Légende : 🔴 Bloquant lancement · 🟠 Important · 🟡 Peut attendre
 
 ---
 
-## Phase 1 — Espace Super-admin ✅ Implémentée (locale, testée)
+## 1. Bugs confirmés à corriger
 
-Fichier : [`src/pages/superadmin.astro`](src/pages/superadmin.astro). Modèle suivi : [`src/pages/api/admin/news.js`](src/pages/api/admin/news.js) (`requireRole`, `env.DB`, `prepare().bind().run()`).
+### 1.1 🔴 Le Super Admin a 3 liens qui mènent à une page blanche
 
-| # | Vue | Route API | Table | Statut |
+**Vérifié en exécution :** dans `/superadmin`, cliquer sur « Actualités », « Événements » ou « Messages » n'affiche **rien du tout** — aucune section, aucun titre, aucun message d'erreur. La page reste vide.
+
+Cause : `src/pages/superadmin.astro` déclare ces 3 entrées dans son menu, mais ne contient aucune section `view-actualites`, `view-evenements` ni `view-messages` correspondante.
+
+C'est exactement le problème que vous soupçonniez : **le Super Admin ne peut pas gérer les contenus depuis son espace**, alors que :
+- les routes API l'autorisent déjà (`api/admin/news.js`, `events.js`, `messages.js` acceptent `super_admin`) ;
+- le middleware l'autorise déjà à ouvrir `/admin` (`ROLE_REQUIRED['/admin'] = ['admin','super_admin']`).
+
+Donc la permission existe, seule l'interface manque. Deux options :
+- **(A) Rapide :** retirer les 3 liens cassés et ajouter à la place un lien « Ouvrir l'espace Admin » vers `/admin`.
+- **(B) Complet :** dupliquer les 3 vues dans `superadmin.astro` pour tout gérer sans changer d'espace.
+
+→ **Décision à prendre avant implémentation.**
+
+### 1.2 🔴 Le formulaire de contact public n'envoie rien
+
+**Vérifié :** `src/pages/contact.astro` (lignes 74-81) intercepte l'envoi (`e.preventDefault()`), affiche un message de confirmation… et **s'arrête là**. Aucun appel réseau, aucune écriture en base.
+
+Conséquences réelles :
+- un visiteur croit avoir envoyé un message, personne ne le reçoit ;
+- la table `messages` ne peut être remplie que par les données de démo ;
+- la vue « Messages » de l'admin gère donc des messages qui n'arriveront jamais.
+
+À faire : créer `src/pages/api/contact.js` (POST public, avec anti-abus comme `api/recensement.js`) et brancher le formulaire dessus.
+
+### 1.3 🟠 « Mon profil » de l'espace Admin n'enregistre rien
+
+`src/pages/admin.astro` ligne 579 : le bouton Enregistrer est encore `onclick="alert('Profil enregistré !')"`. J'ai branché cette vue pour le Super Admin et l'Éditeur, mais **j'ai oublié l'Admin**. La route `api/superadmin/profile.js` accepte déjà le rôle `admin` — il ne manque que le câblage côté écran (même code que dans `editeur.astro`).
+
+### 1.4 🟠 « Pages du site » (Admin) est une maquette figée
+
+`renderPages()` (`admin.astro` ligne 1440) affiche une liste écrite en dur : 7 pages avec de fausses dates de modification et de faux auteurs (« Modifié le 12 juil. 2026 par Mariama S. »). Aucune donnée réelle, aucune action possible.
+
+Options : supprimer la vue, ou la remplacer par une liste réelle des pages du site avec un lien « voir la page ».
+
+---
+
+## 2. Opérations CRUD manquantes
+
+Tableau vérifié route par route.
+
+| Entité | Créer | Lire | Modifier | Supprimer |
 |---|---|---|---|---|
-| 1.1 | `view-users` | [`api/superadmin/users.js`](src/pages/api/superadmin/users.js) (GET/POST/PUT/DELETE) | `utilisateurs` | ✅ Fait. Invitation = création directe (pas d'e-mail branché, mot de passe temporaire affiché une fois). Suspendre/réactiver, réinitialiser mot de passe, supprimer — tous branchés. Garde anti-auto-suspension/auto-suppression/auto-retrait de rôle. |
-| 1.2 | `view-journal` | [`api/superadmin/journal.js`](src/pages/api/superadmin/journal.js) (GET) | `journal_activite` | ✅ Fait. Alimenté automatiquement par toutes les routes `api/superadmin/*` via [`src/lib/journal.js`](src/lib/journal.js). |
-| 1.3 | `view-contenus` (validations) | [`api/superadmin/validations.js`](src/pages/api/superadmin/validations.js) (GET/PUT) | `actualites.status = 'En attente'` | ✅ Fait côté super-admin, mais **la file sera vide** tant que la Phase 2 (soumission éditeur) n'existe pas — rien ne pose ce statut pour l'instant. |
-| 1.4 | `view-overview` + `view-stats` | [`api/superadmin/stats.js`](src/pages/api/superadmin/stats.js) (GET) | agrégats sur tables existantes | ✅ Fait. Volontairement **sans** pageviews/trafic (aucun outil d'analytics branché) — remplacé par "Prochains événements"/"Derniers articles publiés", tous réels. |
-| 1.5 | `view-donnees` (export RGPD) | [`api/superadmin/export.js`](src/pages/api/superadmin/export.js) (POST) | `recensement`/`adhesions`/`messages`/`inscriptions` → CSV | ✅ Fait, export CSV réel et téléchargeable. La liste "Demandes RGPD" (accès/suppression/rectification) reste non trackée dans l'outil — remplacée par une note renvoyant vers l'e-mail de contact (aucune table pour ça). |
-| 1.6 | `view-reglages` (identité/SEO) | [`api/superadmin/settings.js`](src/pages/api/superadmin/settings.js) (GET/PUT) | `site_settings` | ✅ Fait pour Identité (nom/slogan/e-mail/tél.) et SEO (titre/description). Le pied de page public les reflète en direct via [`api/settings.js`](src/pages/api/settings.js) (public, sans auth). ⚠️ Le `<title>`/`<meta description>` de chaque page (Layout.astro) ne sont **pas** branchés — chaque page a son propre titre, un réglage global unique les écraserait tous. Carte "Navigation et pages" laissée en placeholder (pas de structure de menu éditable). |
-| 1.7 | `view-mentions` | même route que 1.6 | `site_settings` | ⬜ **Pas fait.** L'édition du contenu long des mentions légales/CGU/confidentialité (pas juste identité/SEO) n'a pas été implémentée — les boutons "Modifier" restent des `alert()`. Plus gros que prévu (contenu long, pas du clé/valeur simple) ; à rescoper si besoin. |
-| 1.8 | `view-profil` | [`api/superadmin/profile.js`](src/pages/api/superadmin/profile.js) (GET/PUT) | `utilisateurs` (self) | ✅ Fait, avec en plus (hors backlog initial, ajouté sur demande) : confirmation du nouveau mot de passe + bouton afficher/masquer. |
-| 1.9 | `view-securite` (sessions) | — | `sessions` | ⏳ Reporté (décision explicite). Vue toujours factice. |
-| 1.10 | `view-sauvegardes` | — | — | ✅ Fait comme prévu par le backlog : remplacé par un lien vers la procédure `wrangler d1 time-travel` de Cloudflare, plus de faux système de sauvegarde/restauration. |
-| 1.11 | `view-integrations` | — | — | ✅ Fait comme prévu : les outils tiers non branchés (Maps, newsletter, paiement, analytics, réseaux sociaux) affichent honnêtement "À venir" au lieu de "Connecté" (fictif). "Formulaires" reste "Connecté" (réellement vrai). |
+| **Utilisateurs** | ✅ | ✅ | ✅ | ✅ |
+| **Actualités** | ✅ | ✅ | ✅ | ❌ **manquant** |
+| **Événements** | ✅ | ✅ | ✅ | ❌ **manquant** |
+| **Messages** | ❌ (formulaire cassé, cf. 1.2) | ✅ | ✅ (statut) | ❌ **manquant** |
+| **Inscriptions événements** | ✅ (public) | ✅ | ❌ **manquant** | ❌ **manquant** |
+| **Recensement / adhésions** | ✅ (public) | ✅ | ❌ **manquant** | ✅ |
+| **Réglages du site** | — | ✅ | ✅ | — (clé/valeur, normal) |
 
-**Ordre suivi :** 1.1 → 1.2 → 1.3 → 1.4 → 1.5 → 1.6 → 1.8 → 1.10/1.11, un commit par vue (13 commits, voir historique git sur `content/contacts-legal-info`).
-
----
-
-## Phase 2 — Espace Éditeur ✅ Implémentée (locale, testée)
-
-Fichier : [`src/pages/editeur.astro`](src/pages/editeur.astro).
-
-- [x] ✅ 🔴 `view-econtenus` — formulaire "Nouveau brouillon" → `POST /api/admin/news.js` (statut forcé `Brouillon` pour un éditeur) ; bouton "Modifier" (Brouillon/Renvoyé) → `PUT /api/admin/news.js`, pré-rempli ; bouton "Soumettre" → [`PUT api/editeur/submit.js`](src/pages/api/editeur/submit.js) qui passe à `En attente` (repris par la vue 1.3 du Super Admin — boucle complète, y compris correction après un retour, vérifiée de bout en bout). Limite restante : seuls les **articles** sont pris en charge, pas d'événements/ressources (aucune API pour ça).
-- [x] ✅ 🟠 `view-edash` (dashboard perso) — [`GET api/editeur/dashboard.js`](src/pages/api/editeur/dashboard.js), filtré par `auteur_id`, compteurs + commentaire de retour visible.
-- [x] ✅ 🟠 `view-profil` — réutilise la route 1.8 (`api/superadmin/profile.js`, élargie au rôle éditeur), + confirmation mot de passe/afficher-masquer.
-- [x] ✅ **Nouveau (trouvé en implémentant)** : ajout de `actualites.commentaire_retour` pour que l'éditeur voie pourquoi son contenu a été renvoyé (sinon perdu dans le seul journal, invisible pour lui). Nouveau statut `Renvoyé` distinct de `Brouillon`.
+À faire :
+- [ ] 🟠 `DELETE /api/admin/news` + bouton Supprimer dans la vue Actualités
+- [ ] 🟠 `DELETE /api/admin/events` + bouton Supprimer dans la vue Événements
+- [ ] 🟡 `DELETE /api/admin/messages` + bouton Supprimer (ou archiver)
+- [ ] 🟠 `PUT /api/admin/inscriptions` — changer le statut d'un inscrit (Confirmé / En attente / Annulé). Les statuts existent en base et s'affichent, mais **rien ne permet de les modifier**.
+- [ ] 🟡 `DELETE /api/admin/inscriptions` — désinscrire quelqu'un
+- [ ] 🟡 `PUT /api/admin/recensement` — corriger la fiche d'un membre recensé (aujourd'hui : suppression uniquement)
 
 ---
 
-## Phase 3 — Galerie publique
+## 3. Vues encore en maquette (aucune donnée réelle)
 
-Fichier : [`src/pages/galerie.astro`](src/pages/galerie.astro) (20 lignes, quasi vide). **Non commencée.**
+| Vue | Fichier | État |
+|---|---|---|
+| **Galerie publique** | `src/pages/galerie.astro` | 20 lignes, vide. La table `media_galerie` est remplie en base mais **n'est lue nulle part dans le code**. |
+| **Sécurité** (Super Admin) | `superadmin.astro` | 2FA et « sessions actives » entièrement fictifs. Reporté par décision explicite. |
+| **Intégrations** (Super Admin) | `superadmin.astro` ligne 1398 | Bouton « Configurer » = `alert()`. Statuts affichent honnêtement « À venir » depuis la correction. |
+| **Mentions & RGPD** (Super Admin) | `superadmin.astro` ligne 1469 | Bouton « Modifier » = `alert()`. L'édition du texte long des mentions légales/CGU n'existe pas. |
+| **Pages du site** (Admin) | `admin.astro` ligne 1440 | Liste écrite en dur (cf. 1.4). |
 
-- [ ] 🟠 `GET src/pages/api/media.js` — lit la table `media_galerie` (déjà remplie en seed)
-- [ ] 🟠 Modifier [`src/pages/api/admin/upload.js`](src/pages/api/admin/upload.js) pour qu'il insère aussi une ligne dans `media_galerie` lors d'un upload
-- [ ] 🟠 Brancher `galerie.astro` sur ce fetch + affichage grille (remplace le placeholder actuel)
-
----
-
-## Phase 4 — Nettoyage avant mise en production
-
-- [ ] 🔴 Supprimer [`src/pages/api/test-db.js`](src/pages/api/test-db.js) et [`src/pages/api/test-r2.js`](src/pages/api/test-r2.js) — nuance : déjà neutralisés (renvoient 404), donc pas un risque de sécurité actif, juste du nettoyage cosmétique.
-- [ ] 🔴 Retirer le mot de passe pré-rempli `demo1234` sur `connexion.astro`
-- [ ] ⏳ 🔴 Remplacer les comptes de seed par les vrais comptes admin/super-admin du client — **reporté par décision explicite** (comptes de démo conservés pour l'instant, sera fait avant la mise en prod)
-- [ ] 🔴 **Nouveau** : appliquer sur `anb-db` distant (1) le hash des mots de passe, (2) la table `site_settings`, (3) la colonne `actualites.commentaire_retour` — et pousser les commits locaux des Phases 1 et 2 sur `origin`
+Pour la galerie (Phase 3 d'origine) :
+- [ ] 🟠 `GET /api/media.js` — lire `media_galerie`
+- [ ] 🟠 Modifier `api/admin/upload.js` pour insérer une ligne dans `media_galerie` à chaque upload
+- [ ] 🟠 Brancher `galerie.astro` sur ce fetch (affichage grille)
 
 ---
 
-## Phase 5 — Contenu réel (dépend du client, voir `contenu-en-attente-client-anb`)
+## 4. Avant mise en production
 
-- [ ] 🔴 Remplacer `src/lib/demo-data.ts` (équipe, événements, actualités) utilisé dans :
-  - [`src/pages/association.astro`](src/pages/association.astro)
-  - [`src/pages/index.astro`](src/pages/index.astro)
-  - [`src/components/Header.astro`](src/components/Header.astro)
-  - [`src/pages/galerie.astro`](src/pages/galerie.astro)
-- [ ] 🔴 Photos individuelles des membres du bureau + photos générales de l'association
-- [ ] 🟠 Adresse du siège social (toujours "???" côté client)
-- [ ] 🟠 Numéro WhatsApp (aucun lien fourni pour l'instant)
-- [ ] 🟡 Confirmation client : compte TikTok exact, lien Instagram
-- [ ] 🟡 Statuts / papiers juridiques de l'association
+- [ ] 🔴 **Appliquer les migrations sur la base distante `anb-db`** — rien n'y a été appliqué :
+  1. mots de passe de seed hashés (PBKDF2) ;
+  2. table `site_settings` ;
+  3. colonne `actualites.commentaire_retour`.
+- [ ] 🔴 **Pousser les 24 commits locaux** sur `origin`.
+- [ ] 🔴 Retirer le mot de passe pré-rempli `demo1234` — `connexion.astro` ligne 96 (`value="demo1234"`).
+- [ ] 🔴 Remplacer les comptes de démo par les vrais comptes du client (reporté par décision explicite).
+- [ ] 🟡 Supprimer `api/test-db.js` et `api/test-r2.js` — déjà neutralisés (renvoient 404), donc cosmétique.
+- [ ] 🟡 `db/schema.sql` n'est pas idempotent : les tables sans contrainte `UNIQUE` (`evenements`, `adhesions`, `messages`, `inscriptions`, `journal_activite`) **dupliquent leurs lignes de seed** à chaque réapplication du fichier. Déjà constaté en local. À corriger avant de rejouer ce fichier sur une base contenant des données.
+- [ ] 🟡 Table `adhesions` morte : plus aucun formulaire n'y écrit (« adhésion » = « recensement », cf. section 6). Elle ne contient que 4 lignes de démo. À supprimer du schéma ou à documenter comme obsolète.
 
 ---
 
-## Déjà fait (pour référence, ne pas refaire)
+## 5. Contenu attendu du client
 
-- Auth/connexion + middleware par rôle (`admin`, `super_admin`, `editeur`)
-- Espace Admin complet (actus, événements, messages, recensement, upload R2)
-- Recensement public, Adhésion, Contact, Chatbot IA (rate-limité)
-- Pages vitrines statiques (accueil, association, événements, actualités, culture, vie pratique, CGU, confidentialité, mentions légales)
-- Coordonnées réelles intégrées (tél, e-mail, réseaux sociaux) — voir commit `8c16a2d`
-- **Espace Super-admin (Phase 1 ci-dessus)** : Utilisateurs & rôles, Journal d'activité, Contenus & validations, Vue d'ensemble, Statistiques, Données & exports, Réglages identité/SEO (+ reflet en direct sur le site public), Mon profil, Sauvegardes (lien Time Travel), Intégrations (statuts honnêtes) — testé en local, pas encore en prod
-- **Espace Éditeur (Phase 2 ci-dessus)** : création/soumission de brouillons d'articles, tableau de bord perso, boucle complète avec la validation super-admin (renvoi avec commentaire visible, re-soumission, publication) — testé en local, pas encore en prod
-- **Fix identité en dur** : `admin.astro` et `editeur.astro` affichaient un nom figé ("Mariama Souley"/"Fatou Ibrahim") quel que soit le compte connecté — corrigé, plus grave : la création d'actualités attribuait tous les articles à Mariama (id 2) peu importe l'auteur réel — corrigé côté serveur (`api/admin/news.js` dérive désormais l'auteur de la session, jamais du client)
+- [ ] 🔴 Remplacer `src/lib/demo-data.ts` (équipe, événements, actualités), utilisé dans `association.astro`, `index.astro`, `Header.astro`, `galerie.astro`
+- [ ] 🔴 Photos des membres du bureau + photos de l'association
+- [ ] 🟠 Adresse du siège social (toujours absente)
+- [ ] 🟠 Numéro WhatsApp
+- [ ] 🟡 Confirmation du compte TikTok exact et du lien Instagram
+- [ ] 🟡 Statuts / documents juridiques
+
+---
+
+## 6. Fait et vérifié
+
+### Espace Super Admin
+- **Utilisateurs & rôles** — CRUD complet (créer, suspendre/réactiver, réinitialiser le mot de passe, supprimer). Création et réinitialisation génèrent un mot de passe temporaire affiché une seule fois (aucun e-mail n'est envoyé). Un super-admin ne peut ni se suspendre, ni se retirer son rôle, ni se supprimer lui-même.
+- **Journal d'activité** — alimenté automatiquement par toutes les routes `api/superadmin/*` via `src/lib/journal.js`.
+- **Contenus & validations** — approuver (publie) / renvoyer avec commentaire. Boucle complète vérifiée en exécution avec l'espace Éditeur.
+- **Vue d'ensemble & Statistiques globales** — agrégats réels. Volontairement sans mesure d'audience (aucun outil d'analytics n'est branché sur le site).
+- **Données & exports** — export CSV réel (recensement / inscriptions / messages), raison obligatoire, tracé au journal.
+- **Réglages (identité + SEO)** — enregistrés dans `site_settings` ; le pied de page public les reflète en direct via `api/settings.js`. ⚠️ Le `<title>` et la `<meta description>` des pages ne sont **pas** branchés (chaque page a son propre titre ; un réglage global unique les écraserait tous).
+- **Mon profil** — avec confirmation du mot de passe et bouton afficher/masquer.
+- **Sauvegardes** — remplacé par un lien vers la procédure Cloudflare D1 Time Travel (pas de système maison à coder).
+
+### Espace Éditeur
+- Création, **modification** et soumission de brouillons d'articles ; tableau de bord personnel ; filtres par statut avec tri « ce qui demande une action d'abord ». Seuls les **articles** sont pris en charge (pas d'événements ni de ressources — aucune API pour ça).
+- Colonne `actualites.commentaire_retour` ajoutée pour que l'éditeur voie *pourquoi* son contenu a été renvoyé.
+
+### Espace Admin
+- Actualités, Événements, Inscriptions (lecture), Recensement, Messages, Statistiques (branchées sur données réelles).
+
+### Corrections transverses
+- **Identité en dur** — `admin.astro` et `editeur.astro` affichaient un nom figé (« Mariama Souley » / « Fatou Ibrahim ») quel que soit le compte connecté. Plus grave : **tous les articles créés étaient attribués à Mariama** quel que soit l'auteur réel — corrigé côté serveur (l'auteur vient désormais de la session, jamais du client).
+- **Adhésion = recensement** — c'est la même démarche (`/adherer` poste vers `/api/recensement`). Mon code de Phase 1 interrogeait la table morte `adhesions` : la Vue d'ensemble affichait une fausse alerte et l'export RGPD sortait des données de démo au lieu des vraies. Corrigé.
+- **Matrice de permissions** — 2 lignes sur 8 étaient fausses (l'éditeur ne peut pas créer de brouillons d'événements/médias ; aucune distinction « stats simples » n'existe pour l'Admin). Corrigées.
+- **Onglet perdu au rechargement** — l'onglet actif est désormais mémorisé (F5 ne renvoie plus au tableau de bord) sur les 3 espaces.
+
+### Déjà en place avant cette session
+Auth + middleware par rôle · Recensement/adhésion public · Inscription aux événements · Chatbot IA (limité en débit) · Upload R2 · Pages vitrines · Coordonnées réelles (commit `8c16a2d`)
