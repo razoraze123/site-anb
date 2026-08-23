@@ -1,5 +1,13 @@
 ---
 export const prerender = false;
+
+const user = await Astro.session?.get('user');
+if (!user || !['admin', 'super_admin', 'editeur'].includes(user.role)) {
+  return Astro.redirect('/connexion');
+}
+
+const ROLE_LABELS = { admin: 'Admin', super_admin: 'Super Admin', editeur: 'Éditeur' };
+const roleLabel = ROLE_LABELS[user.role] || user.role;
 ---
 <!DOCTYPE html>
 <html lang="fr">
@@ -102,8 +110,8 @@ export const prerender = false;
       <div style="padding:16px; border-top:1px solid rgba(31,41,37,0.06); display:flex; align-items:center; gap:12px;">
         <div style="width:38px; height:38px; border-radius:50%; background:linear-gradient(150deg,#176B4D,#E97824); flex-shrink:0;"></div>
         <div style="flex:1; min-width:0;">
-          <div style="font-size:13.5px; font-weight:700; color:#1F2925; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Fatou Ibrahim</div>
-          <div style="font-size:11.5px; color:#5a655f;">Éditeur</div>
+          <div id="sidebar-user-name" style="font-size:13.5px; font-weight:700; color:#1F2925; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{user.nom}</div>
+          <div style="font-size:11.5px; color:#5a655f;">{roleLabel}</div>
         </div>
         <button class="logout-btn" aria-label="Déconnexion" style="width:34px; height:34px; border-radius:10px; background:#F8F4EC; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1F2925" stroke-width="1.8"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>
@@ -154,14 +162,14 @@ export const prerender = false;
         <section id="view-edash" class="hidden fade-in">
           <div style="display:flex; flex-direction:column; gap:24px;">
             <div>
-              <h1 style="font-size:24px; font-weight:800; color:#1F2925; margin:0 0 6px;">Bonjour Fatou 👋</h1>
+              <h1 style="font-size:24px; font-weight:800; color:#1F2925; margin:0 0 6px;">Bonjour {user.nom.split(' ')[0]} 👋</h1>
               <p style="font-size:14.5px; color:#5a655f; margin:0;">Vos contributions attendent d'être publiées.</p>
             </div>
             <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px;">
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#5a655f;">2</div><div style="font-size:13px; color:#5a655f;">Brouillons</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#E97824;">1</div><div style="font-size:13px; color:#5a655f;">En attente de validation</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#B14524;">1</div><div style="font-size:13px; color:#5a655f;">Renvoyé avec commentaire</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#176B4D;">1</div><div style="font-size:13px; color:#5a655f;">Publiés</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="edash-count-brouillons" style="font-size:22px; font-weight:800; color:#5a655f;">—</div><div style="font-size:13px; color:#5a655f;">Brouillons</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="edash-count-attente" style="font-size:22px; font-weight:800; color:#E97824;">—</div><div style="font-size:13px; color:#5a655f;">En attente de validation</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="edash-count-renvoye" style="font-size:22px; font-weight:800; color:#B14524;">—</div><div style="font-size:13px; color:#5a655f;">Renvoyé avec commentaire</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="edash-count-publies" style="font-size:22px; font-weight:800; color:#176B4D;">—</div><div style="font-size:13px; color:#5a655f;">Publiés</div></div>
             </div>
             <div style="background:rgba(23,107,77,0.06); border-radius:16px; padding:18px; font-size:13.5px; color:#1F2925;">En tant qu'Éditeur, vous pouvez créer des brouillons d'articles, d'événements et de ressources. Ils seront publiés après validation par un Admin ou un Super Admin. Vous n'avez pas accès aux adhésions, messages privés ni aux statistiques détaillées.</div>
             <button class="nav-trigger-btn" data-page="econtenus" style="align-self:flex-start; background:#E97824; color:#FFFFFF; border:none; padding:13px 24px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Nouveau brouillon</button>
@@ -173,8 +181,46 @@ export const prerender = false;
           <div style="display:flex; flex-direction:column; gap:20px;">
             <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:14px;">
               <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Mes contenus</h1>
-              <button style="background:#E97824; color:#FFFFFF; border:none; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;" onclick="alert('Nouveau brouillon créé !')">Nouveau brouillon</button>
+              <button id="toggle-draft-form-btn" style="background:#E97824; color:#FFFFFF; border:none; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Nouveau brouillon</button>
             </div>
+
+            <div id="draft-form-box" class="hidden" style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:14px;">
+              <h3 style="font-size:16px; font-weight:700; color:#1F2925; margin:0;">Nouveau brouillon d'article</h3>
+              <div>
+                <label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Titre</label>
+                <input id="draft-form-title" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px;" placeholder="Titre de l'article" />
+              </div>
+              <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                <div style="flex:1; min-width:180px;">
+                  <label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Catégorie</label>
+                  <select id="draft-form-category" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px;">
+                    <option>Communauté</option>
+                    <option>Vie associative</option>
+                    <option>Bénévolat</option>
+                    <option>Culture</option>
+                    <option>Solidarité</option>
+                    <option>Portraits</option>
+                  </select>
+                </div>
+                <div style="flex:1; min-width:180px;">
+                  <label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Adresse (générée)</label>
+                  <input id="draft-form-slug" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px; color:#9aa39c;" placeholder="/actualites/titre-de-larticle" readonly />
+                </div>
+              </div>
+              <div>
+                <label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Résumé</label>
+                <textarea id="draft-form-excerpt" rows="2" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px; resize:vertical;" placeholder="Résumé court affiché dans les listes"></textarea>
+              </div>
+              <div>
+                <label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Contenu</label>
+                <textarea id="draft-form-content" rows="6" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14.5px; resize:vertical;" placeholder="Contenu complet de l'article"></textarea>
+              </div>
+              <div style="display:flex; gap:10px;">
+                <button id="save-draft-btn" style="background:#176B4D; color:#FFFFFF; border:none; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Enregistrer le brouillon</button>
+                <button id="cancel-draft-btn" style="background:#F8F4EC; color:#1F2925; border:none; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Annuler</button>
+              </div>
+            </div>
+
             <div style="background:#FFFFFF; border-radius:20px; padding:8px; box-shadow:0 8px 24px rgba(31,41,37,0.05);" id="editor-contents-list">
               <!-- Dynamic -->
             </div>
@@ -189,27 +235,41 @@ export const prerender = false;
               <div style="display:flex; align-items:center; gap:16px;">
                 <div style="width:56px; height:56px; border-radius:50%; background:linear-gradient(150deg,#176B4D,#E97824);"></div>
                 <div>
-                  <div style="font-size:16px; font-weight:700; color:#1F2925;">Fatou Ibrahim</div>
-                  <div style="font-size:13px; color:#5a655f;">Éditeur</div>
+                  <div id="profile-header-name" style="font-size:16px; font-weight:700; color:#1F2925;">{user.nom}</div>
+                  <div style="font-size:13px; color:#5a655f;">{roleLabel}</div>
                 </div>
               </div>
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Nom complet</label>
-                <input id="profile-form-name" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" value="Fatou Ibrahim" />
+                <input id="profile-form-name" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" value={user.nom} />
               </div>
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">E-mail</label>
-                <input id="profile-form-email" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="vous@anb-bordeaux.fr" value="fatou.ibrahim@anb-bordeaux.fr" />
+                <input id="profile-form-email" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="vous@anb-bordeaux.fr" value={user.email} />
               </div>
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Rôle</label>
-                <input readonly style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px; color:#9aa39c;" value="Éditeur" />
+                <input readonly style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px; color:#9aa39c;" value={roleLabel} />
               </div>
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Nouveau mot de passe</label>
-                <input type="password" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="••••••••" />
+                <div style="position:relative;">
+                  <input id="profile-form-password" type="password" style="width:100%; padding:12px 44px 12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="Laisser vide pour ne pas changer" />
+                  <button type="button" class="toggle-password-visibility-btn" data-target="profile-form-password" aria-label="Afficher le mot de passe" style="position:absolute; top:50%; right:10px; transform:translateY(-50%); background:none; border:none; cursor:pointer; padding:4px; color:#5a655f; display:flex;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  </button>
+                </div>
               </div>
-              <button style="align-self:flex-start; background:#176B4D; color:#FFFFFF; border:none; padding:12px 24px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;" onclick="alert('Profil enregistré !')">Enregistrer</button>
+              <div>
+                <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Confirmer le nouveau mot de passe</label>
+                <div style="position:relative;">
+                  <input id="profile-form-password-confirm" type="password" style="width:100%; padding:12px 44px 12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="Ressaisir le mot de passe" />
+                  <button type="button" class="toggle-password-visibility-btn" data-target="profile-form-password-confirm" aria-label="Afficher le mot de passe" style="position:absolute; top:50%; right:10px; transform:translateY(-50%); background:none; border:none; cursor:pointer; padding:4px; color:#5a655f; display:flex;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  </button>
+                </div>
+              </div>
+              <button id="save-profile-btn" style="align-self:flex-start; background:#176B4D; color:#FFFFFF; border:none; padding:12px 24px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Enregistrer</button>
             </div>
           </div>
         </section>
@@ -238,12 +298,11 @@ export const prerender = false;
       profil: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="3.4"></circle><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"></path></svg>`
     };
 
-    const editorContents = [
-      { type: 'Article', title: "Portrait : parcours d'une étudiante nigérienne", status: 'En attente de validation', tone: 'o' },
-      { type: 'Article', title: 'Recette : le riz au gras pas à pas', status: 'Brouillon', tone: 'n' },
-      { type: 'Événement', title: 'Atelier couture traditionnelle', status: 'Renvoyé — voir commentaire', tone: 'r' },
-      { type: 'Ressource', title: 'Guide : renouveler son titre de séjour', status: 'Publié', tone: 'g' }
-    ];
+    // Rempli par loadEcontenus() depuis GET /api/editeur/dashboard. Seuls
+    // les articles sont réellement pris en charge (pas d'API pour créer un
+    // brouillon d'événement/ressource) — tout s'affiche donc en "Article".
+    let editorContents = [];
+    const STATUS_TONE = { 'Brouillon': 'n', 'En attente': 'o', 'Renvoyé': 'r', 'Publié': 'g' };
 
     function getBadgeHtml(label, tone) {
       const map = {
@@ -276,6 +335,39 @@ export const prerender = false;
       closeDrawerBtn.addEventListener('click', () => {
         mobileDrawer.classList.add('hidden');
       });
+
+      // Nouveau brouillon : formulaire + slug auto-généré depuis le titre
+      const draftFormBox = document.getElementById('draft-form-box');
+      document.getElementById('toggle-draft-form-btn').addEventListener('click', () => {
+        draftFormBox.classList.toggle('hidden');
+      });
+      document.getElementById('cancel-draft-btn').addEventListener('click', () => {
+        draftFormBox.classList.add('hidden');
+        clearDraftForm();
+      });
+      document.getElementById('draft-form-title').addEventListener('input', (e) => {
+        document.getElementById('draft-form-slug').value = '/actualites/' + e.target.value
+          .toLowerCase()
+          .trim()
+          .normalize('NFD')
+          .replace(/[̀-ͯ]/g, '')
+          .replace(/[^a-z0-9]+/g, '-');
+      });
+      document.getElementById('save-draft-btn').addEventListener('click', saveDraft);
+
+      // Afficher/masquer un champ mot de passe (délégation, couvre les
+      // boutons injectés plus tard).
+      document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.toggle-password-visibility-btn');
+        if (!btn) return;
+        const input = document.getElementById(btn.dataset.target);
+        if (!input) return;
+        const showing = input.type === 'text';
+        input.type = showing ? 'password' : 'text';
+        btn.setAttribute('aria-label', showing ? 'Afficher le mot de passe' : 'Masquer le mot de passe');
+      });
+
+      document.getElementById('save-profile-btn').addEventListener('click', saveProfile);
     });
 
     function goPage(pageKey) {
@@ -343,7 +435,40 @@ export const prerender = false;
 
     function renderPageDetails(pageKey) {
       if (pageKey === 'econtenus') {
+        loadEcontenus();
+      } else if (pageKey === 'edash') {
+        loadEdashCounts();
+      } else if (pageKey === 'profil') {
+        document.getElementById('profile-form-password').value = '';
+        document.getElementById('profile-form-password-confirm').value = '';
+      }
+    }
+
+    async function loadEdashCounts() {
+      try {
+        const res = await fetch('/api/editeur/dashboard');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur.');
+        document.getElementById('edash-count-brouillons').textContent = data.counts.brouillons;
+        document.getElementById('edash-count-attente').textContent = data.counts.en_attente;
+        document.getElementById('edash-count-renvoye').textContent = data.counts.renvoye;
+        document.getElementById('edash-count-publies').textContent = data.counts.publies;
+      } catch {
+        // Silencieux : les tirets par défaut restent affichés.
+      }
+    }
+
+    async function loadEcontenus() {
+      const list = document.getElementById('editor-contents-list');
+      list.innerHTML = '<div style="padding:24px; font-size:13.5px; color:#5a655f;">Chargement…</div>';
+      try {
+        const res = await fetch('/api/editeur/dashboard');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur de chargement.');
+        editorContents = data.items;
         renderEcontenus();
+      } catch (err) {
+        list.innerHTML = `<div style="padding:24px; font-size:13.5px; color:#B14524;">${err.message}</div>`;
       }
     }
 
@@ -351,17 +476,112 @@ export const prerender = false;
       const list = document.getElementById('editor-contents-list');
       list.innerHTML = '';
 
+      if (editorContents.length === 0) {
+        list.innerHTML = '<div style="padding:24px; font-size:13.5px; color:#5a655f;">Aucun contenu pour l\'instant — créez votre premier brouillon.</div>';
+        return;
+      }
+
       editorContents.forEach(c => {
+        const canSubmit = c.status === 'Brouillon' || c.status === 'Renvoyé';
         const row = document.createElement('div');
-        row.style.cssText = 'display:flex; align-items:center; gap:16px; padding:16px; border-bottom:1px solid rgba(31,41,37,0.06); flex-wrap:wrap;';
+        row.style.cssText = 'display:flex; flex-direction:column; gap:8px; padding:16px; border-bottom:1px solid rgba(31,41,37,0.06);';
         row.innerHTML = `
-          <span style="background:rgba(23,107,77,0.08); color:#176B4D; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700;">${c.type}</span>
-          <div style="flex:1; min-width:220px; font-size:14px; font-weight:700; color:#1F2925;">${c.title}</div>
-          ${getBadgeHtml(c.status, c.tone)}
-          <button style="background:#F8F4EC; border:none; padding:9px 16px; border-radius:9px; font-size:12.5px; font-weight:700; cursor:pointer; color:#1F2925;" onclick="alert('Soumission du brouillon : ${c.title}')">Soumettre</button>
+          <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+            <span style="background:rgba(23,107,77,0.08); color:#176B4D; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700;">Article</span>
+            <div style="flex:1; min-width:220px; font-size:14px; font-weight:700; color:#1F2925;">${c.title}</div>
+            ${getBadgeHtml(c.status, STATUS_TONE[c.status] || 'n')}
+            ${canSubmit ? `<button class="submit-draft-btn" data-id="${c.id}" style="background:#F8F4EC; border:none; padding:9px 16px; border-radius:9px; font-size:12.5px; font-weight:700; cursor:pointer; color:#1F2925;">Soumettre</button>` : ''}
+          </div>
+          ${c.commentaire_retour ? `<div style="font-size:13px; color:#B14524; background:rgba(177,69,36,0.08); padding:10px 14px; border-radius:10px;">💬 ${c.commentaire_retour}</div>` : ''}
         `;
         list.appendChild(row);
       });
+
+      document.querySelectorAll('.submit-draft-btn').forEach(btn => {
+        btn.addEventListener('click', () => submitDraft(Number(btn.dataset.id)));
+      });
+    }
+
+    async function submitDraft(id) {
+      if (!confirm('Soumettre ce contenu pour validation ? Vous ne pourrez plus le modifier tant qu\'il est en attente.')) return;
+      try {
+        const res = await fetch('/api/editeur/submit', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur.');
+        await loadEcontenus();
+        await loadEdashCounts();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    function clearDraftForm() {
+      ['draft-form-title', 'draft-form-slug', 'draft-form-excerpt', 'draft-form-content'].forEach((id) => {
+        document.getElementById(id).value = '';
+      });
+      document.getElementById('draft-form-category').selectedIndex = 0;
+    }
+
+    async function saveDraft() {
+      const title = document.getElementById('draft-form-title').value.trim();
+      const slug = document.getElementById('draft-form-slug').value.replace('/actualites/', '');
+      const excerpt = document.getElementById('draft-form-excerpt').value.trim();
+      const content = document.getElementById('draft-form-content').value.trim();
+      const category = document.getElementById('draft-form-category').value;
+
+      if (!title || !excerpt || !content) {
+        alert('Veuillez remplir le titre, le résumé et le contenu.');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/admin/news', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, slug, excerpt, content, category })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur.');
+        document.getElementById('draft-form-box').classList.add('hidden');
+        clearDraftForm();
+        await loadEcontenus();
+        await loadEdashCounts();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function saveProfile() {
+      const nom = document.getElementById('profile-form-name').value.trim();
+      const email = document.getElementById('profile-form-email').value.trim();
+      const password = document.getElementById('profile-form-password').value;
+      const passwordConfirm = document.getElementById('profile-form-password-confirm').value;
+
+      if (password && password !== passwordConfirm) {
+        alert('Les deux mots de passe ne correspondent pas.');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/superadmin/profile', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nom, email, password: password || undefined })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur.');
+        alert('Profil enregistré !');
+        document.getElementById('profile-form-password').value = '';
+        document.getElementById('profile-form-password-confirm').value = '';
+        document.getElementById('profile-header-name').textContent = nom;
+        document.getElementById('sidebar-user-name').textContent = nom;
+      } catch (err) {
+        alert(err.message);
+      }
     }
 
     // Bind navigations inside views
