@@ -1,4 +1,5 @@
 ---
+import DashboardCore from '../components/admin/DashboardCore.astro';
 import ViewActualites from '../components/admin/ViewActualites.astro';
 import ViewEvenements from '../components/admin/ViewEvenements.astro';
 import ViewInscriptions from '../components/admin/ViewInscriptions.astro';
@@ -176,83 +177,7 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
         
         <!-- DASHBOARD VIEW -->
         <section id="view-dashboard" class="hidden fade-in">
-          <div style="display:flex; flex-direction:column; gap:24px;">
-            <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:16px;">
-              <div>
-                <h1 style="font-size:24px; font-weight:800; color:#1F2925; margin:0 0 6px;">Bonjour {user.nom.split(' ')[0]} 👋</h1>
-                <p style="font-size:14.5px; color:#5a655f; margin:0;">Voici ce qui se passe pour l'ANB aujourd'hui.</p>
-              </div>
-              <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                <button class="btn-create-news nav-trigger-btn" data-page="actualites-new" style="background:#E97824; color:#FFFFFF; border:none; padding:13px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Créer un contenu</button>
-                <button class="btn-create-event nav-trigger-btn" data-page="evenements-new" style="background:#FFFFFF; color:#176B4D; border:2px solid #176B4D; padding:11px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Créer un événement</button>
-              </div>
-            </div>
-
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px;">
-              <div style="background:#FFFFFF; border-radius:18px; padding:22px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
-                <div id="stat-events-count" style="font-size:26px; font-weight:800; color:#176B4D;">0</div>
-                <div style="font-size:13.5px; color:#5a655f; margin-top:4px;">Événements à venir</div>
-              </div>
-              <div style="background:#FFFFFF; border-radius:18px; padding:22px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
-                <div id="stat-members-count" style="font-size:26px; font-weight:800; color:#E97824;">0</div>
-                <div style="font-size:13.5px; color:#5a655f; margin-top:4px;">Inscriptions aux événements</div>
-              </div>
-              <div style="background:#FFFFFF; border-radius:18px; padding:22px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
-                <div id="stat-news-count" style="font-size:26px; font-weight:800; color:#176B4D;">0</div>
-                <div style="font-size:13.5px; color:#5a655f; margin-top:4px;">Actualités publiées</div>
-              </div>
-              <div style="background:#FFFFFF; border-radius:18px; padding:22px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
-                <div id="stat-census-count" style="font-size:26px; font-weight:800; color:#176B4D;">0</div>
-                <div style="font-size:13.5px; color:#5a655f; margin-top:4px;">Personnes recensées</div>
-              </div>
-            </div>
-
-            <div style="display:grid; grid-template-columns:1.6fr 1fr; gap:20px; align-items:start; flex-wrap:wrap;">
-              <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05); min-width:0;">
-                <h3 style="font-size:16.5px; font-weight:700; color:#1F2925; margin:0 0 18px;">À traiter en priorité</h3>
-                <div id="priority-items-container" style="display:flex; flex-direction:column; gap:4px;">
-                  <!-- Dynamic -->
-                </div>
-              </div>
-
-              <div style="display:flex; flex-direction:column; gap:20px; min-width:0;">
-                <div style="background:#FFFFFF; border-radius:20px; padding:22px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
-                  <h3 id="calendar-month-label" style="font-size:15px; font-weight:700; color:#1F2925; margin:0 0 14px;">Calendrier</h3>
-                  <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:6px; text-align:center;" id="dashboard-calendar">
-                    <div style="font-size:11px; font-weight:700; color:#5a655f;">L</div>
-                    <div style="font-size:11px; font-weight:700; color:#5a655f;">M</div>
-                    <div style="font-size:11px; font-weight:700; color:#5a655f;">M</div>
-                    <div style="font-size:11px; font-weight:700; color:#5a655f;">J</div>
-                    <div style="font-size:11px; font-weight:700; color:#5a655f;">V</div>
-                    <div style="font-size:11px; font-weight:700; color:#5a655f;">S</div>
-                    <div style="font-size:11px; font-weight:700; color:#5a655f;">D</div>
-                    <!-- cells dynamically added -->
-                  </div>
-                </div>
-                <div style="background:#176B4D; border-radius:20px; padding:24px; color:#FFFFFF;">
-                  <div style="font-size:12px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">Prochain événement</div>
-                  <h3 style="font-size:18px; font-weight:700; margin:0 0 10px;" id="next-event-title">Journée culturelle nigérienne</h3>
-                  <div style="font-size:13.5px; opacity:0.85; margin-bottom:4px;" id="next-event-date">Samedi 20 septembre · 11h00</div>
-                  <div style="font-size:13.5px; opacity:0.85; margin-bottom:14px;" id="next-event-place">Parc Bordelais, Bordeaux</div>
-                  <button class="nav-trigger-btn" data-page="evenements" style="background:#E97824; color:#FFFFFF; border:none; padding:12px 22px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">Gérer l'événement</button>
-                </div>
-              </div>
-            </div>
-
-            <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
-              <h3 style="font-size:16.5px; font-weight:700; color:#1F2925; margin:0 0 16px;">Activité récente</h3>
-              <div style="display:flex; flex-direction:column; gap:14px;">
-                <div style="display:flex; gap:12px; align-items:flex-start; font-size:14px; color:#3f4a45;">
-                  <div style="width:8px; height:8px; border-radius:50%; background:#E97824; margin-top:7px; flex-shrink:0;"></div>
-                  <div>Vous avez publié l'actualité « Bienvenue aux nouveaux membres »<span style="color:#9aa39c; font-size:12.5px; display:block; margin-top:2px;">Il y a 3 heures</span></div>
-                </div>
-                <div style="display:flex; gap:12px; align-items:flex-start; font-size:14px; color:#3f4a45;">
-                  <div style="width:8px; height:8px; border-radius:50%; background:#E97824; margin-top:7px; flex-shrink:0;"></div>
-                  <div>Fatou a ajouté 12 photos dans la galerie<span style="color:#9aa39c; font-size:12.5px; display:block; margin-top:2px;">Hier</span></div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <DashboardCore userName={user.nom} role={user.role} />
         </section>
 
         <!-- ACTUALITES VIEW -->
@@ -420,6 +345,7 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
 
   <script>
     import { createAdminContent, eventBucket } from '../lib/adminContent.js';
+    import { createDashboardCore } from '../lib/dashboardCore.js';
 
     // Vues Actualités / Événements / Messages : markup dans
     // src/components/admin/View*.astro, logique dans lib/adminContent.js —
@@ -431,6 +357,15 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
         content.state.pendingInscriptionsEventId = eventId;
         goPage('inscriptions');
       },
+    });
+
+    // Dashboard : markup dans src/components/admin/DashboardCore.astro,
+    // logique dans lib/dashboardCore.js — partagé à l'identique avec
+    // /superadmin (role='admin' ici, pas de section Gouvernance).
+    const dashboard = createDashboardCore({
+      goPage: (page) => goPage(page),
+      getBadgeHtml: (label, tone) => getBadgeHtml(label, tone),
+      role: 'admin',
     });
 
     // State management
@@ -466,7 +401,6 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
     };
 
     // Arrays populated dynamically via API
-    let priorityItems = [];
     let newsArticles = [];
     let eventsAdmin = [];
     let registrants = [];
@@ -498,39 +432,10 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
 
         // Les vues partagées travaillent sur leur propre copie des données.
         content.setData(data);
-
-        // Populate statistics indicators — les 4 valeurs viennent de
-        // commonKpis (source de vérité serveur, identique au Super Admin),
-        // plus d'un seul .filter()/.length côté client pour ces 4-là.
-        document.getElementById('stat-events-count').textContent = commonKpis.evenements_a_venir;
-        document.getElementById('stat-news-count').textContent = commonKpis.actualites_publiees;
-        document.getElementById('stat-members-count').textContent = commonKpis.inscriptions_evenements;
-        document.getElementById('stat-census-count').textContent = commonKpis.personnes_recensees;
-
-        // Update priority items
-        priorityItems = [];
-
-        messages.filter(m => m.status === 'Non lu' || m.status === 'À traiter').forEach(m => {
-          priorityItems.push({
-            id: m.id,
-            name: m.from_name,
-            type: m.subject,
-            date: 'Reçu',
-            status: m.status,
-            tone: 'o',
-            avatarBg: 'linear-gradient(150deg,#E97824,#1F2925)',
-            action: 'messages'
-          });
-        });
-
-        // Encart « prochain événement » du tableau de bord. (L'encart
-        // équivalent de la vue Événements est géré par le module partagé.)
-        const nextEvent = eventsAdmin.find(e => eventBucket(e) === 'Ouvert');
-        if (nextEvent) {
-          document.getElementById('next-event-title').textContent = nextEvent.title;
-          document.getElementById('next-event-date').textContent = nextEvent.date;
-          document.getElementById('next-event-place').textContent = nextEvent.place;
-        }
+        // commonKpis alimente uniquement la page Statistiques (renderStats)
+        // ci-dessous — le dashboard lui-même a son propre chargement
+        // indépendant via dashboard.load() (lib/dashboardCore.js), qui
+        // écrit dans les mêmes 4 éléments mais ne dépend pas de cet appel.
 
         // Re-render current page
         renderPageDetails(state.page);
@@ -635,7 +540,7 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
 
     function renderPageDetails(pageKey) {
       if (pageKey === 'dashboard') {
-        renderDashboard();
+        dashboard.load();
       } else if (pageKey === 'actualites') {
         content.renderActualites();
       } else if (pageKey === 'evenements') {
@@ -653,83 +558,8 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
       }
     }
 
-    // 1. Dashboard
-    function renderDashboard() {
-      const container = document.getElementById('priority-items-container');
-      container.innerHTML = '';
-      
-      if (priorityItems.length === 0) {
-        container.innerHTML = '<div style="padding: 16px; text-align: center; color: var(--color-muted-text); font-size: 13.5px;">✓ Parfait ! Aucun message en attente.</div>';
-        return;
-      }
-
-      priorityItems.forEach(it => {
-        const row = document.createElement('div');
-        row.style.cssText = 'display:flex; align-items:center; gap:14px; padding:14px 6px; border-bottom:1px solid rgba(31,41,37,0.06); flex-wrap:wrap;';
-        row.innerHTML = `
-          <div style="width:36px; height:36px; border-radius:50%; background:${it.avatarBg}; flex-shrink:0;"></div>
-          <div style="flex:1; min-width:180px;">
-            <div style="font-size:14px; font-weight:700; color:#1F2925;">${it.name} — ${it.type}</div>
-            <div style="font-size:12.5px; color:#5a655f;">${it.date}</div>
-          </div>
-          ${getBadgeHtml(it.status, it.tone)}
-          <a class="priority-item-action" style="font-size:13.5px; font-weight:700; color:#176B4D; cursor:pointer; text-decoration: underline;">Traiter →</a>
-        `;
-        row.querySelector('.priority-item-action').addEventListener('click', () => goPage(it.action));
-        container.appendChild(row);
-      });
-
-      renderDashboardCalendar();
-    }
-
-    const MONTHS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
-    const MONTHS_FR_ABBR = ['janv', 'févr', 'mars', 'avr', 'mai', 'juin', 'juil', 'août', 'sept', 'oct', 'nov', 'déc'];
-
-    // Parse dates au format libre "20 sept. 2026" saisi par l'admin ; renvoie
-    // null si le format ne colle pas (ex: "juin 2026", "à définir").
-    function parseFrDate(str) {
-      const m = /^(\d{1,2})\s+([^\s.]+)\.?\s+(\d{4})$/.exec((str || '').trim().toLowerCase());
-      if (!m) return null;
-      const monthIdx = MONTHS_FR_ABBR.findIndex(abbr => m[2].startsWith(abbr));
-      if (monthIdx === -1) return null;
-      return { day: parseInt(m[1], 10), month: monthIdx, year: parseInt(m[3], 10) };
-    }
-
-    function renderDashboardCalendar() {
-      const calendarWrapper = document.getElementById('dashboard-calendar');
-      const dayHeaders = Array.from(calendarWrapper.querySelectorAll('div[style*="font-size:11px"]'));
-      calendarWrapper.innerHTML = '';
-      dayHeaders.forEach(dh => calendarWrapper.appendChild(dh));
-
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = today.getMonth();
-      const todayDate = today.getDate();
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-      const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7; // 0 = lundi
-
-      const monthLabel = document.getElementById('calendar-month-label');
-      if (monthLabel) monthLabel.textContent = `Calendrier — ${MONTHS_FR[month]} ${year}`;
-
-      const eventDays = new Set();
-      eventsAdmin.forEach(e => {
-        const parsed = parseFrDate(e.date);
-        if (parsed && parsed.year === year && parsed.month === month) eventDays.add(parsed.day);
-      });
-
-      for (let i = 0; i < firstWeekday; i++) {
-        calendarWrapper.appendChild(document.createElement('div'));
-      }
-
-      for (let d = 1; d <= daysInMonth; d++) {
-        const isToday = d === todayDate;
-        const hasEvent = eventDays.has(d);
-        const cell = document.createElement('div');
-        cell.style.cssText = `aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:8px; font-size:12px; font-weight:600; background:${isToday ? '#E97824' : (hasEvent ? 'rgba(23,107,77,0.12)' : 'transparent')}; color:${isToday ? '#FFFFFF' : (hasEvent ? '#176B4D' : '#1F2925')};`;
-        cell.textContent = d;
-        calendarWrapper.appendChild(cell);
-      }
-    }
+    // 1. Dashboard — vue partagée, voir lib/dashboardCore.js
+    // (dashboard.load(), appelée depuis renderPageDetails()).
 
     // 2. Actualités
 

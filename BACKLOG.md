@@ -104,6 +104,18 @@ Tableau vérifié route par route.
 
 ## 5. Fait et vérifié
 
+### Mutualisation du dashboard Admin / Super Admin (2026-08-24)
+Étape 3, après la source de vérité serveur unique des KPI (voir juste en dessous) : le dashboard lui-même (« Tableau de bord » côté Admin, « Vue d'ensemble » côté Super Admin) est désormais **un seul composant partagé**, pas deux implémentations qui se ressemblent.
+
+- **Créés** : `src/components/admin/DashboardCore.astro` (markup — mêmes classes/styles que l'ancien dashboard Admin, pris comme référence visuelle) + `src/lib/dashboardCore.js` (`createDashboardCore({ goPage, getBadgeHtml, role })`, même principe factory que `lib/adminContent.js` pour Actualités/Événements/Inscriptions/Messages).
+- **Partagé** entre `/admin` et `/superadmin` : salutation + boutons de création rapide, les 4 KPI communs (venant uniquement de `/api/admin/kpis`, aucun recalcul dans le composant), « À traiter en priorité » (messages), calendrier du mois, « Prochain événement ». Les différences de rôle sont exprimées par la prop `role` (`'admin'` | `'super_admin'`), pas par du code dupliqué.
+- **Spécifique Super Admin** : bloc « Gouvernance & plateforme » (Administrateurs actifs, Comptes désactivés, Contenus en validation, Demandes à traiter, Nouvelles adhésions ce mois, Attention requise, Activité récente), affiché uniquement quand `role === 'super_admin'`, réutilisant `GET /api/superadmin/stats` et `GET /api/superadmin/validations` existants — aucune nouvelle requête SQL.
+- **Bug corrigé au passage** (repéré en reprenant l'ancien calendrier Admin) : le calendrier utilisait un parseur du texte libre `date` (`parseFrDate`, format `"20 sept. 2026"`) pour placer les points sur les jours d'événements — fragile et incompatible avec la source de vérité `event_date` déjà en place ailleurs. Réécrit pour lire `event_date` directement.
+- **Nettoyage assumé** : l'ancien bloc « Activité récente » du dashboard Admin (2 lignes de texte figées, jamais reliées à de vraies données — ex. « Fatou a ajouté 12 photos dans la galerie ») a été supprimé, pas repris dans le composant partagé.
+- **Supprimé** : `renderDashboard()` / `renderDashboardCalendar()` / `parseFrDate()` / `MONTHS_FR(_ABBR)` dans `admin.astro`, et `loadOverview()` / `renderOverview()` / les variables `attentionItems`/`govActivity` dans `superadmin.astro` — remplacés par `dashboard.load()`. Les fonctions encore utilisées ailleurs dans `superadmin.astro` (`formatJournalDate`, `firstNameFromEmail`, pour Journal d'activité et Contenus & validations) n'ont pas été touchées.
+- Vérifié en exécution (build + `wrangler dev` + jsdom) : Admin et Super Admin affichent des valeurs de KPI identiques sur le dashboard ; la section Gouvernance se charge avec de vraies données sur Super Admin ; navigation vers Actualités/Événements/Inscriptions/Messages (Admin) et Actualités/Événements/Inscriptions/Messages/Utilisateurs/Contenus & validations/Journal (Super Admin) puis retour au dashboard : aucune erreur JS.
+- Rien touché côté modèle recensement/inscriptions, permissions, gestion des utilisateurs, sécurité, réglages ou exports.
+
 ### Source de vérité serveur unique pour les 4 KPI communs (2026-08-24)
 Étape 2 après la correction du vocabulaire : les 4 KPI (Événements à venir, Inscriptions aux événements, Actualités publiées, Personnes recensées) sont désormais calculés **une seule fois, côté serveur**, par `src/lib/stats.js` (`getCommonKpis(db)`, agrégations SQL), au lieu d'être recalculés indépendamment par filtrage de tableaux dans chaque page.
 
