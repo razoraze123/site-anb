@@ -4,7 +4,7 @@
 
 Ce document remplace le backlog précédent, qui contenait des affirmations non vérifiées.
 
-**État git :** 30 commits sur la branche `content/contacts-legal-info`, dont **29 non poussés**. Aucune migration appliquée sur la base distante `anb-db` — tout le travail est local.
+**État git :** 32 commits sur la branche `content/contacts-legal-info`, dont **31 non poussés**. Aucune migration appliquée sur la base distante `anb-db` — tout le travail est local.
 
 Légende : 🔴 Bloquant lancement · 🟠 Important · 🟡 Peut attendre
 
@@ -81,7 +81,7 @@ Tableau vérifié route par route.
   1. mots de passe de seed hashés (PBKDF2) ;
   2. table `site_settings` ;
   3. colonne `actualites.commentaire_retour`.
-- [ ] 🔴 **Pousser les 29 commits locaux** sur `origin`.
+- [ ] 🔴 **Pousser les 31 commits locaux** sur `origin`.
 - [ ] 🔴 Retirer le mot de passe pré-rempli `demo1234` — `connexion.astro` ligne 96 (`value="demo1234"`).
 - [ ] 🔴 Remplacer les comptes de démo par les vrais comptes du client (reporté par décision explicite).
 - [ ] 🟡 Supprimer `api/test-db.js` et `api/test-r2.js` — déjà neutralisés (renvoient 404), donc cosmétique.
@@ -102,6 +102,12 @@ Tableau vérifié route par route.
 ---
 
 ## 5. Fait et vérifié
+
+### Audit ciblé « le système Actualités/Événements marche-t-il à 100% ? »
+Deux bugs réels trouvés en le faisant volontairement échouer (pas en relisant le code), corrigés et re-testés :
+- **Message d'erreur illisible sur un titre en double** — créer/modifier un article dont le titre génère la même adresse qu'un article existant renvoyait l'erreur SQLite brute (`D1_ERROR: UNIQUE constraint failed...`). Le slug étant généré automatiquement (non modifiable à la main), l'admin n'avait aucun moyen de comprendre. Traduit en message clair + code 409.
+- **Un événement complet propose quand même « Je participe »** — aucune tâche planifiée ne fait jamais passer un événement à « Complet » automatiquement (statut posé à la main uniquement). Un visiteur pouvait donc s'inscrire à un événement déjà plein et se faire refuser après coup par l'API (qui, elle, bloquait déjà correctement toute surinscription). Le badge et le bouton comparent désormais aussi la capacité réelle, pas seulement le statut.
+- **Limite acceptée, pas un bug** : le statut « Programmé » d'un article n'a pas de vrai système de publication planifiée (aucune tâche cron dans ce projet) — c'est un simple statut manuel, cohérent avec le reste de l'app (aucune automatisation nulle part ailleurs non plus).
 
 ### Architecture partagée
 - **`src/components/admin/View{Actualites,Evenements,Messages}.astro`** + **`src/lib/adminContent.js`** : les 3 vues de gestion de contenu existent en **un seul exemplaire**, utilisées à l'identique par `/admin` et `/superadmin`. La page hôte injecte ce dont le module a besoin d'elle (navigation, rendu des badges) et lui fournit les données ; le module ignore tout de la navigation propre à chaque espace. Le bouton « Inscrits » n'apparaît que là où une vue Inscriptions existe.
