@@ -4,110 +4,111 @@
 
 Ce document remplace le backlog précédent, qui contenait des affirmations non vérifiées.
 
-**État git :** 25 commits sur la branche `content/contacts-legal-info`, dont **24 non poussés**. Aucune migration appliquée sur la base distante `anb-db` — tout le travail est local.
+**État git :** 27 commits sur la branche `content/contacts-legal-info`, dont **26 non poussés**. Aucune migration appliquée sur la base distante `anb-db` — tout le travail est local.
 
 Légende : 🔴 Bloquant lancement · 🟠 Important · 🟡 Peut attendre
 
 ---
 
-## 1. Bugs confirmés à corriger
+## 1. À faire — par ordre de priorité
 
-### 1.1 🔴 Le Super Admin a 3 liens qui mènent à une page blanche
+### 🔴 P1 — Le Super Admin a 3 liens qui mènent à une page blanche
 
-**Vérifié en exécution :** dans `/superadmin`, cliquer sur « Actualités », « Événements » ou « Messages » n'affiche **rien du tout** — aucune section, aucun titre, aucun message d'erreur. La page reste vide.
+**Vérifié en exécution :** dans `/superadmin`, cliquer sur « Actualités », « Événements » ou « Messages » n'affiche **rien du tout** — aucune section, aucun titre, aucun message d'erreur.
 
-Cause : `src/pages/superadmin.astro` déclare ces 3 entrées dans son menu, mais ne contient aucune section `view-actualites`, `view-evenements` ni `view-messages` correspondante.
+Cause : `superadmin.astro` déclare ces 3 entrées de menu, mais ne contient aucune section `view-actualites`, `view-evenements` ni `view-messages`.
 
-C'est exactement le problème que vous soupçonniez : **le Super Admin ne peut pas gérer les contenus depuis son espace**, alors que :
-- les routes API l'autorisent déjà (`api/admin/news.js`, `events.js`, `messages.js` acceptent `super_admin`) ;
-- le middleware l'autorise déjà à ouvrir `/admin` (`ROLE_REQUIRED['/admin'] = ['admin','super_admin']`).
+La permission existe déjà (les routes API acceptent `super_admin`, et le middleware l'autorise à ouvrir `/admin`) — **seule l'interface manque**.
 
-Donc la permission existe, seule l'interface manque. Deux options :
-- **(A) Rapide :** retirer les 3 liens cassés et ajouter à la place un lien « Ouvrir l'espace Admin » vers `/admin`.
-- **(B) Complet :** dupliquer les 3 vues dans `superadmin.astro` pour tout gérer sans changer d'espace.
+⚠️ **Il n'existe aucun composant réutilisable** dans ce projet : `src/components/` ne contient que `Chatbot`, `Footer` et `Header`. Les 3 espaces (`admin` 1852 lignes, `superadmin` 1548, `editeur` 692) sont des fichiers autonomes qui dupliquent déjà chacun leur propre navigation. On ne peut donc pas « réutiliser les composants » en l'état. Trois options :
 
-→ **Décision à prendre avant implémentation.**
+| Option | Effort | Conséquence |
+|---|---|---|
+| **(A)** Retirer les 3 liens cassés, ajouter « Ouvrir l'espace Admin » → `/admin` | ~15 min | Le super-admin change d'espace pour gérer les contenus. Aucune duplication. |
+| **(B)** Copier les 3 vues d'`admin.astro` dans `superadmin.astro` | ~2 h | ~600 lignes dupliquées à maintenir en double — chaque correction future devra être faite deux fois. |
+| **(C)** Extraire les vues en vrais composants Astro partagés, puis les utiliser dans les deux espaces | ~1 journée | Solution propre et durable, mais c'est un refactoring qui touche du code déjà livré et testé. |
 
-### 1.2 🔴 Le formulaire de contact public n'envoie rien
+→ **Décision à prendre.** (A) si l'objectif est de débloquer vite, (C) si ces vues vont continuer d'évoluer.
 
-**Vérifié :** `src/pages/contact.astro` (lignes 74-81) intercepte l'envoi (`e.preventDefault()`), affiche un message de confirmation… et **s'arrête là**. Aucun appel réseau, aucune écriture en base.
+### 🔴 P2 — Le formulaire de contact public n'envoie rien
 
-Conséquences réelles :
-- un visiteur croit avoir envoyé un message, personne ne le reçoit ;
-- la table `messages` ne peut être remplie que par les données de démo ;
-- la vue « Messages » de l'admin gère donc des messages qui n'arriveront jamais.
+`src/pages/contact.astro` (lignes 74-81) intercepte l'envoi, affiche un message de confirmation… et **s'arrête là**. Aucun appel réseau, aucune écriture en base.
 
-À faire : créer `src/pages/api/contact.js` (POST public, avec anti-abus comme `api/recensement.js`) et brancher le formulaire dessus.
+Conséquences : un visiteur croit avoir envoyé un message, personne ne le reçoit ; la table `messages` ne peut être remplie que par les données de démo ; la vue « Messages » de l'admin gère des messages qui n'arriveront jamais.
 
-### 1.3 🟠 « Mon profil » de l'espace Admin n'enregistre rien
+À faire : créer `api/contact.js` (POST public + anti-abus, sur le modèle de `api/recensement.js`) et brancher le formulaire dessus.
 
-`src/pages/admin.astro` ligne 579 : le bouton Enregistrer est encore `onclick="alert('Profil enregistré !')"`. J'ai branché cette vue pour le Super Admin et l'Éditeur, mais **j'ai oublié l'Admin**. La route `api/superadmin/profile.js` accepte déjà le rôle `admin` — il ne manque que le câblage côté écran (même code que dans `editeur.astro`).
+### 🟠 P3 — Impossible de changer le statut d'un inscrit
 
-### 1.4 🟠 « Pages du site » (Admin) est une maquette figée
+Dans la vue Inscriptions, les statuts (Confirmé / En attente / Liste d'attente / Annulé) **s'affichent mais ne peuvent pas être modifiés**. Aucune route ne le permet.
 
-`renderPages()` (`admin.astro` ligne 1440) affiche une liste écrite en dur : 7 pages avec de fausses dates de modification et de faux auteurs (« Modifié le 12 juil. 2026 par Mariama S. »). Aucune donnée réelle, aucune action possible.
+À faire : `PUT /api/admin/inscriptions` + sélecteur de statut dans la vue.
 
-Options : supprimer la vue, ou la remplacer par une liste réelle des pages du site avec un lien « voir la page ».
+### 🟠 P4 — « Pages du site » (Admin) est une maquette figée
+
+`renderPages()` (`admin.astro`) affiche une liste écrite en dur : 7 pages avec de fausses dates et de faux auteurs. Aucune donnée réelle, aucune action.
+
+Options : supprimer la vue, ou la remplacer par une vraie liste des pages avec un lien « voir la page ».
+
+### 🟠 P5 — Galerie publique vide
+
+`galerie.astro` fait 20 lignes et n'affiche rien. La table `media_galerie` contient des données mais **n'est lue nulle part dans le code**.
+
+- [ ] `GET /api/media.js` — lire `media_galerie`
+- [ ] `api/admin/upload.js` — insérer une ligne dans `media_galerie` à chaque upload
+- [ ] Brancher `galerie.astro` (affichage grille)
+
+### 🟡 P6 — Suppressions et corrections secondaires
+
+- [ ] `DELETE /api/admin/messages` — supprimer/archiver un message
+- [ ] `DELETE /api/admin/inscriptions` — désinscrire quelqu'un
+- [ ] `PUT /api/admin/recensement` — corriger la fiche d'un membre recensé (aujourd'hui : suppression uniquement)
+
+### 🟡 P7 — Vues Super Admin encore en maquette
+
+- [ ] **Sécurité** — 2FA et « sessions actives » fictifs (reporté par décision explicite ; nécessiterait une table `sessions`)
+- [ ] **Intégrations** — bouton « Configurer » = `alert()` (les statuts affichent honnêtement « À venir »)
+- [ ] **Mentions & RGPD** — bouton « Modifier » = `alert()` ; l'édition du texte long des mentions légales/CGU n'existe pas
+
+### 🟡 P8 — SEO global non branché
+
+Les réglages `seo_titre` / `seo_description` sont enregistrés en base mais **le `<title>` et la `<meta description>` des pages ne les lisent pas** : chaque page a son propre titre (« Contact — ANB Bordeaux »), qu'un réglage global unique écraserait. Nécessite de repenser l'approche (titre par page éditable plutôt qu'un titre global).
 
 ---
 
-## 2. Opérations CRUD manquantes
+## 2. État des opérations CRUD
 
 Tableau vérifié route par route.
 
 | Entité | Créer | Lire | Modifier | Supprimer |
 |---|---|---|---|---|
 | **Utilisateurs** | ✅ | ✅ | ✅ | ✅ |
-| **Actualités** | ✅ | ✅ | ✅ | ❌ **manquant** |
-| **Événements** | ✅ | ✅ | ✅ | ❌ **manquant** |
-| **Messages** | ❌ (formulaire cassé, cf. 1.2) | ✅ | ✅ (statut) | ❌ **manquant** |
-| **Inscriptions événements** | ✅ (public) | ✅ | ❌ **manquant** | ❌ **manquant** |
-| **Recensement / adhésions** | ✅ (public) | ✅ | ❌ **manquant** | ✅ |
+| **Actualités** | ✅ | ✅ | ✅ | ✅ |
+| **Événements** | ✅ | ✅ | ✅ | ✅ (avec garde-fou sur les inscrits) |
+| **Messages** | ❌ formulaire cassé (P2) | ✅ | ✅ statut | ❌ (P6) |
+| **Inscriptions événements** | ✅ public | ✅ | ❌ (P3) | ❌ (P6) |
+| **Recensement / adhésions** | ✅ public | ✅ | ❌ (P6) | ✅ |
 | **Réglages du site** | — | ✅ | ✅ | — (clé/valeur, normal) |
-
-À faire :
-- [ ] 🟠 `DELETE /api/admin/news` + bouton Supprimer dans la vue Actualités
-- [ ] 🟠 `DELETE /api/admin/events` + bouton Supprimer dans la vue Événements
-- [ ] 🟡 `DELETE /api/admin/messages` + bouton Supprimer (ou archiver)
-- [ ] 🟠 `PUT /api/admin/inscriptions` — changer le statut d'un inscrit (Confirmé / En attente / Annulé). Les statuts existent en base et s'affichent, mais **rien ne permet de les modifier**.
-- [ ] 🟡 `DELETE /api/admin/inscriptions` — désinscrire quelqu'un
-- [ ] 🟡 `PUT /api/admin/recensement` — corriger la fiche d'un membre recensé (aujourd'hui : suppression uniquement)
+| **Médias / galerie** | ✅ upload R2 | ❌ (P5) | ❌ | ❌ |
 
 ---
 
-## 3. Vues encore en maquette (aucune donnée réelle)
-
-| Vue | Fichier | État |
-|---|---|---|
-| **Galerie publique** | `src/pages/galerie.astro` | 20 lignes, vide. La table `media_galerie` est remplie en base mais **n'est lue nulle part dans le code**. |
-| **Sécurité** (Super Admin) | `superadmin.astro` | 2FA et « sessions actives » entièrement fictifs. Reporté par décision explicite. |
-| **Intégrations** (Super Admin) | `superadmin.astro` ligne 1398 | Bouton « Configurer » = `alert()`. Statuts affichent honnêtement « À venir » depuis la correction. |
-| **Mentions & RGPD** (Super Admin) | `superadmin.astro` ligne 1469 | Bouton « Modifier » = `alert()`. L'édition du texte long des mentions légales/CGU n'existe pas. |
-| **Pages du site** (Admin) | `admin.astro` ligne 1440 | Liste écrite en dur (cf. 1.4). |
-
-Pour la galerie (Phase 3 d'origine) :
-- [ ] 🟠 `GET /api/media.js` — lire `media_galerie`
-- [ ] 🟠 Modifier `api/admin/upload.js` pour insérer une ligne dans `media_galerie` à chaque upload
-- [ ] 🟠 Brancher `galerie.astro` sur ce fetch (affichage grille)
-
----
-
-## 4. Avant mise en production
+## 3. Avant mise en production
 
 - [ ] 🔴 **Appliquer les migrations sur la base distante `anb-db`** — rien n'y a été appliqué :
   1. mots de passe de seed hashés (PBKDF2) ;
   2. table `site_settings` ;
   3. colonne `actualites.commentaire_retour`.
-- [ ] 🔴 **Pousser les 24 commits locaux** sur `origin`.
+- [ ] 🔴 **Pousser les 26 commits locaux** sur `origin`.
 - [ ] 🔴 Retirer le mot de passe pré-rempli `demo1234` — `connexion.astro` ligne 96 (`value="demo1234"`).
 - [ ] 🔴 Remplacer les comptes de démo par les vrais comptes du client (reporté par décision explicite).
 - [ ] 🟡 Supprimer `api/test-db.js` et `api/test-r2.js` — déjà neutralisés (renvoient 404), donc cosmétique.
 - [ ] 🟡 `db/schema.sql` n'est pas idempotent : les tables sans contrainte `UNIQUE` (`evenements`, `adhesions`, `messages`, `inscriptions`, `journal_activite`) **dupliquent leurs lignes de seed** à chaque réapplication du fichier. Déjà constaté en local. À corriger avant de rejouer ce fichier sur une base contenant des données.
-- [ ] 🟡 Table `adhesions` morte : plus aucun formulaire n'y écrit (« adhésion » = « recensement », cf. section 6). Elle ne contient que 4 lignes de démo. À supprimer du schéma ou à documenter comme obsolète.
+- [ ] 🟡 Table `adhesions` morte : plus aucun formulaire n'y écrit (« adhésion » = « recensement », cf. section 5). Elle ne contient que 4 lignes de démo. À supprimer du schéma ou à documenter comme obsolète.
 
 ---
 
-## 5. Contenu attendu du client
+## 4. Contenu attendu du client
 
 - [ ] 🔴 Remplacer `src/lib/demo-data.ts` (équipe, événements, actualités), utilisé dans `association.astro`, `index.astro`, `Header.astro`, `galerie.astro`
 - [ ] 🔴 Photos des membres du bureau + photos de l'association
@@ -118,7 +119,7 @@ Pour la galerie (Phase 3 d'origine) :
 
 ---
 
-## 6. Fait et vérifié
+## 5. Fait et vérifié
 
 ### Espace Super Admin
 - **Utilisateurs & rôles** — CRUD complet (créer, suspendre/réactiver, réinitialiser le mot de passe, supprimer). Création et réinitialisation génèrent un mot de passe temporaire affiché une seule fois (aucun e-mail n'est envoyé). Un super-admin ne peut ni se suspendre, ni se retirer son rôle, ni se supprimer lui-même.
@@ -135,7 +136,9 @@ Pour la galerie (Phase 3 d'origine) :
 - Colonne `actualites.commentaire_retour` ajoutée pour que l'éditeur voie *pourquoi* son contenu a été renvoyé.
 
 ### Espace Admin
-- Actualités, Événements, Inscriptions (lecture), Recensement, Messages, Statistiques (branchées sur données réelles).
+- Actualités et Événements — création, modification et **suppression** (la suppression d'un événement demande une confirmation supplémentaire s'il a des inscrits, car ils sont supprimés avec lui).
+- Inscriptions (lecture seule), Recensement (lecture + suppression), Messages (changement de statut), Statistiques (branchées sur données réelles).
+- **Mon profil** — enregistre réellement, avec confirmation du mot de passe et bouton afficher/masquer (identique aux deux autres espaces).
 
 ### Corrections transverses
 - **Identité en dur** — `admin.astro` et `editeur.astro` affichaient un nom figé (« Mariama Souley » / « Fatou Ibrahim ») quel que soit le compte connecté. Plus grave : **tous les articles créés étaient attribués à Mariama** quel que soit l'auteur réel — corrigé côté serveur (l'auteur vient désormais de la session, jamais du client).
