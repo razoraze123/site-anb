@@ -4,7 +4,7 @@
 
 Ce document remplace le backlog précédent, qui contenait des affirmations non vérifiées.
 
-**État git :** 27 commits sur la branche `content/contacts-legal-info`, dont **26 non poussés**. Aucune migration appliquée sur la base distante `anb-db` — tout le travail est local.
+**État git :** 30 commits sur la branche `content/contacts-legal-info`, dont **29 non poussés**. Aucune migration appliquée sur la base distante `anb-db` — tout le travail est local.
 
 Légende : 🔴 Bloquant lancement · 🟠 Important · 🟡 Peut attendre
 
@@ -12,25 +12,7 @@ Légende : 🔴 Bloquant lancement · 🟠 Important · 🟡 Peut attendre
 
 ## 1. À faire — par ordre de priorité
 
-### 🔴 P1 — Le Super Admin a 3 liens qui mènent à une page blanche
-
-**Vérifié en exécution :** dans `/superadmin`, cliquer sur « Actualités », « Événements » ou « Messages » n'affiche **rien du tout** — aucune section, aucun titre, aucun message d'erreur.
-
-Cause : `superadmin.astro` déclare ces 3 entrées de menu, mais ne contient aucune section `view-actualites`, `view-evenements` ni `view-messages`.
-
-La permission existe déjà (les routes API acceptent `super_admin`, et le middleware l'autorise à ouvrir `/admin`) — **seule l'interface manque**.
-
-⚠️ **Il n'existe aucun composant réutilisable** dans ce projet : `src/components/` ne contient que `Chatbot`, `Footer` et `Header`. Les 3 espaces (`admin` 1852 lignes, `superadmin` 1548, `editeur` 692) sont des fichiers autonomes qui dupliquent déjà chacun leur propre navigation. On ne peut donc pas « réutiliser les composants » en l'état. Trois options :
-
-| Option | Effort | Conséquence |
-|---|---|---|
-| **(A)** Retirer les 3 liens cassés, ajouter « Ouvrir l'espace Admin » → `/admin` | ~15 min | Le super-admin change d'espace pour gérer les contenus. Aucune duplication. |
-| **(B)** Copier les 3 vues d'`admin.astro` dans `superadmin.astro` | ~2 h | ~600 lignes dupliquées à maintenir en double — chaque correction future devra être faite deux fois. |
-| **(C)** Extraire les vues en vrais composants Astro partagés, puis les utiliser dans les deux espaces | ~1 journée | Solution propre et durable, mais c'est un refactoring qui touche du code déjà livré et testé. |
-
-→ **Décision à prendre.** (A) si l'objectif est de débloquer vite, (C) si ces vues vont continuer d'évoluer.
-
-### 🔴 P2 — Le formulaire de contact public n'envoie rien
+### 🔴 P1 — Le formulaire de contact public n'envoie rien
 
 `src/pages/contact.astro` (lignes 74-81) intercepte l'envoi, affiche un message de confirmation… et **s'arrête là**. Aucun appel réseau, aucune écriture en base.
 
@@ -38,19 +20,19 @@ Conséquences : un visiteur croit avoir envoyé un message, personne ne le reço
 
 À faire : créer `api/contact.js` (POST public + anti-abus, sur le modèle de `api/recensement.js`) et brancher le formulaire dessus.
 
-### 🟠 P3 — Impossible de changer le statut d'un inscrit
+### 🟠 P2 — Impossible de changer le statut d'un inscrit
 
 Dans la vue Inscriptions, les statuts (Confirmé / En attente / Liste d'attente / Annulé) **s'affichent mais ne peuvent pas être modifiés**. Aucune route ne le permet.
 
 À faire : `PUT /api/admin/inscriptions` + sélecteur de statut dans la vue.
 
-### 🟠 P4 — « Pages du site » (Admin) est une maquette figée
+### 🟠 P3 — « Pages du site » (Admin) est une maquette figée
 
 `renderPages()` (`admin.astro`) affiche une liste écrite en dur : 7 pages avec de fausses dates et de faux auteurs. Aucune donnée réelle, aucune action.
 
 Options : supprimer la vue, ou la remplacer par une vraie liste des pages avec un lien « voir la page ».
 
-### 🟠 P5 — Galerie publique vide
+### 🟠 P4 — Galerie publique vide
 
 `galerie.astro` fait 20 lignes et n'affiche rien. La table `media_galerie` contient des données mais **n'est lue nulle part dans le code**.
 
@@ -58,19 +40,19 @@ Options : supprimer la vue, ou la remplacer par une vraie liste des pages avec u
 - [ ] `api/admin/upload.js` — insérer une ligne dans `media_galerie` à chaque upload
 - [ ] Brancher `galerie.astro` (affichage grille)
 
-### 🟡 P6 — Suppressions et corrections secondaires
+### 🟡 P5 — Suppressions et corrections secondaires
 
 - [ ] `DELETE /api/admin/messages` — supprimer/archiver un message
 - [ ] `DELETE /api/admin/inscriptions` — désinscrire quelqu'un
 - [ ] `PUT /api/admin/recensement` — corriger la fiche d'un membre recensé (aujourd'hui : suppression uniquement)
 
-### 🟡 P7 — Vues Super Admin encore en maquette
+### 🟡 P6 — Vues Super Admin encore en maquette
 
 - [ ] **Sécurité** — 2FA et « sessions actives » fictifs (reporté par décision explicite ; nécessiterait une table `sessions`)
 - [ ] **Intégrations** — bouton « Configurer » = `alert()` (les statuts affichent honnêtement « À venir »)
 - [ ] **Mentions & RGPD** — bouton « Modifier » = `alert()` ; l'édition du texte long des mentions légales/CGU n'existe pas
 
-### 🟡 P8 — SEO global non branché
+### 🟡 P7 — SEO global non branché
 
 Les réglages `seo_titre` / `seo_description` sont enregistrés en base mais **le `<title>` et la `<meta description>` des pages ne les lisent pas** : chaque page a son propre titre (« Contact — ANB Bordeaux »), qu'un réglage global unique écraserait. Nécessite de repenser l'approche (titre par page éditable plutôt qu'un titre global).
 
@@ -85,11 +67,11 @@ Tableau vérifié route par route.
 | **Utilisateurs** | ✅ | ✅ | ✅ | ✅ |
 | **Actualités** | ✅ | ✅ | ✅ | ✅ |
 | **Événements** | ✅ | ✅ | ✅ | ✅ (avec garde-fou sur les inscrits) |
-| **Messages** | ❌ formulaire cassé (P2) | ✅ | ✅ statut | ❌ (P6) |
-| **Inscriptions événements** | ✅ public | ✅ | ❌ (P3) | ❌ (P6) |
-| **Recensement / adhésions** | ✅ public | ✅ | ❌ (P6) | ✅ |
+| **Messages** | ❌ formulaire cassé (P1) | ✅ | ✅ statut | ❌ (P5) |
+| **Inscriptions événements** | ✅ public | ✅ | ❌ (P2) | ❌ (P5) |
+| **Recensement / adhésions** | ✅ public | ✅ | ❌ (P5) | ✅ |
 | **Réglages du site** | — | ✅ | ✅ | — (clé/valeur, normal) |
-| **Médias / galerie** | ✅ upload R2 | ❌ (P5) | ❌ | ❌ |
+| **Médias / galerie** | ✅ upload R2 | ❌ (P4) | ❌ | ❌ |
 
 ---
 
@@ -99,7 +81,7 @@ Tableau vérifié route par route.
   1. mots de passe de seed hashés (PBKDF2) ;
   2. table `site_settings` ;
   3. colonne `actualites.commentaire_retour`.
-- [ ] 🔴 **Pousser les 26 commits locaux** sur `origin`.
+- [ ] 🔴 **Pousser les 29 commits locaux** sur `origin`.
 - [ ] 🔴 Retirer le mot de passe pré-rempli `demo1234` — `connexion.astro` ligne 96 (`value="demo1234"`).
 - [ ] 🔴 Remplacer les comptes de démo par les vrais comptes du client (reporté par décision explicite).
 - [ ] 🟡 Supprimer `api/test-db.js` et `api/test-r2.js` — déjà neutralisés (renvoient 404), donc cosmétique.
@@ -121,7 +103,12 @@ Tableau vérifié route par route.
 
 ## 5. Fait et vérifié
 
+### Architecture partagée
+- **`src/components/admin/View{Actualites,Evenements,Messages}.astro`** + **`src/lib/adminContent.js`** : les 3 vues de gestion de contenu existent en **un seul exemplaire**, utilisées à l'identique par `/admin` et `/superadmin`. La page hôte injecte ce dont le module a besoin d'elle (navigation, rendu des badges) et lui fournit les données ; le module ignore tout de la navigation propre à chaque espace. Le bouton « Inscrits » n'apparaît que là où une vue Inscriptions existe.
+- Conséquence : **un super-admin est un admin** — un seul compte, un seul rôle, et il gère les contenus depuis son propre espace. Toute correction future sur ces vues profite automatiquement aux deux.
+
 ### Espace Super Admin
+- **Actualités, Événements, Messages** — mêmes vues que l'espace Admin (voir ci-dessus). Corrige les 3 liens qui menaient à une page blanche.
 - **Utilisateurs & rôles** — CRUD complet (créer, suspendre/réactiver, réinitialiser le mot de passe, supprimer). Création et réinitialisation génèrent un mot de passe temporaire affiché une seule fois (aucun e-mail n'est envoyé). Un super-admin ne peut ni se suspendre, ni se retirer son rôle, ni se supprimer lui-même.
 - **Journal d'activité** — alimenté automatiquement par toutes les routes `api/superadmin/*` via `src/lib/journal.js`.
 - **Contenus & validations** — approuver (publie) / renvoyer avec commentaire. Boucle complète vérifiée en exécution avec l'espace Éditeur.
