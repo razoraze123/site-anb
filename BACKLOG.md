@@ -20,11 +20,20 @@ Conséquences : un visiteur croit avoir envoyé un message, personne ne le reço
 
 À faire : créer `api/contact.js` (POST public + anti-abus, sur le modèle de `api/recensement.js`) et brancher le formulaire dessus.
 
-### 🟠 P2 — Impossible de changer le statut d'un inscrit
+### 🔴 P2 — Événements & Inscriptions : audit complet (2026-08-23)
 
-Dans la vue Inscriptions, les statuts (Confirmé / En attente / Liste d'attente / Annulé) **s'affichent mais ne peuvent pas être modifiés**. Aucune route ne le permet.
+Vérifié en exécution (inscription réelle, modification réelle d'un événement annulé, relecture de toutes les routes). Ce qui marche déjà bien : CRUD Événements (créer/modifier/supprimer, avec garde-fou sur les inscrits liés — testé), capacité réelle vs affichée (`isFull`, déjà corrigé plus tôt), inscription publique elle-même (respecte bien capacité/statut Complet/Annulé, anti-abus par IP).
 
-À faire : `PUT /api/admin/inscriptions` + sélecteur de statut dans la vue.
+Ce qui ne va pas, par gravité :
+
+- 🔴 **L'inscription publique ne récupère que le prénom.** `api/inscriptions.js` insère `last_name`, `email`, `phone` en chaînes vides à chaque fois — le formulaire (`evenements.astro`) ne demande que « Prénom ». Résultat vérifié en base : un inscrit réel n'a ni nom, ni e-mail, ni téléphone. La vue Inscrits de l'admin affiche des colonnes Nom/E-mail/Téléphone qui sont donc **toujours vides** pour toute vraie inscription. Concrètement, l'association n'a **aucun moyen de recontacter un inscrit**. C'est le point le plus important de cet audit.
+- 🔴 **« Modifier » un événement réinitialise silencieusement son statut à « Ouvert ».** Même famille de bug que celui déjà corrigé sur les actualités, mais **pas corrigé ici**. Reproduit en direct : un événement annulé (`status='Annulé'`), une fois passé par « Modifier » → « Sauvegarder », repasse en `Ouvert` — alors que rien dans le formulaire ne parle de statut. Un événement annulé redevient donc inscriptible dès qu'on corrige une simple faute de frappe dans sa description.
+- 🟠 **Aucun moyen de faire passer un événement en Passé, Annulé ou Brouillon.** Le formulaire de création/édition n'a ni champ statut ni champ `tab`, et `PUT /api/admin/events` ne touche jamais `tab`. Conséquence vérifiée en base : sur les 8 événements existants, seuls ceux insérés à la main par le fichier de seed sont dans les onglets Passés/Brouillons/Annulés — **aucun événement créé depuis l'interface n'a jamais pu y arriver**. Plus concrètement : un événement qui a eu lieu reste affiché comme « à venir » (sur `/evenements` public *et* dans l'admin) indéfiniment, tant que personne ne va corriger `tab` à la main dans la base. Avant un vrai lancement, il faut au minimum un bouton pour marquer un événement Terminé/Annulé ; idéalement, dériver l'état « passé » de la date plutôt que d'un champ à mettre à jour à la main (mais `date` est aujourd'hui un texte libre — `"20 sept. 2026 — 11h00"` — pas une vraie date, donc ça demande d'abord de changer ce champ en date structurée).
+- 🟠 **Impossible de changer le statut d'un inscrit** (Confirmé/En attente/Liste d'attente/Annulé) — s'affiche mais aucune route ne le permet. À faire : `PUT /api/admin/inscriptions` + sélecteur dans la vue.
+- 🟡 Champ « Date limite d'inscription » du formulaire événement : présent visuellement mais sans `id`, jamais lu ni envoyé à l'API. Purement décoratif.
+- 🟡 La vue Inscrits n'a pas de recherche (contrairement à Recensement, qui en a une) — gênant seulement si un événement a beaucoup d'inscrits.
+- 🟡 Le Super Admin n'a aucune vue Inscriptions (ni dans son espace, ni de bouton vers celle de `/admin`) — seul l'export CSV agrégé y donne accès. Ça contredit le principe déjà appliqué ailleurs cette session (« un super-admin est un admin, mêmes onglets ») ; à harmoniser si tu veux que le super-admin puisse consulter/gérer les inscrits sans compte admin séparé.
+- 🟡 Matrice de permissions (Super Admin, ligne « Traitement des inscriptions et adhésions ») affiche `✓` pour admin/super-admin — en réalité on peut seulement *consulter* une inscription, jamais la « traiter » (aucune route ne le permet, cf. ci-dessus). À corriger en même temps que le reste de la matrice.
 
 ### 🟠 P3 — « Pages du site » (Admin) est une maquette figée
 
