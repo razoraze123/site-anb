@@ -581,13 +581,49 @@ export const prerender = false;
       { text: 'Connexion administrateur établie depuis l\'IP 82.1XX.XX.XX', time: 'Hier' }
     ];
 
-    const users = [
-      { name: 'Mariama Souley', email: 'mariama.souley@anb-bordeaux.fr', role: 'Admin', roleT: 'o', status: 'Actif', statusT: 'g', last: "Aujourd'hui, 09:12", avatarBg: 'linear-gradient(150deg,#176B4D,#E97824)', permissions: 'Gestion des contenus, événements, médias, messages et demandes. Traitement des inscriptions.' },
-      { name: 'Nasser Diallo', email: 'nasser.diallo@anb-bordeaux.fr', role: 'Super Admin', roleT: 'g', status: 'Actif', statusT: 'g', last: "Aujourd'hui, 08:40", avatarBg: 'linear-gradient(150deg,#1F2925,#176B4D)', permissions: 'Accès complet : utilisateurs et rôles, réglages globaux, exports, sauvegardes, journal d\'activité, sécurité.' },
-      { name: 'Fatou Ibrahim', email: 'fatou.ibrahim@anb-bordeaux.fr', role: 'Éditeur', roleT: 'n', status: 'Actif', statusT: 'g', last: 'Hier, 18:22', avatarBg: 'linear-gradient(150deg,#E8D8BF,#176B4D)', permissions: 'Création d\'articles, événements et ressources en brouillon uniquement.' },
-      { name: 'Aïcha Boubacar', email: 'aicha.boubacar@anb-bordeaux.fr', role: 'Admin', roleT: 'o', status: 'Invitation envoyée', statusT: 'o', last: '—', avatarBg: 'linear-gradient(150deg,#E97824,#1F2925)', permissions: 'Rôle admin en attente de validation.' },
-      { name: 'Ibrahim Moussa', email: 'ibrahim.moussa@anb-bordeaux.fr', role: 'Super Admin', roleT: 'g', status: 'Désactivé', statusT: 'r', last: 'Il y a 92 jours', avatarBg: 'linear-gradient(150deg,#5a655f,#1F2925)', permissions: 'Compte suspendu pour inactivité prolongée.' }
-    ];
+    // Rempli par loadUsers() depuis GET /api/superadmin/users — plus de données figées.
+    let users = [];
+
+    const ROLE_LABELS = { admin: ['Admin', 'o'], super_admin: ['Super Admin', 'g'], editeur: ['Éditeur', 'n'] };
+    const ROLE_PERMISSIONS = {
+      admin: "Gestion des contenus, événements, médias, messages et demandes. Traitement des inscriptions.",
+      super_admin: "Accès complet : utilisateurs et rôles, réglages globaux, exports, journal d'activité.",
+      editeur: "Création d'articles, événements et ressources en brouillon uniquement."
+    };
+    const AVATAR_GRADIENTS = ['linear-gradient(150deg,#176B4D,#E97824)', 'linear-gradient(150deg,#1F2925,#176B4D)', 'linear-gradient(150deg,#E8D8BF,#176B4D)', 'linear-gradient(150deg,#E97824,#1F2925)', 'linear-gradient(150deg,#5a655f,#1F2925)'];
+
+    function decorateUser(u, i) {
+      const [roleLabel, roleT] = ROLE_LABELS[u.role] || [u.role, 'n'];
+      return {
+        id: u.id,
+        name: u.nom,
+        email: u.email,
+        dbRole: u.role,
+        dbStatut: u.statut,
+        role: roleLabel,
+        roleT,
+        status: u.statut === 'actif' ? 'Actif' : 'Désactivé',
+        statusT: u.statut === 'actif' ? 'g' : 'r',
+        last: '—',
+        avatarBg: AVATAR_GRADIENTS[i % AVATAR_GRADIENTS.length],
+        permissions: ROLE_PERMISSIONS[u.role] || ''
+      };
+    }
+
+    async function loadUsers() {
+      const container = document.getElementById('users-list-container');
+      container.innerHTML = '<div style="padding:24px; font-size:13.5px; color:#5a655f;">Chargement…</div>';
+      try {
+        const res = await fetch('/api/superadmin/users');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur de chargement.');
+        users = data.users.map(decorateUser);
+        state.userSelectedIdx = 0;
+        renderUsers();
+      } catch (err) {
+        container.innerHTML = `<div style="padding:24px; font-size:13.5px; color:#B14524;">${err.message}</div>`;
+      }
+    }
 
     const permissionMatrix = [
       { label: 'Gestion des contenus (articles, événements, médias)', superadmin: '✓', admin: '✓', editeur: 'Brouillon' },
@@ -772,7 +808,7 @@ export const prerender = false;
       if (pageKey === 'overview') {
         renderOverview();
       } else if (pageKey === 'users') {
-        renderUsers();
+        loadUsers();
       } else if (pageKey === 'contenus') {
         renderValidations();
       } else if (pageKey === 'donnees') {
@@ -874,19 +910,35 @@ export const prerender = false;
         </div>
       `;
 
-      document.getElementById('user-reset-btn').addEventListener('click', () => {
-        alert(`Lien de réinitialisation de mot de passe envoyé à ${selected.email}`);
-      });
-      document.getElementById('user-toggle-btn').addEventListener('click', () => {
-        if (selected.status === 'Actif') {
-          selected.status = 'Désactivé';
-          selected.statusT = 'r';
-        } else {
-          selected.status = 'Actif';
-          selected.statusT = 'g';
+      document.getElementById('user-reset-btn').addEventListener('click', async () => {
+        try {
+          const res = await fetch('/api/superadmin/users', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: selected.id, resetPassword: true })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Erreur.');
+          alert(`Nouveau mot de passe temporaire pour ${selected.email} : ${data.tempPassword}\n(à communiquer manuellement — aucun e-mail n'est envoyé)`);
+        } catch (err) {
+          alert(err.message);
         }
-        logActivity('Nasser', 'Super Admin', 'Modification statut utilisateur', `${selected.name} (${selected.status})`);
-        renderUsers();
+      });
+      document.getElementById('user-toggle-btn').addEventListener('click', async () => {
+        const newStatut = selected.dbStatut === 'actif' ? 'desactive' : 'actif';
+        try {
+          const res = await fetch('/api/superadmin/users', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: selected.id, statut: newStatut })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Erreur.');
+          state.userSelectedIdx = users.findIndex(u => u.id === selected.id);
+          await loadUsers();
+        } catch (err) {
+          alert(err.message);
+        }
       });
 
       const matrixWrapper = document.getElementById('permission-matrix-rows');
@@ -916,41 +968,36 @@ export const prerender = false;
       document.getElementById('invite-success-alert').classList.add('hidden');
     });
 
-    document.getElementById('invite-user-submit-btn').addEventListener('click', () => {
+    document.getElementById('invite-user-submit-btn').addEventListener('click', async () => {
       const name = document.getElementById('invite-form-name').value.trim();
       const email = document.getElementById('invite-form-email').value.trim();
-      const role = document.getElementById('invite-form-role').value;
+      const roleSelectValue = document.getElementById('invite-form-role').value;
+      const dbRoleMap = { Admin: 'admin', 'Super Admin': 'super_admin', 'Éditeur / Bénévole': 'editeur' };
 
       if (!name || !email) {
         alert('Veuillez remplir le nom et le mail.');
         return;
       }
 
-      const roleTMap = { Admin: 'o', 'Super Admin': 'g', 'Éditeur / Bénévole': 'n' };
-      const roleMap = { Admin: 'Admin', 'Super Admin': 'Super Admin', 'Éditeur / Bénévole': 'Éditeur' };
+      try {
+        const res = await fetch('/api/superadmin/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nom: name, email, role: dbRoleMap[roleSelectValue] })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur.');
 
-      users.push({
-        name,
-        email,
-        role: roleMap[role],
-        roleT: roleTMap[role],
-        status: 'Invitation envoyée',
-        statusT: 'o',
-        last: '—',
-        avatarBg: 'linear-gradient(150deg,#176B4D,#1F2925)',
-        permissions: `Accès configuré en tant que ${role}`
-      });
+        const successAlert = document.getElementById('invite-success-alert');
+        successAlert.textContent = `✓ Compte créé pour ${email}. Mot de passe temporaire : ${data.tempPassword} (à communiquer manuellement, aucun e-mail n'est envoyé).`;
+        successAlert.classList.remove('hidden');
 
-      logActivity('Nasser', 'Super Admin', 'Invitation utilisateur', `${name} (${role})`);
-
-      document.getElementById('invite-success-alert').classList.remove('hidden');
-      setTimeout(() => {
         document.getElementById('invite-form-name').value = '';
         document.getElementById('invite-form-email').value = '';
-        inviteBox.classList.add('hidden');
-        state.inviteOpen = false;
-        renderUsers();
-      }, 1500);
+        await loadUsers();
+      } catch (err) {
+        alert(err.message);
+      }
     });
 
     // 3. Validations
