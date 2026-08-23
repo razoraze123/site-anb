@@ -123,6 +123,24 @@ export async function PUT(context) {
       });
     }
 
+    // Un super_admin ne peut ni se suspendre ni se retirer son propre rôle
+    // super_admin — sinon il perd l'accès à ce panneau et ne peut plus se
+    // réactiver lui-même.
+    if (Number(id) === user.id) {
+      if (statut === 'desactive') {
+        return new Response(JSON.stringify({ error: "Vous ne pouvez pas suspendre votre propre compte." }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
+      if (role && role !== 'super_admin') {
+        return new Response(JSON.stringify({ error: "Vous ne pouvez pas retirer votre propre rôle Super Admin." }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
+    }
+
     if (resetPassword) {
       const tempPassword = generateTempPassword();
       const hashed = await hashPassword(tempPassword);

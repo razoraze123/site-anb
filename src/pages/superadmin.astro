@@ -102,8 +102,8 @@ export const prerender = false;
       <div style="padding:16px; border-top:1px solid rgba(31,41,37,0.06); display:flex; align-items:center; gap:12px;">
         <div style="width:38px; height:38px; border-radius:50%; background:linear-gradient(150deg,#176B4D,#E97824); flex-shrink:0;"></div>
         <div style="flex:1; min-width:0;">
-          <div style="font-size:13.5px; font-weight:700; color:#1F2925; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Nasser Diallo</div>
-          <div style="font-size:11.5px; color:#5a655f;">Super Admin</div>
+          <div id="sidebar-user-name" style="font-size:13.5px; font-weight:700; color:#1F2925; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">—</div>
+          <div id="sidebar-user-role" style="font-size:11.5px; color:#5a655f;">—</div>
         </div>
         <button class="logout-btn" aria-label="Déconnexion" style="width:34px; height:34px; border-radius:10px; background:#F8F4EC; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1F2925" stroke-width="1.8"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>
@@ -165,7 +165,7 @@ export const prerender = false;
         <section id="view-overview" class="hidden fade-in">
           <div style="display:flex; flex-direction:column; gap:24px;">
             <div>
-              <h1 style="font-size:24px; font-weight:800; color:#1F2925; margin:0 0 6px;">Bonjour Nasser 👋</h1>
+              <h1 id="overview-greeting" style="font-size:24px; font-weight:800; color:#1F2925; margin:0 0 6px;">Bonjour 👋</h1>
               <p style="font-size:14.5px; color:#5a655f; margin:0;">Vue d'ensemble de la plateforme ANB.</p>
             </div>
             <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px;">
@@ -447,8 +447,8 @@ export const prerender = false;
               <div style="display:flex; align-items:center; gap:16px;">
                 <div style="width:56px; height:56px; border-radius:50%; background:linear-gradient(150deg,#176B4D,#E97824);"></div>
                 <div>
-                  <div style="font-size:16px; font-weight:700; color:#1F2925;">Nasser Diallo</div>
-                  <div style="font-size:13px; color:#5a655f;">Super Admin</div>
+                  <div id="profile-header-name" style="font-size:16px; font-weight:700; color:#1F2925;">—</div>
+                  <div id="profile-header-role" style="font-size:13px; color:#5a655f;">—</div>
                 </div>
               </div>
               <div>
@@ -465,7 +465,21 @@ export const prerender = false;
               </div>
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Nouveau mot de passe</label>
-                <input id="profile-form-password" type="password" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="Laisser vide pour ne pas changer" />
+                <div style="position:relative;">
+                  <input id="profile-form-password" type="password" style="width:100%; padding:12px 44px 12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="Laisser vide pour ne pas changer" />
+                  <button type="button" class="toggle-password-visibility-btn" data-target="profile-form-password" aria-label="Afficher le mot de passe" style="position:absolute; top:50%; right:10px; transform:translateY(-50%); background:none; border:none; cursor:pointer; padding:4px; color:#5a655f; display:flex;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Confirmer le nouveau mot de passe</label>
+                <div style="position:relative;">
+                  <input id="profile-form-password-confirm" type="password" style="width:100%; padding:12px 44px 12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="Ressaisir le mot de passe" />
+                  <button type="button" class="toggle-password-visibility-btn" data-target="profile-form-password-confirm" aria-label="Afficher le mot de passe" style="position:absolute; top:50%; right:10px; transform:translateY(-50%); background:none; border:none; cursor:pointer; padding:4px; color:#5a655f; display:flex;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  </button>
+                </div>
               </div>
               <button id="save-profile-btn" style="align-self:flex-start; background:#176B4D; color:#FFFFFF; border:none; padding:12px 24px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Enregistrer</button>
             </div>
@@ -490,6 +504,7 @@ export const prerender = false;
       restoreOpen: false,
       statsPeriod: '30 jours',
       journalUserFilter: 'Tous',
+      currentUserId: null,
     };
 
     const navigationItems = [
@@ -696,6 +711,7 @@ export const prerender = false;
     document.addEventListener('DOMContentLoaded', () => {
       generateNav();
       goPage('overview');
+      loadSessionIdentity();
 
       document.querySelectorAll('.logout-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -714,7 +730,39 @@ export const prerender = false;
       closeDrawerBtn.addEventListener('click', () => {
         mobileDrawer.classList.add('hidden');
       });
+
+      // Afficher/masquer un champ mot de passe (délégation : couvre tous
+      // les boutons .toggle-password-visibility-btn, y compris ceux
+      // injectés plus tard).
+      document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.toggle-password-visibility-btn');
+        if (!btn) return;
+        const input = document.getElementById(btn.dataset.target);
+        if (!input) return;
+        const showing = input.type === 'text';
+        input.type = showing ? 'password' : 'text';
+        btn.setAttribute('aria-label', showing ? 'Afficher le mot de passe' : 'Masquer le mot de passe');
+      });
     });
+
+    // Identité de session : nom/rôle réels dans la sidebar, la salutation
+    // de la Vue d'ensemble, et l'id nécessaire pour bloquer l'auto-suspension
+    // dans Utilisateurs & rôles.
+    async function loadSessionIdentity() {
+      try {
+        const res = await fetch('/api/superadmin/profile');
+        const data = await res.json();
+        if (!res.ok) return;
+        state.currentUserId = data.id;
+        const roleLabel = PROFILE_ROLE_LABELS[data.role] || data.role;
+        document.getElementById('sidebar-user-name').textContent = data.nom;
+        document.getElementById('sidebar-user-role').textContent = roleLabel;
+        const firstName = data.nom.split(' ')[0];
+        document.getElementById('overview-greeting').textContent = `Bonjour ${firstName} 👋`;
+      } catch {
+        // Silencieux : la sidebar garde ses tirets par défaut.
+      }
+    }
 
     function goPage(pageKey) {
       state.page = pageKey;
@@ -936,7 +984,9 @@ export const prerender = false;
         <p style="font-size:13.5px; line-height:1.6; color:#3f4a45; margin:0 0 20px; background: rgba(31,41,37,0.02); padding: 10px; border-radius:8px;">${selected.permissions}</p>
         <div style="display:flex; flex-direction:column; gap:10px;">
           <button id="user-reset-btn" style="background:#F8F4EC; color:#1F2925; border:none; padding:11px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">Réinitialiser l'accès</button>
-          <button id="user-toggle-btn" style="background:#F8F4EC; color:#1F2925; border:none; padding:11px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">${selected.status === 'Actif' ? 'Suspendre le compte' : 'Activer le compte'}</button>
+          ${selected.id === state.currentUserId
+            ? `<div style="font-size:12.5px; color:#9aa39c; text-align:center; padding:8px;">C'est votre propre compte — utilisez « Mon profil » pour le modifier. Vous ne pouvez pas vous suspendre vous-même.</div>`
+            : `<button id="user-toggle-btn" style="background:#F8F4EC; color:#1F2925; border:none; padding:11px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">${selected.status === 'Actif' ? 'Suspendre le compte' : 'Activer le compte'}</button>`}
         </div>
       `;
 
@@ -954,7 +1004,7 @@ export const prerender = false;
           alert(err.message);
         }
       });
-      document.getElementById('user-toggle-btn').addEventListener('click', async () => {
+      document.getElementById('user-toggle-btn')?.addEventListener('click', async () => {
         const newStatut = selected.dbStatut === 'actif' ? 'desactive' : 'actif';
         try {
           const res = await fetch('/api/superadmin/users', {
@@ -1263,10 +1313,14 @@ export const prerender = false;
         const res = await fetch('/api/superadmin/profile');
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Erreur de chargement.');
+        const roleLabel = PROFILE_ROLE_LABELS[data.role] || data.role;
         document.getElementById('profile-form-name').value = data.nom;
         document.getElementById('profile-form-email').value = data.email;
-        document.getElementById('profile-form-role').value = PROFILE_ROLE_LABELS[data.role] || data.role;
+        document.getElementById('profile-form-role').value = roleLabel;
         document.getElementById('profile-form-password').value = '';
+        document.getElementById('profile-form-password-confirm').value = '';
+        document.getElementById('profile-header-name').textContent = data.nom;
+        document.getElementById('profile-header-role').textContent = roleLabel;
       } catch (err) {
         alert(err.message);
       }
@@ -1276,6 +1330,12 @@ export const prerender = false;
       const nom = document.getElementById('profile-form-name').value.trim();
       const email = document.getElementById('profile-form-email').value.trim();
       const password = document.getElementById('profile-form-password').value;
+      const passwordConfirm = document.getElementById('profile-form-password-confirm').value;
+
+      if (password && password !== passwordConfirm) {
+        alert('Les deux mots de passe ne correspondent pas.');
+        return;
+      }
 
       try {
         const res = await fetch('/api/superadmin/profile', {
@@ -1287,6 +1347,9 @@ export const prerender = false;
         if (!res.ok) throw new Error(data.error || 'Erreur.');
         alert('Profil enregistré !');
         document.getElementById('profile-form-password').value = '';
+        document.getElementById('profile-form-password-confirm').value = '';
+        document.getElementById('profile-header-name').textContent = nom;
+        document.getElementById('sidebar-user-name').textContent = nom;
       } catch (err) {
         alert(err.message);
       }

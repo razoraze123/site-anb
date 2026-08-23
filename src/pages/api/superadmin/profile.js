@@ -8,7 +8,7 @@ export const prerender = false;
 export async function GET(context) {
   const user = await requireRole(context, ['super_admin']);
   if (!user) return unauthorized();
-  return new Response(JSON.stringify({ nom: user.nom, email: user.email, role: user.role }), {
+  return new Response(JSON.stringify({ id: user.id, nom: user.nom, email: user.email, role: user.role }), {
     status: 200,
     headers: { "Content-Type": "application/json" }
   });
