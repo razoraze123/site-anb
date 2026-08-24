@@ -175,14 +175,11 @@ INSERT OR IGNORE INTO journal_activite (utilisateur_email, role, action, details
 ('fatou.ibrahim@anb-bordeaux.fr', 'Éditeur', 'Soumission pour validation', 'Portrait : parcours d''une étudiante', '78.232.112.5'),
 ('nasser.diallo@anb-bordeaux.fr', 'Super Admin', 'Connexion', 'Connexion depuis Bordeaux', '90.41.223.15');
 
--- Galerie Médias
-INSERT OR IGNORE INTO media_galerie (nom_fichier, titre, texte_alternatif, credit, type, taille_octets) VALUES
-('photos/galerie_1.jpg', 'Moment de partage traditionnel', 'Membres partageant un repas traditionnel', 'ANB Bordeaux', 'Photo', 2048500),
-('photos/galerie_2.jpg', 'Danses et célébrations', 'Groupe de danse traditionnelle nigérienne', 'ANB Bordeaux', 'Photo', 1850320),
-('videos/galerie_3.mp4', 'Vidéo récapitulative Journée Culturelle', 'Vidéo montrant les temps forts de l''événement', 'ANB Bordeaux', 'Vidéo', 15482000),
-('photos/galerie_4.jpg', 'Atelier de cuisine traditionnelle', 'Préparation du riz au gras', 'ANB Bordeaux', 'Photo', 980450),
-('photos/galerie_5.jpg', 'Remise d''équipements sportifs', 'Membres de l''équipe de football réunis', 'ANB Bordeaux', 'Photo', 1230400),
-('videos/galerie_6.mp4', 'Présentation des danses', 'Vidéo des danseurs au parc', 'ANB Bordeaux', 'Vidéo', 8700500);
+-- Galerie Médias : volontairement AUCUN seed. media_galerie est
+-- désormais la source de vérité de /galerie et de la galerie de la home
+-- (P1.3) — y insérer des lignes fictives (comme avant) ferait apparaître
+-- de fausses images dès l'installation, sans fichier R2 correspondant.
+-- La galerie démarre vide ; elle se peuple via Admin/Super Admin → Galerie.
 
 -- 9. Table site_settings (clé/valeur, éditable depuis le Super Admin)
 CREATE TABLE IF NOT EXISTS site_settings (

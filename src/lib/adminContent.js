@@ -169,7 +169,11 @@ export function wireUploadZone(type) {
 }
 
 export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) {
-  const data = { actualites: [], evenements: [], messages: [], inscriptions: [], recensement: [] };
+  // galerie n'est volontairement pas dans ce data partagé ni dans
+  // fetchData()/setData() : indépendante des Actualités/Événements
+  // (media_galerie, pas la même table), elle se recharge elle-même via
+  // renderGalerie() plutôt que via le cycle refresh() commun.
+  const data = { actualites: [], evenements: [], messages: [], inscriptions: [], recensement: [], galerie: [] };
 
   const state = {
     newsTab: 'Publiées',
@@ -178,6 +182,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     messageSelectedIdx: 0,
     editingNewsId: null,
     editingEventId: null,
+    editingGalerieId: null,
     // Id d'événement à présélectionner la prochaine fois que la vue
     // Inscrits s'affiche (posé par le bouton "Inscrits" d'une carte
     // événement, consommé une fois par renderInscriptions()).
@@ -440,6 +445,152 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     if (heading) heading.textContent = 'Nouvelle actualité';
     const submitBtn = document.getElementById('publish-news-submit-btn');
     if (submitBtn) submitBtn.textContent = "Publier l'actualité";
+  }
+
+  // ---------------------------------------------------------------- Galerie
+  //
+  // media_galerie est la source de vérité de /galerie et de la galerie de
+  // la home (remplace demo-data.ts fullGallery/homeGallery). Se recharge
+  // elle-même via GET /api/galerie (route publique, mêmes données que ce
+  // que l'admin lit) — pas de route /api/admin/galerie en GET séparée,
+  // rien de sensible à cacher dans ces métadonnées.
+
+  async function renderGalerie() {
+    const container = document.getElementById('galerie-list-container');
+    if (!container) return;
+
+    try {
+      const res = await fetch('/api/galerie');
+      const payload = await res.json();
+      if (!res.ok) throw new Error(payload.error || 'Erreur de chargement.');
+      data.galerie = payload.medias || [];
+    } catch (err) {
+      container.innerHTML = `<div style="padding: 30px; text-align: center; color: #B14524; font-size: 14.5px;">${escapeHtml(err.message)}</div>`;
+      return;
+    }
+
+    container.innerHTML = '';
+    if (data.galerie.length === 0) {
+      container.innerHTML = '<div style="grid-column:1/-1; padding: 30px; text-align: center; color: var(--color-muted-text); font-size: 14.5px;">Aucun média dans la galerie pour l\'instant.</div>';
+      return;
+    }
+
+    data.galerie.forEach((m) => {
+      const card = document.createElement('div');
+      card.style.cssText = 'background:#FFFFFF; border-radius:16px; overflow:hidden; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column;';
+      card.innerHTML = `
+        <div style="aspect-ratio:4/3; background:url('${m.url}') center/cover no-repeat, #F8F4EC;"></div>
+        <div style="padding:14px; display:flex; flex-direction:column; gap:6px; flex:1;">
+          <div style="font-size:14px; font-weight:700; color:#1F2925;">${escapeHtml(m.titre)}</div>
+          <div style="font-size:12px; color:#5a655f;">${escapeHtml(m.type)} · ${escapeHtml(m.credit)}</div>
+          <div style="font-size:11.5px; color:#9aa39c;">${(m.created_at || '').split(' ')[0]}</div>
+          <div style="display:flex; gap:8px; margin-top:auto; padding-top:8px;">
+            <button class="edit-galerie-btn" style="flex:1; background:#F8F4EC; border:none; padding:8px 10px; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; color:#176B4D;">Modifier</button>
+            <button class="delete-galerie-btn" style="flex:1; background:rgba(177,69,36,0.08); border:none; padding:8px 10px; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; color:#B14524;">Supprimer</button>
+          </div>
+        </div>
+      `;
+
+      card.querySelector('.edit-galerie-btn').addEventListener('click', () => {
+        state.editingGalerieId = m.id;
+        goPage('galerie-new');
+        document.getElementById('galerie-form-titre').value = m.titre;
+        document.getElementById('galerie-form-alt').value = m.texte_alternatif;
+        document.getElementById('galerie-form-credit').value = m.credit;
+        document.getElementById('galerie-form-type').value = m.type;
+        setUploadPreview('galerie', m.url);
+        // nom_fichier existant, jamais ré-uploadé lors d'une simple
+        // modification de métadonnées.
+        document.getElementById('galerie-form-image-url').dataset.existingKey = m.nom_fichier;
+        document.querySelector('#view-galerie-new h1').textContent = 'Modifier le média';
+        document.getElementById('publish-galerie-submit-btn').textContent = 'Sauvegarder les modifications';
+      });
+
+      card.querySelector('.delete-galerie-btn').addEventListener('click', async () => {
+        if (!confirm(`Supprimer définitivement « ${m.titre} » ? Le fichier sera aussi retiré de R2. Cette action est irréversible.`)) return;
+        try {
+          const res = await fetch(`/api/admin/galerie?id=${m.id}`, { method: 'DELETE' });
+          const result = await res.json();
+          if (!res.ok) throw new Error(result.error || 'Erreur lors de la suppression.');
+          await renderGalerie();
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+
+      container.appendChild(card);
+    });
+  }
+
+  function resetGalerieForm() {
+    state.editingGalerieId = null;
+    ['galerie-form-titre', 'galerie-form-alt', 'galerie-form-credit'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    const typeSelect = document.getElementById('galerie-form-type');
+    if (typeSelect) typeSelect.value = 'Photo';
+    resetUploadZone('galerie');
+    const urlInput = document.getElementById('galerie-form-image-url');
+    if (urlInput) delete urlInput.dataset.existingKey;
+    const heading = document.querySelector('#view-galerie-new h1');
+    if (heading) heading.textContent = 'Ajouter un média';
+    const submitBtn = document.getElementById('publish-galerie-submit-btn');
+    if (submitBtn) submitBtn.textContent = 'Ajouter à la galerie';
+  }
+
+  function wireGalerieForm() {
+    document.getElementById('publish-galerie-submit-btn')?.addEventListener('click', async () => {
+      const titre = document.getElementById('galerie-form-titre').value.trim();
+      const texte_alternatif = document.getElementById('galerie-form-alt').value.trim();
+      const credit = document.getElementById('galerie-form-credit').value.trim();
+      const type = document.getElementById('galerie-form-type').value;
+      const urlInput = document.getElementById('galerie-form-image-url');
+      const imageUrl = urlInput.value;
+      // Nouvel upload : URL "/api/media/{key}" -> on isole la clé réelle.
+      // Modification sans changer le fichier : on garde la clé d'origine.
+      const nom_fichier = imageUrl
+        ? imageUrl.replace('/api/media/', '')
+        : urlInput.dataset.existingKey;
+
+      if (!titre || !texte_alternatif || !credit) {
+        alert('Veuillez remplir le titre, le texte alternatif et le crédit.');
+        return;
+      }
+      if (!nom_fichier) {
+        alert('Veuillez téléverser un fichier.');
+        return;
+      }
+
+      const isEdit = state.editingGalerieId !== null;
+      try {
+        const res = await fetch('/api/admin/galerie', {
+          method: isEdit ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(
+            isEdit
+              ? { id: state.editingGalerieId, titre, texte_alternatif, credit, type }
+              : { nom_fichier, titre, texte_alternatif, credit, type }
+          ),
+        });
+        if (!res.ok) {
+          const errBody = await res.json();
+          throw new Error(errBody.error || "Erreur lors de l'enregistrement");
+        }
+
+        const alertBox = document.getElementById('galerie-publish-success-alert');
+        alertBox?.classList.remove('hidden');
+        await renderGalerie();
+
+        setTimeout(() => {
+          alertBox?.classList.add('hidden');
+          resetGalerieForm();
+          goPage('galerie');
+        }, 1200);
+      } catch (err) {
+        alert('Erreur de sauvegarde : ' + err.message);
+      }
+    });
   }
 
   // ------------------------------------------------------------ Événements
@@ -1323,8 +1474,10 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
   function wire() {
     wireUploadZone('news');
     wireUploadZone('event');
+    wireUploadZone('galerie');
     wireNewsForm();
     wireEventForm();
+    wireGalerieForm();
     wireRecensement();
   }
 
@@ -1341,8 +1494,10 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     renderRecensement,
     renderPages,
     renderInscriptions,
+    renderGalerie,
     loadValidations,
     resetNewsForm,
     resetEventForm,
+    resetGalerieForm,
   };
 }

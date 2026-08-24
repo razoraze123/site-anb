@@ -11,17 +11,6 @@ export const navItems = [
   { href: '/contact', label: 'Contact' },
 ] as const;
 
-export const homeGallery = [
-  { bg: 'linear-gradient(150deg,#176B4D,#1F2925)', span: 2, label: 'Repas communautaire' },
-  { bg: 'linear-gradient(150deg,#E97824,#E8D8BF)', span: 1, label: 'Journée culturelle' },
-  { bg: 'linear-gradient(150deg,#1F2925,#176B4D)', span: 1, label: 'Bénévoles en action' },
-  { bg: 'linear-gradient(150deg,#E8D8BF,#E97824)', span: 2, label: 'Musique et danse' },
-  { bg: 'linear-gradient(150deg,#176B4D,#E97824)', span: 1, label: 'Rencontre des familles' },
-  { bg: 'linear-gradient(150deg,#E97824,#1F2925)', span: 1, label: 'Sport communautaire' },
-  { bg: 'linear-gradient(150deg,#1F2925,#E8D8BF)', span: 1, label: 'Sourires partagés' },
-  { bg: 'linear-gradient(150deg,#E8D8BF,#176B4D)', span: 1, label: 'Artistes locaux' },
-] as const;
-
 export const newsArticles = [
   {
     category: 'Communauté',
@@ -80,8 +69,3 @@ export const timeline = [
   { year: '20XX', text: 'Structuration du bureau et lancement des actions solidaires en direction du Niger.' },
   { year: "Aujourd'hui", text: 'Une communauté active, des événements réguliers et un accompagnement renforcé pour chacun.' },
 ] as const;
-
-export const fullGallery = [
-  ...homeGallery,
-  ...homeGallery.map((g, i) => ({ ...g, label: `${g.label} — ${i + 2}` })),
-];

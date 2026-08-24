@@ -1,6 +1,5 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { homeGallery } from '../lib/demo-data';
 import { env } from "cloudflare:workers";
 
 // La home doit refléter les vraies actualités publiées (pas de mock) — ça
@@ -10,6 +9,11 @@ export const prerender = false;
 const db = env.DB;
 let newsArticles = [];
 let nextEvent = null;
+let galleryMedias = [];
+const GALLERY_BG_TONES = [
+  'linear-gradient(150deg,#176B4D,#1F2925)', 'linear-gradient(150deg,#E97824,#E8D8BF)',
+  'linear-gradient(150deg,#1F2925,#176B4D)', 'linear-gradient(150deg,#E8D8BF,#E97824)',
+];
 
 try {
   if (db) {
@@ -33,9 +37,15 @@ try {
         ? "Célébration des traditions nigériennes."
         : "Rencontre solidaire et conviviale.";
     }
+
+    // Aperçu galerie — media_galerie (jamais plus homeGallery/demo-data.ts).
+    const galleryResult = await db.prepare(
+      "SELECT nom_fichier, titre, texte_alternatif FROM media_galerie ORDER BY created_at DESC LIMIT 8"
+    ).all();
+    galleryMedias = galleryResult.results;
   }
 } catch (error) {
-  console.error("Erreur de récupération D1 pour les actualités/événements (home) :", error);
+  console.error("Erreur de récupération D1 pour les actualités/événements/galerie (home) :", error);
 }
 
 const dateFormatter = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -229,20 +239,26 @@ function formatArticleDate(created_at) {
       </div>
     </section>
 
-    <!-- GALERIE -->
+    <!-- GALERIE — masquée si aucun média réel n'existe encore
+         (media_galerie), jamais de bloc fictif pour combler la section. -->
+    {galleryMedias.length > 0 && (
     <section style="max-width:1280px; margin:0 auto; padding:100px clamp(20px,4vw,48px);">
       <div style="display:flex; flex-wrap:wrap; align-items:end; justify-content:space-between; gap:20px; margin-bottom:40px;">
         <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.9rem,3.2vw,2.5rem); color:#1F2925; margin:0;">Les moments qui nous rassemblent</h2>
         <a href="/galerie" style="background:transparent; border:2px solid #176B4D; color:#176B4D; padding:13px 26px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer; white-space:nowrap; display:inline-block;">Voir toute la galerie</a>
       </div>
       <div class="gallery-grid" data-reveal-group>
-        {homeGallery.map((img) => (
-          <div style={`grid-row:span ${img.span}; border-radius:20px; background:${img.bg}; position:relative; overflow:hidden; display:flex; align-items:flex-end; padding:14px;`}>
-            <span style="color:rgba(255,255,255,0.9); font-size:12px; font-weight:700;">{img.label}</span>
+        {galleryMedias.map((m, i) => (
+          <div style={`grid-row:span ${i === 0 ? 2 : 1}; border-radius:20px; background:${GALLERY_BG_TONES[i % GALLERY_BG_TONES.length]}; position:relative; overflow:hidden;`}>
+            <img src={`/api/media/${m.nom_fichier}`} alt={m.texte_alternatif} loading="lazy" style="width:100%; height:100%; object-fit:cover; display:block;" />
+            <div style="position:absolute; inset:0; display:flex; align-items:flex-end; padding:14px; background:linear-gradient(to top, rgba(0,0,0,0.4), transparent 55%);">
+              <span style="color:rgba(255,255,255,0.95); font-size:12px; font-weight:700;">{m.titre}</span>
+            </div>
           </div>
         ))}
       </div>
     </section>
+    )}
 
     <!-- ACTUALITES -->
     <section style="background:#FFFFFF; padding:100px 0;">
