@@ -3,7 +3,9 @@ import DashboardCore from '../components/admin/DashboardCore.astro';
 import ViewActualites from '../components/admin/ViewActualites.astro';
 import ViewEvenements from '../components/admin/ViewEvenements.astro';
 import ViewInscriptions from '../components/admin/ViewInscriptions.astro';
+import ViewRecensement from '../components/admin/ViewRecensement.astro';
 import ViewMessages from '../components/admin/ViewMessages.astro';
+import ViewPages from '../components/admin/ViewPages.astro';
 
 export const prerender = false;
 
@@ -190,79 +192,13 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
         <ViewInscriptions />
 
         <!-- RECENSEMENT VIEW -->
-        <section id="view-recensement" class="hidden fade-in">
-          <div style="display:flex; flex-direction:column; gap:20px;">
-            <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:14px;">
-              <div>
-                <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0 0 4px;">Recensement</h1>
-                <div style="font-size:13px; color:#5a655f;">
-                  <span id="rec-count-label" style="font-weight:700; color:#176B4D;">0</span> membres recensés
-                  · <span id="rec-benevole-label" style="font-weight:700; color:#E97824;">0</span> bénévoles potentiels
-                </div>
-              </div>
-              <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <a href="/recensement" target="_blank" style="background:#F8F4EC; color:#1F2925; border:none; padding:11px 18px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer; text-decoration:none; display:flex; align-items:center; gap:6px;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
-                  Voir le formulaire
-                </a>
-                <button id="recensement-export-csv-btn" style="background:#176B4D; color:#FFFFFF; border:none; padding:11px 18px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer; display:flex; align-items:center; gap:6px;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                  Exporter CSV
-                </button>
-              </div>
-            </div>
-
-            <!-- Filters & Search -->
-            <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:16px; background:#FFFFFF; padding:14px 16px; border-radius:18px; box-shadow:0 8px 24px rgba(31,41,37,0.03);">
-              <div style="display:flex; gap:6px; flex-wrap:wrap;" id="recensement-tabs">
-                <button class="rec-tab-btn" data-status="Tous" style="padding:7px 14px; border-radius:10px; font-size:13px; font-weight:700; border:none; cursor:pointer; background:#176B4D; color:#FFFFFF;">Tous</button>
-                <button class="rec-tab-btn" data-status="Étudiant" style="padding:7px 14px; border-radius:10px; font-size:13px; font-weight:700; border:none; cursor:pointer; background:#F8F4EC; color:#1F2925;">🎓 Étudiants</button>
-                <button class="rec-tab-btn" data-status="Employé" style="padding:7px 14px; border-radius:10px; font-size:13px; font-weight:700; border:none; cursor:pointer; background:#F8F4EC; color:#1F2925;">💼 Employés</button>
-                <button class="rec-tab-btn" data-status="benevole" style="padding:7px 14px; border-radius:10px; font-size:13px; font-weight:700; border:none; cursor:pointer; background:#F8F4EC; color:#1F2925;">🤝 Bénévoles</button>
-              </div>
-              <div style="position:relative; width:100%; max-width:280px;">
-                <input id="recensement-search-input" placeholder="Rechercher…" style="width:100%; padding:9px 14px 9px 34px; border-radius:10px; border:1.5px solid #e3dccb; font-size:13px; box-sizing:border-box;" />
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#5a655f" stroke-width="2" style="position:absolute; left:11px; top:50%; transform:translateY(-50%);"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
-              </div>
-            </div>
-
-            <!-- Table -->
-            <div style="background:#FFFFFF; border-radius:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05); overflow:hidden;">
-              <div style="overflow-x:auto;">
-                <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13.5px; min-width:900px;">
-                  <thead>
-                    <tr style="background:#F8F4EC; border-bottom:1px solid rgba(31,41,37,0.06); color:#5a655f; font-weight:700;">
-                      <th style="padding:14px 18px;">Nom Complet</th>
-                      <th style="padding:14px 18px;">Statut</th>
-                      <th style="padding:14px 18px;">Domaine</th>
-                      <th style="padding:14px 18px;">Bénévole</th>
-                      <th style="padding:14px 18px;">E-mail</th>
-                      <th style="padding:14px 18px;">Tél.</th>
-                      <th style="padding:14px 18px; text-align:right;">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody id="recensement-table-body">
-                    <!-- Dynamic -->
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </section>
-
+        <ViewRecensement />
 
         <!-- MESSAGES VIEW -->
         <ViewMessages />
 
         <!-- PAGES DU SITE VIEW -->
-        <section id="view-pages" class="hidden fade-in">
-          <div style="display:flex; flex-direction:column; gap:20px;">
-            <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Pages du site</h1>
-            <div style="background:#FFFFFF; border-radius:20px; padding:8px; box-shadow:0 8px 24px rgba(31,41,37,0.05);" id="site-pages-container">
-              <!-- list -->
-            </div>
-          </div>
-        </section>
+        <ViewPages />
 
         <!-- STATISTIQUES VIEW -->
         <section id="view-stats" class="hidden fade-in">
@@ -372,7 +308,6 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
     const state = {
       user: 'admin',
       page: 'dashboard',
-      recensementFilter: 'Tous'
     };
 
     const navigationItems = [
@@ -405,8 +340,6 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
     let eventsAdmin = [];
     let registrants = [];
     let messages = [];
-    let recensementList = [];
-    let recensementSearch = '';
     // Les 4 KPI communs avec le Super Admin (voir lib/stats.js) : calculés
     // côté serveur par /api/admin/kpis, plus jamais dérivés en filtrant les
     // tableaux ci-dessus dans le navigateur.
@@ -428,9 +361,9 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
         eventsAdmin = data.evenements;
         registrants = data.inscriptions;
         messages = data.messages;
-        recensementList = data.recensement || [];
 
-        // Les vues partagées travaillent sur leur propre copie des données.
+        // Les vues partagées travaillent sur leur propre copie des données
+        // (dont Recensement, désormais mutualisée avec /superadmin).
         content.setData(data);
         // commonKpis alimente uniquement la page Statistiques (renderStats)
         // ci-dessous — le dashboard lui-même a son propre chargement
@@ -548,11 +481,11 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
       } else if (pageKey === 'inscriptions') {
         content.renderInscriptions();
       } else if (pageKey === 'recensement') {
-        renderRecensement();
+        content.renderRecensement();
       } else if (pageKey === 'messages') {
         content.renderMessages();
       } else if (pageKey === 'pages') {
-        renderPages();
+        content.renderPages();
       } else if (pageKey === 'stats') {
         renderStats();
       }
@@ -569,123 +502,13 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
     // (content.renderInscriptions(), appelée depuis renderPageDetails()).
 
     // Recensement render
-    function renderRecensement() {
-      const tbody = document.getElementById('recensement-table-body');
-      if (!tbody) return;
-
-      tbody.innerHTML = '';
-
-      // Update counters in header
-      const countLabel = document.getElementById('rec-count-label');
-      const benevoleLabel = document.getElementById('rec-benevole-label');
-      if (countLabel) countLabel.textContent = recensementList.length;
-      if (benevoleLabel) benevoleLabel.textContent = recensementList.filter(r => r.benevole).length;
-
-      const filtered = recensementList.filter(r => {
-        // Filter by tab status
-        if (state.recensementFilter === 'benevole') {
-          if (!r.benevole) return false;
-        } else if (state.recensementFilter !== 'Tous' && r.status !== state.recensementFilter) {
-          return false;
-        }
-
-        // Filter by search query
-        if (recensementSearch) {
-          const query = recensementSearch.toLowerCase().trim();
-          const fullName = `${r.first_name} ${r.last_name}`.toLowerCase();
-          return fullName.includes(query) || r.email.toLowerCase().includes(query) || (r.phone && r.phone.includes(query)) || (r.origine && r.origine.toLowerCase().includes(query));
-        }
-
-        return true;
-      });
-
-      if (filtered.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="9" style="padding:40px; text-align:center; color:#5a655f; font-size:14px;">
-              Aucun membre recensé ne correspond à ces critères.
-            </td>
-          </tr>
-        `;
-        return;
-      }
-
-      filtered.forEach(r => {
-        const tr = document.createElement('tr');
-        tr.style.cssText = 'border-bottom:1px solid rgba(31,41,37,0.06); transition:background-color 0.15s;';
-        tr.onmouseover = () => tr.style.backgroundColor = 'rgba(23,107,77,0.02)';
-        tr.onmouseout = () => tr.style.backgroundColor = 'transparent';
-
-        const statusTone = r.status === 'Étudiant' ? 'g' : 'o';
-        const dateStr = r.created_at ? r.created_at.split(' ')[0] : '—';
-        const benevoleHtml = r.benevole
-          ? `<span style="background:rgba(233,120,36,0.12); color:#B75E12; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:700;">🤝 Oui</span>`
-          : `<span style="color:#9aa39c; font-size:12px;">—</span>`;
-
-        tr.innerHTML = `
-          <td style="padding:13px 18px; font-weight:700; color:#1F2925; white-space:nowrap;">${r.first_name} ${r.last_name}</td>
-          <td style="padding:13px 18px;">${getBadgeHtml(r.status, statusTone)}</td>
-          <td style="padding:13px 18px; color:#5a655f; font-size:13px; max-width:140px; overflow:hidden; text-overflow:ellipsis;">${r.domaine || '—'}</td>
-          <td style="padding:13px 18px;">${benevoleHtml}</td>
-          <td style="padding:13px 18px; color:#5a655f; font-size:13px;">${r.email}</td>
-          <td style="padding:13px 18px; color:#5a655f; font-size:13px; white-space:nowrap;">${r.phone}</td>
-          <td style="padding:13px 18px; text-align:right; white-space:nowrap;">
-            <span style="font-size:11.5px; color:#9aa39c; margin-right:8px;">${dateStr}</span>
-            <button class="delete-rec-btn" data-id="${r.id}" style="background:transparent; border:none; color:#B14524; font-size:12.5px; font-weight:700; cursor:pointer; padding:5px 10px; border-radius:6px; transition:background-color 0.15s;">Suppr.</button>
-          </td>
-        `;
-
-        // Bind delete action
-        tr.querySelector('.delete-rec-btn').addEventListener('click', async (e) => {
-          const id = e.target.dataset.id;
-          if (confirm("Êtes-vous sûr de vouloir supprimer ce recensement ?")) {
-            try {
-              const res = await fetch(`/api/admin/recensement?id=${id}`, { method: 'DELETE' });
-              if (!res.ok) throw new Error("Échec de la suppression");
-
-              // Remove locally and re-render
-              recensementList = recensementList.filter(item => item.id != id);
-              document.getElementById('stat-census-count').textContent = recensementList.length;
-              renderRecensement();
-            } catch (err) {
-              alert(err.message);
-            }
-          }
-        });
-
-        tbody.appendChild(tr);
-      });
-    }
-
+    // 6. Recensement — vue partagée, voir lib/adminContent.js
+    // (content.renderRecensement(), appelée depuis renderPageDetails()).
 
     // 7. Messages
 
-    // 9. Pages
-    function renderPages() {
-      const container = document.getElementById('site-pages-container');
-      container.innerHTML = '';
-      const pList = [
-        { name: 'Accueil', modified: '12 juil. 2026', author: 'Mariama S.', status: 'Publié' },
-        { name: "L'association", modified: '20 juin 2026', author: 'Nasser D.', status: 'Publié' },
-        { name: 'Culture nigérienne', modified: '15 mai 2026', author: 'Fatou I.', status: 'Publié' },
-        { name: 'Contact', modified: '2 avr. 2026', author: 'Mariama S.', status: 'Publié' },
-        { name: 'Mentions légales', modified: '12 juil. 2026', author: 'Nasser D.', status: 'Publié' },
-        { name: 'CGU', modified: '12 juil. 2026', author: 'Nasser D.', status: 'Publié' },
-        { name: 'Politique de confidentialité', modified: '12 juil. 2026', author: 'Nasser D.', status: 'Publié' }
-      ];
-
-      pList.forEach(p => {
-        const row = document.createElement('div');
-        row.style.cssText = 'display:flex; align-items:center; gap:16px; padding:16px; border-bottom:1px solid rgba(31,41,37,0.06); flex-wrap:wrap;';
-        row.innerHTML = `
-          <div style="flex:1; min-width:160px; font-size:14.5px; font-weight:700; color:#1F2925;">${p.name}</div>
-          <div style="font-size:12.5px; color:#5a655f; min-width:120px;">Modifié le ${p.modified}</div>
-          <div style="font-size:12.5px; color:#5a655f; min-width:120px;">Par ${p.author}</div>
-          ${getBadgeHtml(p.status, 'g')}
-        `;
-        container.appendChild(row);
-      });
-    }
+    // 9. Pages — vue partagée, voir lib/adminContent.js
+    // (content.renderPages(), appelée depuis renderPageDetails()).
 
     // 10. Statistiques
     function renderStats() {
@@ -810,57 +633,8 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
         });
       }
 
-      // Recensement Search listener
-      const recSearchInput = document.getElementById('recensement-search-input');
-      if (recSearchInput) {
-        recSearchInput.addEventListener('input', (e) => {
-          recensementSearch = e.target.value;
-          renderRecensement();
-        });
-      }
-
-      // Recensement Status tabs listeners
-      document.querySelectorAll('.rec-tab-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          document.querySelectorAll('.rec-tab-btn').forEach(b => {
-            b.style.background = '#F8F4EC';
-            b.style.color = '#1F2925';
-          });
-          e.target.style.background = '#176B4D';
-          e.target.style.color = '#FFFFFF';
-          state.recensementFilter = e.target.dataset.status;
-          renderRecensement();
-        });
-      });
-
-      // Recensement Export CSV
-      const recExportBtn = document.getElementById('recensement-export-csv-btn');
-      if (recExportBtn) {
-        recExportBtn.addEventListener('click', () => {
-          if (recensementList.length === 0) {
-            alert("Aucune donnée à exporter.");
-            return;
-          }
-          const headers = ["ID", "Prénom", "Nom", "Statut", "Téléphone", "E-mail", "Domaine", "Bénévole", "Date d'inscription"];
-          const csvRows = [headers.join(";")];
-          recensementList.forEach(r => {
-            csvRows.push([
-              r.id, r.first_name, r.last_name, r.status, r.phone, r.email,
-              r.domaine || '',
-              r.benevole ? 'Oui' : 'Non',
-              r.created_at
-            ].join(";"));
-          });
-          const blob = new Blob(["\uFEFF" + csvRows.join("\n")], { type: 'text/csv;charset=utf-8;' });
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.setAttribute("href", url);
-          link.setAttribute("download", `recensement_anb_${new Date().toISOString().split('T')[0]}.csv`);
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        });
-      }
+      // Recensement (recherche, onglets, export CSV) : câblé par
+      // content.wire() ci-dessus (lib/adminContent.js, wireRecensement()).
 
       // Mobile FAB Trigger
       document.getElementById('mobile-fab-btn')?.addEventListener('click', () => {

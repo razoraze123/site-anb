@@ -30,6 +30,12 @@
 // Exporté (et pas seulement interne à createAdminContent) car des pages
 // hôtes comme /admin en ont aussi besoin en dehors des vues partagées
 // (ex. l'encart "prochain événement" du tableau de bord).
+// BOM UTF-8 pour les exports CSV (Excel a besoin de ce marqueur pour
+// reconnaître l'encodage) — String.fromCharCode plutôt qu'un caractère
+// littéral ou un échappement \u, pour éviter tout risque de corruption
+// d'encodage au moment de la sauvegarde du fichier.
+const CSV_BOM = String.fromCharCode(0xFEFF);
+
 export function eventBucket(ev) {
   if (ev.status === 'Annulé') return 'Annulé';
   if (ev.status === 'Terminé') return 'Terminé';
@@ -150,7 +156,7 @@ export function wireUploadZone(type) {
 }
 
 export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) {
-  const data = { actualites: [], evenements: [], messages: [], inscriptions: [] };
+  const data = { actualites: [], evenements: [], messages: [], inscriptions: [], recensement: [] };
 
   const state = {
     newsTab: 'Publiées',
@@ -163,7 +169,13 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     // Inscrits s'affiche (posé par le bouton "Inscrits" d'une carte
     // événement, consommé une fois par renderInscriptions()).
     pendingInscriptionsEventId: null,
+    recensementFilter: 'Tous',
   };
+
+  // Recherche texte libre de la vue Recensement — pas dans `state` (même
+  // choix que dans l'ancien admin.astro : ce n'est pas une donnée de
+  // navigation, juste l'état local d'un champ de saisie).
+  let recensementSearch = '';
 
   // ---------------------------------------------------------------- données
 
@@ -178,6 +190,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     data.evenements = payload.evenements || [];
     data.messages = payload.messages || [];
     data.inscriptions = payload.inscriptions || [];
+    data.recensement = payload.recensement || [];
   }
 
   /** Recharge les données depuis l'API puis rejoue le rendu demandé. */
@@ -824,6 +837,178 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     }
   }
 
+  // ----------------------------------------------------------- Recensement
+
+  function renderRecensement() {
+    const tbody = document.getElementById('recensement-table-body');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    // Update counters in header
+    const countLabel = document.getElementById('rec-count-label');
+    const benevoleLabel = document.getElementById('rec-benevole-label');
+    if (countLabel) countLabel.textContent = data.recensement.length;
+    if (benevoleLabel) benevoleLabel.textContent = data.recensement.filter(r => r.benevole).length;
+
+    const filtered = data.recensement.filter(r => {
+      // Filter by tab status
+      if (state.recensementFilter === 'benevole') {
+        if (!r.benevole) return false;
+      } else if (state.recensementFilter !== 'Tous' && r.status !== state.recensementFilter) {
+        return false;
+      }
+
+      // Filter by search query
+      if (recensementSearch) {
+        const query = recensementSearch.toLowerCase().trim();
+        const fullName = `${r.first_name} ${r.last_name}`.toLowerCase();
+        return fullName.includes(query) || r.email.toLowerCase().includes(query) || (r.phone && r.phone.includes(query)) || (r.origine && r.origine.toLowerCase().includes(query));
+      }
+
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="9" style="padding:40px; text-align:center; color:#5a655f; font-size:14px;">
+            Aucun membre recensé ne correspond à ces critères.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    filtered.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.style.cssText = 'border-bottom:1px solid rgba(31,41,37,0.06); transition:background-color 0.15s;';
+      tr.onmouseover = () => tr.style.backgroundColor = 'rgba(23,107,77,0.02)';
+      tr.onmouseout = () => tr.style.backgroundColor = 'transparent';
+
+      const statusTone = r.status === 'Étudiant' ? 'g' : 'o';
+      const dateStr = r.created_at ? r.created_at.split(' ')[0] : '—';
+      const benevoleHtml = r.benevole
+        ? `<span style="background:rgba(233,120,36,0.12); color:#B75E12; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:700;">🤝 Oui</span>`
+        : `<span style="color:#9aa39c; font-size:12px;">—</span>`;
+
+      tr.innerHTML = `
+        <td style="padding:13px 18px; font-weight:700; color:#1F2925; white-space:nowrap;">${r.first_name} ${r.last_name}</td>
+        <td style="padding:13px 18px;">${getBadgeHtml(r.status, statusTone)}</td>
+        <td style="padding:13px 18px; color:#5a655f; font-size:13px; max-width:140px; overflow:hidden; text-overflow:ellipsis;">${r.domaine || '—'}</td>
+        <td style="padding:13px 18px;">${benevoleHtml}</td>
+        <td style="padding:13px 18px; color:#5a655f; font-size:13px;">${r.email}</td>
+        <td style="padding:13px 18px; color:#5a655f; font-size:13px; white-space:nowrap;">${r.phone}</td>
+        <td style="padding:13px 18px; text-align:right; white-space:nowrap;">
+          <span style="font-size:11.5px; color:#9aa39c; margin-right:8px;">${dateStr}</span>
+          <button class="delete-rec-btn" data-id="${r.id}" style="background:transparent; border:none; color:#B14524; font-size:12.5px; font-weight:700; cursor:pointer; padding:5px 10px; border-radius:6px; transition:background-color 0.15s;">Suppr.</button>
+        </td>
+      `;
+
+      // Bind delete action
+      tr.querySelector('.delete-rec-btn').addEventListener('click', async (e) => {
+        const id = e.target.dataset.id;
+        if (confirm("Êtes-vous sûr de vouloir supprimer ce recensement ?")) {
+          try {
+            const res = await fetch(`/api/admin/recensement?id=${id}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error("Échec de la suppression");
+
+            // Remove locally and re-render
+            data.recensement = data.recensement.filter(item => item.id != id);
+            document.getElementById('stat-census-count').textContent = data.recensement.length;
+            renderRecensement();
+          } catch (err) {
+            alert(err.message);
+          }
+        }
+      });
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  function wireRecensement() {
+    const recSearchInput = document.getElementById('recensement-search-input');
+    if (recSearchInput) {
+      recSearchInput.addEventListener('input', (e) => {
+        recensementSearch = e.target.value;
+        renderRecensement();
+      });
+    }
+
+    document.querySelectorAll('.rec-tab-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.rec-tab-btn').forEach(b => {
+          b.style.background = '#F8F4EC';
+          b.style.color = '#1F2925';
+        });
+        e.target.style.background = '#176B4D';
+        e.target.style.color = '#FFFFFF';
+        state.recensementFilter = e.target.dataset.status;
+        renderRecensement();
+      });
+    });
+
+    const recExportBtn = document.getElementById('recensement-export-csv-btn');
+    if (recExportBtn) {
+      recExportBtn.addEventListener('click', () => {
+        if (data.recensement.length === 0) {
+          alert("Aucune donnée à exporter.");
+          return;
+        }
+        const headers = ["ID", "Prénom", "Nom", "Statut", "Téléphone", "E-mail", "Domaine", "Bénévole", "Date d'inscription"];
+        const csvRows = [headers.join(";")];
+        data.recensement.forEach(r => {
+          csvRows.push([
+            r.id, r.first_name, r.last_name, r.status, r.phone, r.email,
+            r.domaine || '',
+            r.benevole ? 'Oui' : 'Non',
+            r.created_at
+          ].join(";"));
+        });
+        const blob = new Blob([CSV_BOM + csvRows.join("\n")], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `recensement_anb_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+    }
+  }
+
+  // ----------------------------------------------------------- Pages du site
+  // Maquette figée (BACKLOG.md P3) : aucune donnée réelle, aucune action.
+  // Reprise telle quelle depuis l'ancien admin.astro.
+
+  function renderPages() {
+    const container = document.getElementById('site-pages-container');
+    if (!container) return;
+    container.innerHTML = '';
+    const pList = [
+      { name: 'Accueil', modified: '12 juil. 2026', author: 'Mariama S.', status: 'Publié' },
+      { name: "L'association", modified: '20 juin 2026', author: 'Nasser D.', status: 'Publié' },
+      { name: 'Culture nigérienne', modified: '15 mai 2026', author: 'Fatou I.', status: 'Publié' },
+      { name: 'Contact', modified: '2 avr. 2026', author: 'Mariama S.', status: 'Publié' },
+      { name: 'Mentions légales', modified: '12 juil. 2026', author: 'Nasser D.', status: 'Publié' },
+      { name: 'CGU', modified: '12 juil. 2026', author: 'Nasser D.', status: 'Publié' },
+      { name: 'Politique de confidentialité', modified: '12 juil. 2026', author: 'Nasser D.', status: 'Publié' }
+    ];
+
+    pList.forEach(p => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex; align-items:center; gap:16px; padding:16px; border-bottom:1px solid rgba(31,41,37,0.06); flex-wrap:wrap;';
+      row.innerHTML = `
+        <div style="flex:1; min-width:160px; font-size:14.5px; font-weight:700; color:#1F2925;">${p.name}</div>
+        <div style="font-size:12.5px; color:#5a655f; min-width:120px;">Modifié le ${p.modified}</div>
+        <div style="font-size:12.5px; color:#5a655f; min-width:120px;">Par ${p.author}</div>
+        ${getBadgeHtml(p.status, 'g')}
+      `;
+      container.appendChild(row);
+    });
+  }
+
   // ------------------------------------------- câblage des zones statiques
   // wireUploadZone est désormais un export du module (voir plus haut).
 
@@ -960,6 +1145,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     wireUploadZone('event');
     wireNewsForm();
     wireEventForm();
+    wireRecensement();
   }
 
   return {
@@ -972,6 +1158,8 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     renderActualites,
     renderEvenements,
     renderMessages,
+    renderRecensement,
+    renderPages,
     renderInscriptions,
     resetNewsForm,
     resetEventForm,
