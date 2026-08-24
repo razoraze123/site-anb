@@ -6,6 +6,7 @@ import ViewInscriptions from '../components/admin/ViewInscriptions.astro';
 import ViewRecensement from '../components/admin/ViewRecensement.astro';
 import ViewMessages from '../components/admin/ViewMessages.astro';
 import ViewPages from '../components/admin/ViewPages.astro';
+import ViewValidations from '../components/admin/ViewValidations.astro';
 
 export const prerender = false;
 
@@ -191,6 +192,10 @@ if (!user) {
         <ViewMessages />
         <ViewPages />
 
+        <!-- CONTENUS & VALIDATIONS — vue partagée avec /admin depuis que
+             l'API accepte aussi 'admin' (workflow éditorial). -->
+        <ViewValidations />
+
         <!-- UTILISATEURS ET ROLES VIEW -->
         <section id="view-users" class="hidden fade-in">
           <div style="display:flex; flex-direction:column; gap:20px;">
@@ -237,26 +242,6 @@ if (!user) {
                   <!-- Dynamic -->
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- CONTENUS ET VALIDATIONS VIEW -->
-        <section id="view-contenus" class="hidden fade-in">
-          <div style="display:flex; flex-direction:column; gap:20px;">
-            <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Contenus et validations</h1>
-            <div id="validations-columns" style="display:grid; grid-template-columns:1fr 1.2fr; gap:20px; align-items:start; flex-wrap:wrap;">
-              <div style="background:#FFFFFF; border-radius:20px; padding:8px; box-shadow:0 8px 24px rgba(31,41,37,0.05); min-width:0;" id="validations-queue-list">
-                <!-- Dynamic -->
-              </div>
-              <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05); min-width:0;" id="validation-detail-box">
-                <!-- Dynamic -->
-              </div>
-            </div>
-            <div id="validations-empty-state" class="hidden" style="background:#FFFFFF; border-radius:20px; padding:70px 24px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; align-items:center; text-align:center; gap:14px;">
-              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#9aa39c" stroke-width="1.6"><path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="9"></circle></svg>
-              <div style="font-size:15.5px; font-weight:700; color:#1F2925;">Aucune validation en attente</div>
-              <div style="font-size:13.5px; color:#5a655f; max-width:360px;">Les contenus soumis par les éditeurs apparaîtront ici lorsqu'ils seront prêts à être examinés.</div>
             </div>
           </div>
         </section>
@@ -524,7 +509,6 @@ if (!user) {
       page: 'overview',
       userSelectedIdx: 0,
       inviteOpen: false,
-      validationSelectedIdx: 0,
       exportConfirmOpen: false,
       twoFA: true,
       backupRunning: false,
@@ -634,33 +618,8 @@ if (!user) {
       { label: 'Sécurité et sauvegardes', superadmin: '✓', admin: '—', editeur: '—' }
     ];
 
-    // Rempli par loadValidations() depuis GET /api/superadmin/validations
-    // (actualités au statut 'En attente' — posé par la soumission éditeur,
-    // Phase 2, pas encore branchée : cette file peut donc être vide pour
-    // l'instant).
-    let validationQueue = [];
-
-    async function loadValidations() {
-      const container = document.getElementById('validations-queue-list');
-      container.innerHTML = '<div style="padding:24px; font-size:13.5px; color:#5a655f;">Chargement…</div>';
-      try {
-        const res = await fetch('/api/superadmin/validations');
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Erreur de chargement.');
-        validationQueue = data.items.map(it => ({
-          id: it.id,
-          author: it.auteur_nom || 'Auteur inconnu',
-          type: 'Article',
-          date: formatJournalDate(it.created_at),
-          title: it.title,
-          status: it.status
-        }));
-        state.validationSelectedIdx = 0;
-        renderValidations();
-      } catch (err) {
-        container.innerHTML = `<div style="padding:24px; font-size:13.5px; color:#B14524;">${err.message}</div>`;
-      }
-    }
+    // Contenus & validations : vue partagée, voir lib/adminContent.js
+    // (content.loadValidations(), appelée depuis renderPageDetails()).
 
     // Rempli par loadJournal() depuis GET /api/superadmin/journal.
     let journalLogs = [];
@@ -913,7 +872,7 @@ if (!user) {
       } else if (pageKey === 'users') {
         loadUsers();
       } else if (pageKey === 'contenus') {
-        loadValidations();
+        content.loadValidations();
       } else if (pageKey === 'journal') {
         loadJournal();
       } else if (pageKey === 'reglages') {
@@ -1123,90 +1082,8 @@ if (!user) {
       }
     });
 
-    // 3. Validations
-    function renderValidations() {
-      const columns = document.getElementById('validations-columns');
-      const emptyState = document.getElementById('validations-empty-state');
-      const isEmpty = validationQueue.length === 0;
-      columns.classList.toggle('hidden', isEmpty);
-      emptyState.classList.toggle('hidden', !isEmpty);
-      if (isEmpty) return;
-
-      const listWrapper = document.getElementById('validations-queue-list');
-      listWrapper.innerHTML = '';
-
-      validationQueue.forEach((c, i) => {
-        const isSelected = state.validationSelectedIdx === i;
-        const item = document.createElement('div');
-        item.style.cssText = `padding:16px; border-bottom:1px solid rgba(31,41,37,0.06); cursor:pointer; background:${isSelected ? '#F8F4EC' : 'transparent'}; border-left:3px solid ${isSelected ? '#176B4D' : 'transparent'};`;
-        item.innerHTML = `
-          <div style="display:flex; justify-content:space-between; gap:8px;">
-            <span style="background:rgba(23,107,77,0.08); color:#176B4D; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700;">${c.type}</span>
-            <span style="font-size:12px; color:#9aa39c;">${c.date}</span>
-          </div>
-          <div style="font-size:14px; font-weight:700; color:#1F2925; margin-top:8px;">${c.title}</div>
-          <div style="font-size:12.5px; color:#5a655f; margin-top:2px;">Par ${c.author} · ${c.status}</div>
-        `;
-        item.addEventListener('click', () => {
-          state.validationSelectedIdx = i;
-          renderValidations();
-        });
-        listWrapper.appendChild(item);
-      });
-
-      const detailBox = document.getElementById('validation-detail-box');
-      const selected = validationQueue[state.validationSelectedIdx] || validationQueue[0];
-
-      if (!selected) {
-        detailBox.innerHTML = '';
-        return;
-      }
-
-      detailBox.innerHTML = `
-        <h3 style="font-size:16px; font-weight:700; color:#1F2925; margin:0 0 6px;">${selected.title}</h3>
-        <div style="font-size:13px; color:#5a655f; margin-bottom:16px;">Par ${selected.author} · ${selected.date}</div>
-        <div style="aspect-ratio:16/9; border-radius:14px; background:linear-gradient(150deg,#E8D8BF,#176B4D); margin-bottom:18px;"></div>
-        <div style="font-size:13px; font-weight:700; color:#1F2925; margin-bottom:8px;">Commentaire pour l'auteur</div>
-        <textarea id="validation-comment-text" rows="2" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:13.5px; resize:vertical; margin-bottom:16px;" placeholder="Optionnel..."></textarea>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <button id="validation-approve-btn" style="background:#176B4D; color:#FFFFFF; border:none; padding:11px 20px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">Approuver et publier</button>
-          <button id="validation-return-btn" style="background:#F8F4EC; color:#1F2925; border:none; padding:11px 20px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">Renvoyer avec commentaire</button>
-        </div>
-      `;
-
-      document.getElementById('validation-approve-btn').addEventListener('click', async () => {
-        try {
-          const res = await fetch('/api/superadmin/validations', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: selected.id, action: 'approve' })
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || 'Erreur.');
-          alert(`Le contenu "${selected.title}" a été approuvé et publié !`);
-          await loadValidations();
-        } catch (err) {
-          alert(err.message);
-        }
-      });
-
-      document.getElementById('validation-return-btn').addEventListener('click', async () => {
-        const comment = document.getElementById('validation-comment-text').value.trim() || 'Des ajustements sont requis.';
-        try {
-          const res = await fetch('/api/superadmin/validations', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: selected.id, action: 'return', comment })
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || 'Erreur.');
-          alert(`Le contenu a été renvoyé avec votre commentaire.`);
-          await loadValidations();
-        } catch (err) {
-          alert(err.message);
-        }
-      });
-    }
+    // 3. Validations — vue partagée, voir lib/adminContent.js
+    // (content.loadValidations(), appelée depuis renderPageDetails()).
 
     const generateExportBtn = document.getElementById('generate-export-btn');
     const exportConfirmBox = document.getElementById('export-confirm-box');

@@ -170,6 +170,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     // événement, consommé une fois par renderInscriptions()).
     pendingInscriptionsEventId: null,
     recensementFilter: 'Tous',
+    validationSelectedIdx: 0,
   };
 
   // Recherche texte libre de la vue Recensement — pas dans `state` (même
@@ -837,6 +838,138 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     }
   }
 
+  // ------------------------------------------------- Contenus & validations
+  //
+  // Workflow : un éditeur crée un brouillon, le soumet (statut 'En attente'
+  // en base) ; un admin OU un super-admin l'approuve (-> 'Publié') ou le
+  // renvoie avec un commentaire (-> 'Renvoyé'). Route GET/PUT
+  // /api/superadmin/validations — accepte désormais 'admin' en plus de
+  // 'super_admin' (même contrôle serveur pour les deux, aucun statut ni
+  // transition ajoutés). Un éditeur ne peut pas l'appeler : requireRole ne
+  // liste pas 'editeur' sur cette route.
+
+  const VALIDATIONS_MONTHS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+
+  // "YYYY-MM-DD HH:MM:SS" (UTC, tel que stocké par D1) -> "12 juillet 2026, 14:32"
+  function formatValidationDate(sqlDate) {
+    if (!sqlDate) return '—';
+    const [datePart, timePart] = sqlDate.split(' ');
+    const [y, m, d] = (datePart || '').split('-').map(Number);
+    const [h, min] = (timePart || '').split(':');
+    if (!y || !m || !d) return sqlDate;
+    return `${d} ${VALIDATIONS_MONTHS_FR[m - 1]} ${y}, ${h}:${min}`;
+  }
+
+  let validationQueue = [];
+
+  async function loadValidations() {
+    const container = document.getElementById('validations-queue-list');
+    if (!container) return;
+    container.innerHTML = '<div style="padding:24px; font-size:13.5px; color:#5a655f;">Chargement…</div>';
+    try {
+      const res = await fetch('/api/superadmin/validations');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Erreur de chargement.');
+      validationQueue = data.items.map(it => ({
+        id: it.id,
+        author: it.auteur_nom || 'Auteur inconnu',
+        type: 'Article',
+        date: formatValidationDate(it.created_at),
+        title: it.title,
+        status: it.status,
+      }));
+      state.validationSelectedIdx = 0;
+      renderValidations();
+    } catch (err) {
+      container.innerHTML = `<div style="padding:24px; font-size:13.5px; color:#B14524;">${err.message}</div>`;
+    }
+  }
+
+  function renderValidations() {
+    const columns = document.getElementById('validations-columns');
+    const emptyState = document.getElementById('validations-empty-state');
+    if (!columns || !emptyState) return;
+    const isEmpty = validationQueue.length === 0;
+    columns.classList.toggle('hidden', isEmpty);
+    emptyState.classList.toggle('hidden', !isEmpty);
+    if (isEmpty) return;
+
+    const listWrapper = document.getElementById('validations-queue-list');
+    listWrapper.innerHTML = '';
+
+    validationQueue.forEach((c, i) => {
+      const isSelected = state.validationSelectedIdx === i;
+      const item = document.createElement('div');
+      item.style.cssText = `padding:16px; border-bottom:1px solid rgba(31,41,37,0.06); cursor:pointer; background:${isSelected ? '#F8F4EC' : 'transparent'}; border-left:3px solid ${isSelected ? '#176B4D' : 'transparent'};`;
+      item.innerHTML = `
+        <div style="display:flex; justify-content:space-between; gap:8px;">
+          <span style="background:rgba(23,107,77,0.08); color:#176B4D; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700;">${c.type}</span>
+          <span style="font-size:12px; color:#9aa39c;">${c.date}</span>
+        </div>
+        <div style="font-size:14px; font-weight:700; color:#1F2925; margin-top:8px;">${c.title}</div>
+        <div style="font-size:12.5px; color:#5a655f; margin-top:2px;">Par ${c.author} · ${c.status}</div>
+      `;
+      item.addEventListener('click', () => {
+        state.validationSelectedIdx = i;
+        renderValidations();
+      });
+      listWrapper.appendChild(item);
+    });
+
+    const detailBox = document.getElementById('validation-detail-box');
+    const selected = validationQueue[state.validationSelectedIdx] || validationQueue[0];
+
+    if (!selected) {
+      detailBox.innerHTML = '';
+      return;
+    }
+
+    detailBox.innerHTML = `
+      <h3 style="font-size:16px; font-weight:700; color:#1F2925; margin:0 0 6px;">${selected.title}</h3>
+      <div style="font-size:13px; color:#5a655f; margin-bottom:16px;">Par ${selected.author} · ${selected.date}</div>
+      <div style="aspect-ratio:16/9; border-radius:14px; background:linear-gradient(150deg,#E8D8BF,#176B4D); margin-bottom:18px;"></div>
+      <div style="font-size:13px; font-weight:700; color:#1F2925; margin-bottom:8px;">Commentaire pour l'auteur</div>
+      <textarea id="validation-comment-text" rows="2" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:13.5px; resize:vertical; margin-bottom:16px;" placeholder="Optionnel..."></textarea>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button id="validation-approve-btn" style="background:#176B4D; color:#FFFFFF; border:none; padding:11px 20px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">Approuver et publier</button>
+        <button id="validation-return-btn" style="background:#F8F4EC; color:#1F2925; border:none; padding:11px 20px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">Renvoyer avec commentaire</button>
+      </div>
+    `;
+
+    document.getElementById('validation-approve-btn').addEventListener('click', async () => {
+      try {
+        const res = await fetch('/api/superadmin/validations', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: selected.id, action: 'approve' }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur.');
+        alert(`Le contenu "${selected.title}" a été approuvé et publié !`);
+        await loadValidations();
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+
+    document.getElementById('validation-return-btn').addEventListener('click', async () => {
+      const comment = document.getElementById('validation-comment-text').value.trim() || 'Des ajustements sont requis.';
+      try {
+        const res = await fetch('/api/superadmin/validations', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: selected.id, action: 'return', comment }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur.');
+        alert('Le contenu a été renvoyé avec votre commentaire.');
+        await loadValidations();
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+  }
+
   // ----------------------------------------------------------- Recensement
 
   function renderRecensement() {
@@ -1161,6 +1294,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     renderRecensement,
     renderPages,
     renderInscriptions,
+    loadValidations,
     resetNewsForm,
     resetEventForm,
   };

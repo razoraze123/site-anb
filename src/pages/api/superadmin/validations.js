@@ -8,7 +8,7 @@ export const prerender = false;
 // posé par PUT /api/editeur/submit.js).
 export async function GET(context) {
   try {
-    const user = await requireRole(context, ['super_admin']);
+    const user = await requireRole(context, ['admin', 'super_admin']);
     if (!user) return unauthorized();
 
     const db = env.DB;
@@ -45,7 +45,7 @@ export async function GET(context) {
 // commentaire_retour) pour qu'il le voie sur son tableau de bord.
 export async function PUT(context) {
   try {
-    const user = await requireRole(context, ['super_admin']);
+    const user = await requireRole(context, ['admin', 'super_admin']);
     if (!user) return unauthorized();
 
     const db = env.DB;
