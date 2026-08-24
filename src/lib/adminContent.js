@@ -36,6 +36,19 @@
 // d'encodage au moment de la sauvegarde du fichier.
 const CSV_BOM = String.fromCharCode(0xFEFF);
 
+// Échappement HTML minimal, utilisé pour tout champ pouvant provenir d'une
+// source publique non authentifiée (formulaire de contact -> table
+// `messages`) avant interpolation dans innerHTML. Contrairement aux
+// actualités/événements (toujours créés par un compte Admin/Éditeur
+// authentifié), un message peut désormais être écrit par n'importe quel
+// visiteur anonyme : from_name/subject/content/email doivent être
+// échappés partout où ils sont affichés dans l'espace admin.
+function escapeHtml(str) {
+  return String(str ?? '').replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[c]));
+}
+
 export function eventBucket(ev) {
   if (ev.status === 'Annulé') return 'Annulé';
   if (ev.status === 'Terminé') return 'Terminé';
@@ -744,13 +757,33 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
       item.style.cssText = `padding:16px; border-bottom:1px solid rgba(31,41,37,0.06); cursor:pointer; background:${isSelected ? '#F8F4EC' : 'transparent'}; border-left: 3px solid ${isSelected ? '#176B4D' : 'transparent'};`;
       item.innerHTML = `
         <div style="display:flex; justify-content:space-between; gap:8px; align-items: flex-start;">
-          <div style="font-size:14px; font-weight:700; color:#1F2925;">${m.from_name}</div>
+          <div style="font-size:14px; font-weight:700; color:#1F2925;">${escapeHtml(m.from_name)}</div>
           ${getBadgeHtml(m.status, tone)}
         </div>
-        <div style="font-size:13px; color:#3f4a45; margin-top:3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${m.subject}</div>
+        <div style="font-size:13px; color:#3f4a45; margin-top:3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(m.subject)}</div>
       `;
-      item.addEventListener('click', () => {
+      item.addEventListener('click', async () => {
         state.messageSelectedIdx = realIdx;
+        // Ouverture = marquage "lu" : un message "Non lu" jamais encore
+        // ouvert passe automatiquement à "À traiter" (lu, pas encore
+        // résolu) — réutilise le PUT existant, aucune nouvelle route,
+        // transition silencieuse (pas d'alert(), ce n'est pas une action
+        // volontaire de l'admin comme "Marquer comme traité"/"Archiver").
+        if (m.status === 'Non lu') {
+          try {
+            await fetch('/api/admin/messages', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id: m.id, status: 'À traiter' }),
+            });
+            await refresh(renderMessages);
+            return;
+          } catch {
+            // Échec silencieux : le message reste affiché "Non lu" et
+            // sera re-tenté à la prochaine ouverture. Pas bloquant pour
+            // la consultation elle-même.
+          }
+        }
         renderMessages();
       });
       listWrapper.appendChild(item);
@@ -761,17 +794,23 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
 
     const alreadyDone = selected.status === 'Traité';
     const isArchived = selected.status === 'Archivé';
+    // mailto: — Option A du workflow Messages : ANB collecte et organise
+    // les messages, mais n'envoie jamais d'e-mail depuis l'outil. Ce lien
+    // ouvre le client e-mail habituel de l'admin, destinataire et objet
+    // pré-remplis, corps volontairement vide (jamais de réponse fabriquée).
+    const mailtoHref = `mailto:${encodeURIComponent(selected.email || '')}?subject=${encodeURIComponent('Re: ' + (selected.subject || ''))}`;
     detailBox.innerHTML = `
-      <h3 style="font-size:16px; font-weight:700; color:#1F2925; margin:0 0 4px;">${selected.subject}</h3>
-      <div style="font-size:13px; color:#5a655f; margin-bottom:16px;">De ${selected.from_name} · Catégorie : ${selected.category}</div>
-      <p style="font-size:13.5px; line-height:1.6; color:#3f4a45; margin:0 0 18px; background: rgba(31,41,37,0.02); padding: 12px; border-radius: 8px;">${selected.content}</p>
-      <textarea id="message-reply-text" rows="3" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:13.5px; resize:vertical; margin-bottom:14px;" placeholder="Votre réponse…"></textarea>
+      <h3 style="font-size:16px; font-weight:700; color:#1F2925; margin:0 0 4px;">${escapeHtml(selected.subject)}</h3>
+      <div style="font-size:13px; color:#5a655f; margin-bottom:4px;">De ${escapeHtml(selected.from_name)} · Catégorie : ${escapeHtml(selected.category)}</div>
+      <div style="font-size:13px; color:#5a655f; margin-bottom:16px;">${selected.email ? `<a href="${mailtoHref}" style="color:#176B4D; font-weight:600;">${escapeHtml(selected.email)}</a>` : '<span style="color:#9aa39c;">Adresse e-mail non renseignée</span>'}</div>
+      <p style="font-size:13.5px; line-height:1.6; color:#3f4a45; margin:0 0 18px; background: rgba(31,41,37,0.02); padding: 12px; border-radius: 8px; white-space:pre-wrap;">${escapeHtml(selected.content)}</p>
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
-        <button id="message-reply-btn" style="background:#176B4D; color:#FFFFFF; border:none; padding:11px 20px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">Répondre</button>
+        <a id="message-reply-btn" href="${mailtoHref}" style="background:#176B4D; color:#FFFFFF; border:none; padding:11px 20px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center;">Répondre par e-mail</a>
         <button id="message-done-btn" ${alreadyDone ? 'disabled' : ''} style="background:#F8F4EC; color:#1F2925; border:none; padding:11px 20px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:${alreadyDone ? 'default' : 'pointer'}; opacity:${alreadyDone ? '0.5' : '1'};">Marquer comme traité</button>
         <button id="message-archive-btn" ${isArchived ? 'disabled' : ''} style="background:#F8F4EC; color:#1F2925; border:none; padding:11px 20px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:${isArchived ? 'default' : 'pointer'}; opacity:${isArchived ? '0.5' : '1'};">Archiver</button>
         ${isArchived ? '<button id="message-delete-btn" style="background:#c0392b; color:#FFFFFF; border:none; padding:11px 20px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">Supprimer définitivement</button>' : ''}
       </div>
+      <p style="font-size:11.5px; color:#9aa39c; margin:10px 0 0;">« Répondre par e-mail » ouvre votre messagerie habituelle — ANB n'envoie aucun e-mail depuis cet outil.</p>
     `;
 
     async function updateStatus(status, successMessage) {
@@ -784,21 +823,6 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
       alert(successMessage);
       await refresh(renderMessages);
     }
-
-    document.getElementById('message-reply-btn').addEventListener('click', async () => {
-      const text = document.getElementById('message-reply-text').value.trim();
-      if (!text) {
-        alert('Le message de réponse est vide.');
-        return;
-      }
-      try {
-        // Aucun envoi d'e-mail n'est branché : on trace seulement le
-        // traitement côté base, la réponse se fait hors de l'outil.
-        await updateStatus('Traité', 'Message marqué comme traité. (Aucun e-mail n\'est envoyé par l\'outil : répondez depuis votre messagerie.)');
-      } catch (err) {
-        alert(err.message);
-      }
-    });
 
     document.getElementById('message-done-btn').addEventListener('click', async () => {
       if (alreadyDone) return;

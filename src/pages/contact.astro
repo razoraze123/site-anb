@@ -63,8 +63,9 @@ import Layout from '../layouts/Layout.astro';
               <label for="contact-message" style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Message</label>
               <textarea id="contact-message" name="message" rows="4" required style="width:100%; padding:13px 16px; border-radius:12px; border:1.5px solid #d8d0c0; font-size:14.5px; font-family:inherit; resize:vertical;" placeholder="Votre message"></textarea>
             </div>
-            <button type="submit" style="background:#E97824; color:#FFFFFF; border:none; padding:16px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer; margin-top:8px; box-shadow:0 10px 22px rgba(233,120,36,0.28);">Envoyer le message</button>
-            <p id="contact-form-note" style="display:none; font-size:13.5px; color:#5a655f; text-align:center; margin:4px 0 0;">Ce formulaire sera bientôt connecté (validation et envoi sécurisés en préparation) — merci de nous écrire directement à anbordeaux33@outlook.fr en attendant.</p>
+            <button id="contact-submit-btn" type="submit" style="background:#E97824; color:#FFFFFF; border:none; padding:16px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer; margin-top:8px; box-shadow:0 10px 22px rgba(233,120,36,0.28);">Envoyer le message</button>
+            <p id="contact-form-success" style="display:none; font-size:13.5px; color:#176B4D; text-align:center; margin:4px 0 0; font-weight:700;">✓ Votre message a bien été envoyé. Nous vous répondrons dès que possible.</p>
+            <p id="contact-form-error" style="display:none; font-size:13.5px; color:#B14524; text-align:center; margin:4px 0 0;"></p>
           </form>
         </div>
       </div>
@@ -73,10 +74,44 @@ import Layout from '../layouts/Layout.astro';
 
   <script>
     const form = document.querySelector<HTMLFormElement>('#contact-form');
-    const note = document.querySelector<HTMLElement>('#contact-form-note');
-    form?.addEventListener('submit', (e) => {
+    const submitBtn = document.querySelector<HTMLButtonElement>('#contact-submit-btn');
+    const successNote = document.querySelector<HTMLElement>('#contact-form-success');
+    const errorNote = document.querySelector<HTMLElement>('#contact-form-error');
+    let submitting = false;
+
+    form?.addEventListener('submit', async (e) => {
       e.preventDefault();
-      if (note) note.style.display = 'block';
+      if (submitting) return; // anti double-soumission (clic rapide/répété)
+      submitting = true;
+      if (successNote) successNote.style.display = 'none';
+      if (errorNote) errorNote.style.display = 'none';
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.style.opacity = '0.7'; submitBtn.textContent = 'Envoi…'; }
+
+      try {
+        const res = await fetch('/api/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nom: (document.querySelector<HTMLInputElement>('#contact-nom')?.value || '').trim(),
+            email: (document.querySelector<HTMLInputElement>('#contact-email')?.value || '').trim(),
+            sujet: (document.querySelector<HTMLInputElement>('#contact-sujet')?.value || '').trim(),
+            message: (document.querySelector<HTMLTextAreaElement>('#contact-message')?.value || '').trim(),
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Une erreur est survenue, réessayez.");
+
+        if (successNote) successNote.style.display = 'block';
+        form.reset();
+      } catch (err) {
+        if (errorNote) {
+          errorNote.textContent = err instanceof Error ? err.message : "Une erreur est survenue, réessayez.";
+          errorNote.style.display = 'block';
+        }
+      } finally {
+        submitting = false;
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.style.opacity = '1'; submitBtn.textContent = 'Envoyer le message'; }
+      }
     });
   </script>
 </Layout>

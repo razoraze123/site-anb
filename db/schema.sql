@@ -77,9 +77,14 @@ CREATE TABLE IF NOT EXISTS adhesions (
 );
 
 -- 6. Table messages
+-- email : adresse de l'expéditeur, utilisée uniquement pour ouvrir le
+-- client e-mail de l'admin ("Répondre par e-mail", lien mailto:) — ANB
+-- n'envoie jamais d'e-mail depuis l'outil pour ce flux (voir
+-- db/migration-2026-08-25-messages-email.sql).
 CREATE TABLE IF NOT EXISTS messages (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   from_name TEXT NOT NULL,
+  email TEXT NOT NULL DEFAULT '',
   subject TEXT NOT NULL,
   category TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'Non lu',
@@ -146,12 +151,12 @@ INSERT OR IGNORE INTO adhesions (name, email, motivation, status) VALUES
 ('Souley Hassane', 'souley.h@email.fr', 'Renouvellement annuel de cotisation.', 'Renouvellement');
 
 -- Messages
-INSERT OR IGNORE INTO messages (from_name, subject, category, status, content) VALUES
-('Aïcha B.', 'Demande d''adhésion', 'Adhésion', 'À traiter', 'Bonjour, je souhaiterais rejoindre l''ANB et en savoir plus sur les prochains événements.'),
-('Ibrahim M.', 'Question sur le logement', 'Contact', 'Non lu', 'Bonjour, je cherche un logement étudiant à Bordeaux, pouvez-vous m''aider ?'),
-('Fatou K.', 'Proposition de bénévolat', 'Bénévolat', 'Traité', 'Je serais ravie d''aider pour le prochain événement, dites-moi comment m''organiser.'),
-('Assane T.', 'Partenariat commerçant', 'Partenariat', 'Traité', 'Notre restaurant souhaite proposer une réduction aux membres de l''ANB.'),
-('Mariam D.', 'Question générale', 'Autre', 'Archivé', 'Bonjour, à quelle heure se termine la journée culturelle ?');
+INSERT OR IGNORE INTO messages (from_name, email, subject, category, status, content) VALUES
+('Aïcha B.', 'aicha.b@email.fr', 'Demande d''adhésion', 'Adhésion', 'À traiter', 'Bonjour, je souhaiterais rejoindre l''ANB et en savoir plus sur les prochains événements.'),
+('Ibrahim M.', 'ibrahim.m@email.fr', 'Question sur le logement', 'Contact', 'Non lu', 'Bonjour, je cherche un logement étudiant à Bordeaux, pouvez-vous m''aider ?'),
+('Fatou K.', 'fatou.k@email.fr', 'Proposition de bénévolat', 'Bénévolat', 'Traité', 'Je serais ravie d''aider pour le prochain événement, dites-moi comment m''organiser.'),
+('Assane T.', 'assane.t@email.fr', 'Partenariat commerçant', 'Partenariat', 'Traité', 'Notre restaurant souhaite proposer une réduction aux membres de l''ANB.'),
+('Mariam D.', 'mariam.d@email.fr', 'Question générale', 'Autre', 'Archivé', 'Bonjour, à quelle heure se termine la journée culturelle ?');
 
 -- Inscriptions
 INSERT OR IGNORE INTO inscriptions (event_id, first_name, last_name) VALUES
