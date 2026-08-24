@@ -4,12 +4,13 @@ import { logActivity } from "../../../lib/journal.js";
 
 export const prerender = false;
 
-// Clés autorisées (voir seed dans db/schema.sql). Écrit dans site_settings ;
-// les pages publiques (mentions-legales.astro, Layout SEO, ...) restent en
-// dur pour l'instant et ne lisent pas encore cette table (itération future).
+// Clés autorisées (voir seed dans db/schema.sql). Écrit dans site_settings,
+// lu par les pages publiques via /api/settings (Footer, Layout SEO, contact,
+// adherer, contacts-utiles, mentions légales) — voir P1.1 pour la liste
+// complète des consommateurs.
 const ALLOWED_KEYS = [
   'identite_nom', 'identite_slogan', 'identite_email', 'identite_telephone',
-  'seo_titre', 'seo_description',
+  'identite_adresse', 'seo_titre', 'seo_description',
 ];
 
 export async function GET(context) {

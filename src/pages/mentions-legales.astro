@@ -14,10 +14,10 @@ import Layout from '../layouts/Layout.astro';
           <h2 style="font-family:'Unbounded',sans-serif; font-size:20px; font-weight:700; color:#176B4D; margin:0 0 12px;">1. Éditeur du site</h2>
           <p style="margin:0;">
             Le site internet <strong>anb-bordeaux.fr</strong> est édité par l'<strong>Association des Nigériens à Bordeaux (ANB Bordeaux)</strong>, association régie par la loi du 1er juillet 1901 et le décret du 16 août 1901.<br />
-            <strong>Siège social :</strong> adresse en cours de finalisation, sera communiquée prochainement<br />
+            <strong>Siège social :</strong> <span id="legal-adresse">adresse en cours de finalisation, sera communiquée prochainement</span><br />
             <strong>Numéro RNA / SIRET :</strong> en cours d'attribution<br />
-            <strong>Adresse email :</strong> <a href="mailto:anbordeaux33@outlook.fr" style="color:#176B4D; font-weight:600; text-decoration:underline;">anbordeaux33@outlook.fr</a><br />
-            <strong>Numéro de téléphone :</strong> 07 58 62 42 84
+            <strong>Adresse email :</strong> <a id="legal-email-link" href="mailto:anbordeaux33@outlook.fr" style="color:#176B4D; font-weight:600; text-decoration:underline;">anbordeaux33@outlook.fr</a><br />
+            <strong>Numéro de téléphone :</strong> <span id="legal-telephone">07 58 62 42 84</span>
           </p>
         </div>
 
@@ -58,4 +58,26 @@ import Layout from '../layouts/Layout.astro';
       </div>
     </section>
   </main>
+
+  <script>
+    // Reflète les coordonnées éditées depuis le Super Admin
+    // (src/pages/api/settings.js -> site_settings). Le siège social ne
+    // remplace le texte "en cours de finalisation" QUE si une vraie
+    // adresse a été renseignée — jamais de fausse adresse dans un
+    // document juridique.
+    fetch('/api/settings')
+      .then((res) => res.json())
+      .then(({ settings }) => {
+        const adresse = document.getElementById('legal-adresse');
+        const telephone = document.getElementById('legal-telephone');
+        const emailLink = document.getElementById('legal-email-link');
+        if (adresse && settings.identite_adresse) adresse.textContent = settings.identite_adresse;
+        if (telephone && settings.identite_telephone) telephone.textContent = settings.identite_telephone;
+        if (emailLink && settings.identite_email) {
+          emailLink.textContent = settings.identite_email;
+          emailLink.setAttribute('href', `mailto:${settings.identite_email}`);
+        }
+      })
+      .catch(() => {});
+  </script>
 </Layout>

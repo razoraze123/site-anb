@@ -196,6 +196,10 @@ INSERT OR IGNORE INTO site_settings (key, value) VALUES
 ('identite_slogan', 'Ensemble, faire vivre la communauté nigérienne à Bordeaux.'),
 ('identite_email', 'anbordeaux33@outlook.fr'),
 ('identite_telephone', '07 58 62 42 84'),
+-- Vide par défaut : aucune adresse de siège social réelle n'a encore été
+-- fournie par le client (cf. mentions-legales.astro, "en cours de
+-- finalisation"). Ne jamais y mettre une adresse inventée.
+('identite_adresse', ''),
 ('seo_titre', 'ANB — Association des Nigériens à Bordeaux'),
 ('seo_description', 'Communauté nigérienne à Bordeaux : événements, entraide et accompagnement.');
 

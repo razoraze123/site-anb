@@ -11,6 +11,9 @@ const DEFAULTS = {
   identite_slogan: 'Ensemble, faire vivre la communauté nigérienne à Bordeaux.',
   identite_email: 'anbordeaux33@outlook.fr',
   identite_telephone: '07 58 62 42 84',
+  // Vide tant qu'aucune adresse réelle n'est fournie — jamais de valeur
+  // inventée ici (voir mentions-legales.astro, "en cours de finalisation").
+  identite_adresse: '',
   seo_titre: 'ANB — Association des Nigériens à Bordeaux',
   seo_description: "Communauté nigérienne à Bordeaux : événements, entraide et accompagnement.",
 };

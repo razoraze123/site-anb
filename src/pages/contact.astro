@@ -17,7 +17,7 @@ import Layout from '../layouts/Layout.astro';
             </div>
             <div>
               <div style="font-size:13px; color:#5a655f;">Email</div>
-              <div style="font-size:15px; font-weight:700; color:#1F2925;">anbordeaux33@outlook.fr</div>
+              <div id="contact-info-email" style="font-size:15px; font-weight:700; color:#1F2925;">anbordeaux33@outlook.fr</div>
             </div>
           </div>
           <div style="display:flex; gap:16px; align-items:center;">
@@ -26,7 +26,7 @@ import Layout from '../layouts/Layout.astro';
             </div>
             <div>
               <div style="font-size:13px; color:#5a655f;">Téléphone</div>
-              <div style="font-size:15px; font-weight:700; color:#1F2925;">07 58 62 42 84</div>
+              <div id="contact-info-phone" style="font-size:15px; font-weight:700; color:#1F2925;">07 58 62 42 84</div>
             </div>
           </div>
           <div style="display:flex; gap:16px; align-items:center;">
@@ -35,7 +35,7 @@ import Layout from '../layouts/Layout.astro';
             </div>
             <div>
               <div style="font-size:13px; color:#5a655f;">Adresse</div>
-              <div style="font-size:15px; font-weight:700; color:#1F2925;">Bordeaux Métropole</div>
+              <div id="contact-info-adresse" style="font-size:15px; font-weight:700; color:#1F2925;">Bordeaux Métropole</div>
             </div>
           </div>
         </div>
@@ -73,6 +73,22 @@ import Layout from '../layouts/Layout.astro';
   </main>
 
   <script>
+    // Reflète les coordonnées éditées depuis le Super Admin
+    // (src/pages/api/settings.js -> site_settings), même principe
+    // best-effort que le Footer. Adresse : jamais de repli fictif — si
+    // identite_adresse est vide, "Bordeaux Métropole" reste affiché.
+    fetch('/api/settings')
+      .then((res) => res.json())
+      .then(({ settings }) => {
+        const email = document.getElementById('contact-info-email');
+        const phone = document.getElementById('contact-info-phone');
+        const adresse = document.getElementById('contact-info-adresse');
+        if (email && settings.identite_email) email.textContent = settings.identite_email;
+        if (phone && settings.identite_telephone) phone.textContent = settings.identite_telephone;
+        if (adresse && settings.identite_adresse) adresse.textContent = settings.identite_adresse;
+      })
+      .catch(() => {});
+
     const form = document.querySelector<HTMLFormElement>('#contact-form');
     const submitBtn = document.querySelector<HTMLButtonElement>('#contact-submit-btn');
     const successNote = document.querySelector<HTMLElement>('#contact-form-success');
