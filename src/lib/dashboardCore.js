@@ -153,40 +153,53 @@ export function createDashboardCore({ goPage, getBadgeHtml, role }) {
   }
 
   // ---------------------------------------------------------- Gouvernance
-  // Super Admin uniquement. Réutilise les routes existantes
-  // (api/superadmin/stats.js, api/superadmin/validations.js) — aucune
-  // nouvelle requête SQL, aucun calcul dupliqué.
+  // Super Admin uniquement. Réutilise la route existante
+  // (api/superadmin/stats.js) — aucune nouvelle route, aucun calcul dupliqué.
+  //
+  // Les 4 lignes "Attention requise" reprennent la maquette d'origine à
+  // l'identique dans leur position, mais pas toutes ne sont des alertes
+  // dynamiques : 2 sont réelles et conditionnelles (messages non traités
+  // depuis 7 jours, événement sans image), 2 sont des informations fixes
+  // ("Bientôt disponible" pour le suivi d'inactivité admin — aucune colonne
+  // de dernière connexion n'existe encore ; rappel Cloudflare pour les
+  // sauvegardes — jamais présenté comme une alerte, rien à vérifier
+  // manuellement côté admin).
   async function loadGovernance() {
-    const [statsRes, validationsRes] = await Promise.all([
-      fetch('/api/superadmin/stats'),
-      fetch('/api/superadmin/validations'),
-    ]);
+    const statsRes = await fetch('/api/superadmin/stats');
     const stats = statsRes.ok ? await statsRes.json() : null;
-    const validations = validationsRes.ok ? await validationsRes.json() : { items: [] };
-
     if (!stats) return;
 
-    document.getElementById('dashcore-gov-admins').textContent = stats.overview.admins_actifs;
-    document.getElementById('dashcore-gov-desactives').textContent = stats.overview.comptes_desactives;
-    document.getElementById('dashcore-gov-demandes').textContent = stats.overview.demandes_a_traiter;
+    document.getElementById('dashcore-gov-membres').textContent = stats.overview.membres;
     document.getElementById('dashcore-gov-adhesions-mois').textContent = stats.overview.adhesions_ce_mois;
-    document.getElementById('dashcore-gov-validations').textContent = validations.items.length;
+    document.getElementById('dashcore-gov-evenements').textContent = stats.overview.evenements_a_venir;
+    document.getElementById('dashcore-gov-demandes').textContent = stats.overview.demandes_a_traiter;
+    document.getElementById('dashcore-gov-admins').textContent = stats.overview.admins_actifs;
 
-    const attentionList = [...(stats.attention || [])];
-    if (validations.items.length > 0) {
-      attentionList.push(`${validations.items.length} contenu(s) en attente de validation.`);
+    const attentionItems = [];
+    if (stats.overview.messages_non_traites_7j > 0) {
+      attentionItems.push({ text: `${stats.overview.messages_non_traites_7j} message(s) non traité(s) depuis plus de 7 jours.`, tone: 'alert' });
     }
+    if (stats.overview.evenements_sans_image > 0) {
+      attentionItems.push({ text: `${stats.overview.evenements_sans_image} événement(s) à venir sans image de couverture.`, tone: 'alert' });
+    }
+    attentionItems.push({ text: 'Suivi des comptes administrateurs inactifs', badge: 'Bientôt disponible', tone: 'info' });
+    attentionItems.push({
+      text: 'Sauvegardes gérées automatiquement par Cloudflare (D1 Time Travel).',
+      tone: 'info',
+      link: { href: 'https://developers.cloudflare.com/d1/reference/time-travel/', label: 'Voir la procédure ↗' },
+    });
+
     const attWrapper = document.getElementById('dashcore-gov-attention-list');
     attWrapper.innerHTML = '';
-    if (attentionList.length === 0) {
-      attWrapper.innerHTML = '<div style="font-size:13.5px; color:#5a655f;">Rien à signaler.</div>';
-    }
-    attentionList.forEach((text) => {
+    attentionItems.forEach((it) => {
+      const isAlert = it.tone === 'alert';
       const item = document.createElement('div');
-      item.style.cssText = 'display:flex; align-items:center; gap:12px; padding:12px 14px; background:rgba(233,120,36,0.08); border-radius:12px;';
+      item.style.cssText = `display:flex; align-items:center; gap:12px; padding:12px 14px; background:${isAlert ? 'rgba(233,120,36,0.08)' : 'rgba(31,41,37,0.03)'}; border-radius:12px; flex-wrap:wrap;`;
       item.innerHTML = `
-        <span style="width:8px; height:8px; border-radius:50%; background:#E97824; flex-shrink:0;"></span>
-        <span style="font-size:13.5px; color:#1F2925;">${text}</span>
+        <span style="width:8px; height:8px; border-radius:50%; background:${isAlert ? '#E97824' : '#9aa39c'}; flex-shrink:0;"></span>
+        <span style="font-size:13.5px; color:${isAlert ? '#1F2925' : '#5a655f'}; flex:1; min-width:200px;">${it.text}</span>
+        ${it.badge ? `<span style="background:rgba(31,41,37,0.08); color:#5a655f; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700;">${it.badge}</span>` : ''}
+        ${it.link ? `<a href="${it.link.href}" target="_blank" rel="noopener" style="font-size:12.5px; font-weight:700; color:#176B4D; text-decoration:underline;">${it.link.label}</a>` : ''}
       `;
       attWrapper.appendChild(item);
     });

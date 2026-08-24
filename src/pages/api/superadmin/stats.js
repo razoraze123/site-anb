@@ -41,7 +41,8 @@ export async function GET(context) {
     const [
       commonKpis, recensementCeMois, messagesATraiter,
       adminsActifs, comptesDesactives, recensementPeriode,
-      recentJournal, latestArticles, upcomingEvents
+      recentJournal, latestArticles, upcomingEvents,
+      messagesNonTraites7j, evenementsSansImage, inscriptionsPeriode,
     ] = await Promise.all([
       getCommonKpis(db),
       db.prepare("SELECT COUNT(*) AS n FROM recensement WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')").first(),
@@ -52,6 +53,21 @@ export async function GET(context) {
       db.prepare("SELECT utilisateur_email, role, action, details, created_at FROM journal_activite ORDER BY created_at DESC LIMIT 5").all(),
       db.prepare("SELECT title, category, status, created_at FROM actualites ORDER BY created_at DESC LIMIT 5").all(),
       db.prepare("SELECT title, date, place FROM evenements WHERE status = 'Ouvert' ORDER BY created_at DESC LIMIT 5").all(),
+      // Messages non traités depuis plus de 7 jours — pour "Attention
+      // requise" de la Vue d'ensemble (maquette d'origine : "3 demandes
+      // d'adhésion n'ont pas été traitées depuis plus de 7 jours" ;
+      // reformulé sur les messages, seule donnée réelle équivalente — le
+      // recensement n'a aucun état "en attente de traitement").
+      db.prepare("SELECT COUNT(*) AS n FROM messages WHERE status IN ('Non lu', 'À traiter') AND created_at <= datetime('now', '-7 days')").first(),
+      // Événements à venir sans vraie image de couverture (bg_gradient
+      // encore au dégradé par défaut, jamais remplacé par une URL R2) —
+      // même logique que isImageUrl() côté client (lib/adminContent.js).
+      db.prepare("SELECT COUNT(*) AS n FROM evenements WHERE status = 'Ouvert' AND event_date >= date('now') AND bg_gradient NOT LIKE '/%' AND bg_gradient NOT LIKE 'http%'").first(),
+      // Inscriptions sur la période sélectionnée — distinct du KPI commun
+      // (toujours le total non filtré, lib/stats.js) : ne le remplace pas,
+      // n'alimente que la carte "Inscriptions aux événements" de
+      // Statistiques globales.
+      db.prepare(`SELECT COUNT(*) AS n FROM inscriptions WHERE created_at >= ${sinceExpr}`).first(),
     ]);
 
     // Pas de file d'attente pour le recensement (contrairement aux messages) :
@@ -77,12 +93,15 @@ export async function GET(context) {
         demandes_a_traiter: messagesATraiter.n,
         admins_actifs: adminsActifs.n,
         comptes_desactives: comptesDesactives.n,
+        messages_non_traites_7j: messagesNonTraites7j.n,
+        evenements_sans_image: evenementsSansImage.n,
       },
       attention,
       recent_activity: recentJournal.results,
       period_days: days,
       period_stats: {
         adhesions: recensementPeriode.n,
+        inscriptions: inscriptionsPeriode.n,
       },
       latest_articles: latestArticles.results,
       upcoming_events: upcomingEvents.results,

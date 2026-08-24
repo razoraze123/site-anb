@@ -408,20 +408,48 @@ if (!user) {
               </div>
             </div>
             <p style="font-size:12.5px; color:#9aa39c; margin:0;">Basé uniquement sur les données de la plateforme — aucun outil de mesure d'audience (pages vues, visiteurs) n'est branché sur le site pour l'instant.</p>
+
+            <!-- 4 cartes = maquette originale "Statistiques globales"
+                 (screenshot fourni), dans son ordre exact. "Personnes
+                 recensées (total)" et "Événements à venir" (ajouts hors
+                 maquette, déjà sur le Dashboard) ont été retirés d'ici. -->
             <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px;">
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stat-period-inscriptions" style="font-size:22px; font-weight:800; color:#176B4D;">—</div><div style="font-size:13px; color:#5a655f;">Inscriptions aux événements</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stat-period-adhesions" style="font-size:22px; font-weight:800; color:#E97824;">—</div><div style="font-size:13px; color:#5a655f;">Nouvelles demandes d'adhésion</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stat-period-membres" style="font-size:22px; font-weight:800; color:#176B4D;">—</div><div style="font-size:13px; color:#5a655f;">Personnes recensées (total)</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stat-period-evenements" style="font-size:22px; font-weight:800; color:#E97824;">—</div><div style="font-size:13px; color:#5a655f;">Événements à venir</div></div>
-            </div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px;">
-              <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
-                <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0 0 14px;">Prochains événements</h3>
-                <div id="top-pages-list"></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:8px;">
+                <div style="font-size:22px; font-weight:800; color:#9aa39c;">—</div>
+                <div style="font-size:13px; color:#5a655f;">Visites du site</div>
+                <span style="align-self:flex-start; background:rgba(31,41,37,0.08); color:#5a655f; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700;">Bientôt disponible</span>
               </div>
-              <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
-                <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0 0 14px;">Derniers articles publiés</h3>
-                <div id="top-articles-list"></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stat-period-inscriptions" style="font-size:22px; font-weight:800; color:#176B4D;">—</div><div style="font-size:13px; color:#5a655f;">Inscriptions aux événements</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stat-period-adhesions" style="font-size:22px; font-weight:800; color:#E97824;">—</div><div style="font-size:13px; color:#5a655f;">Nouvelles personnes recensées</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:8px;">
+                <div style="font-size:22px; font-weight:800; color:#9aa39c;">—</div>
+                <div style="font-size:13px; color:#5a655f;">Évolution sur la période</div>
+                <span style="align-self:flex-start; background:rgba(31,41,37,0.08); color:#5a655f; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700;">Bientôt disponible</span>
+              </div>
+            </div>
+
+            <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:10px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0;">Visites par semaine</h3>
+                <span style="background:rgba(31,41,37,0.08); color:#5a655f; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700;">Bientôt disponible</span>
+              </div>
+              <p style="font-size:13px; color:#9aa39c; margin:0;">Nécessite un outil de mesure d'audience — aucun n'est branché sur le site pour l'instant.</p>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px;">
+              <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:10px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                  <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0;">Pages les plus vues</h3>
+                  <span style="background:rgba(31,41,37,0.08); color:#5a655f; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700;">Bientôt disponible</span>
+                </div>
+                <p style="font-size:13px; color:#9aa39c; margin:0;">Nécessite un suivi des pages vues, pas encore en place.</p>
+              </div>
+              <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:10px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                  <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0;">Articles les plus lus</h3>
+                  <span style="background:rgba(31,41,37,0.08); color:#5a655f; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700;">Bientôt disponible</span>
+                </div>
+                <p style="font-size:13px; color:#9aa39c; margin:0;">Nécessite un compteur de lecture par article, pas encore en place.</p>
               </div>
             </div>
           </div>
@@ -1414,41 +1442,16 @@ if (!user) {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Erreur de chargement.');
 
-        // Total (pas filtré par période) : même source que le dashboard
-        // Admin — voir lib/stats.js. Cette carte n'a jamais été un vrai
-        // "sur la période" malgré sa place ici (son libellé ne l'indiquait
-        // pas), donc pas de changement de comportement visible attendu
-        // hors correction de cohérence.
-        document.getElementById('stat-period-inscriptions').textContent = data.overview.inscriptions_evenements;
+        // Les 4 cartes de la maquette originale ("Statistiques globales")
+        // sont désormais toutes réellement filtrées par la période
+        // sélectionnée — period_stats.inscriptions/adhesions, pas
+        // overview.* (qui reste le total non filtré, source commune avec
+        // le Dashboard, lib/stats.js — non modifié, non dupliqué).
+        document.getElementById('stat-period-inscriptions').textContent = data.period_stats.inscriptions;
         document.getElementById('stat-period-adhesions').textContent = data.period_stats.adhesions;
-        document.getElementById('stat-period-membres').textContent = data.overview.membres;
-        document.getElementById('stat-period-evenements').textContent = data.overview.evenements_a_venir;
-
-        const eventsList = document.getElementById('top-pages-list');
-        eventsList.innerHTML = '';
-        if (data.upcoming_events.length === 0) {
-          eventsList.innerHTML = '<div style="font-size:13.5px; color:#5a655f;">Aucun événement à venir.</div>';
-        }
-        data.upcoming_events.forEach(ev => {
-          const item = document.createElement('div');
-          item.style.cssText = 'display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid rgba(31,41,37,0.06); font-size:13.5px; gap:10px;';
-          item.innerHTML = `<span style="color:#1F2925;">${ev.title}</span><span style="font-weight:700; color:#176B4D; white-space:nowrap;">${ev.date}</span>`;
-          eventsList.appendChild(item);
-        });
-
-        const articlesList = document.getElementById('top-articles-list');
-        articlesList.innerHTML = '';
-        if (data.latest_articles.length === 0) {
-          articlesList.innerHTML = '<div style="font-size:13.5px; color:#5a655f;">Aucun article.</div>';
-        }
-        data.latest_articles.forEach(a => {
-          const item = document.createElement('div');
-          item.style.cssText = 'display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid rgba(31,41,37,0.06); font-size:13.5px; gap:10px;';
-          item.innerHTML = `<span style="color:#1F2925;">${a.title}</span>${getBadgeHtml(a.status, a.status === 'Publié' ? 'g' : 'n')}`;
-          articlesList.appendChild(item);
-        });
       } catch (err) {
-        document.getElementById('top-pages-list').innerHTML = `<div style="font-size:13.5px; color:#B14524;">${err.message}</div>`;
+        document.getElementById('stat-period-inscriptions').innerHTML = '—';
+        document.getElementById('stat-period-adhesions').innerHTML = '—';
       }
     }
   </script>
