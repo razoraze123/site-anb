@@ -47,8 +47,56 @@ export function createDashboardCore({ goPage, getBadgeHtml, role }) {
     renderNextEvent(data.evenements || []);
 
     if (role === 'super_admin') {
+      wireSubnav();
       await loadGovernance();
     }
+  }
+
+  // Segmented control « Opérations | Gouvernance » — Super Admin uniquement.
+  // Bascule .hidden entre les deux panneaux déjà présents dans le markup
+  // (DashboardCore.astro), retient le dernier onglet consulté en
+  // sessionStorage (même pattern que superadmin-current-page), et gère les
+  // flèches gauche/droite pour l'accessibilité clavier (rôle tablist).
+  // idempotent : load() peut être rappelé à chaque retour sur la vue.
+  let subnavWired = false;
+  function wireSubnav() {
+    const tabs = [...document.querySelectorAll('.dashcore-subnav-tab')];
+    const opsPanel = document.getElementById('dashcore-ops-panel');
+    const govPanel = document.getElementById('dashcore-gov-panel');
+    if (!tabs.length || !opsPanel || !govPanel) return;
+
+    function activate(target, { focus = false } = {}) {
+      tabs.forEach((tab) => {
+        const isActive = tab.dataset.target === target;
+        tab.classList.toggle('is-active', isActive);
+        tab.setAttribute('aria-selected', String(isActive));
+        tab.tabIndex = isActive ? 0 : -1;
+        if (isActive && focus) tab.focus();
+      });
+      opsPanel.classList.toggle('hidden', target !== 'ops');
+      govPanel.classList.toggle('hidden', target !== 'gov');
+      try { sessionStorage.setItem('dashcore-subview', target); } catch {}
+    }
+
+    if (!subnavWired) {
+      subnavWired = true;
+      tabs.forEach((tab, i) => {
+        tab.addEventListener('click', () => activate(tab.dataset.target));
+        tab.addEventListener('keydown', (e) => {
+          if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+          e.preventDefault();
+          const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+          activate(next.dataset.target, { focus: true });
+        });
+      });
+    }
+
+    let initial = 'ops';
+    try {
+      const saved = sessionStorage.getItem('dashcore-subview');
+      if (saved === 'gov' || saved === 'ops') initial = saved;
+    } catch {}
+    activate(initial);
   }
 
   function renderKpis(kpis) {
