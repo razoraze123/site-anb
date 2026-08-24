@@ -19,8 +19,12 @@ export async function GET(context) {
       });
     }
 
+    // excerpt/content/bg_gradient inclus pour que l'admin/super-admin qui
+    // valide puisse réellement lire l'article avant d'approuver ou de
+    // renvoyer — jusqu'ici seuls le titre/auteur/date/statut étaient
+    // exploités côté client, la décision se prenait à l'aveugle.
     const result = await db.prepare(
-      `SELECT a.id, a.title, a.excerpt, a.category, a.bg_gradient, a.status, a.created_at,
+      `SELECT a.id, a.title, a.excerpt, a.content, a.category, a.bg_gradient, a.status, a.created_at,
               u.nom AS auteur_nom
        FROM actualites a
        LEFT JOIN utilisateurs u ON u.id = a.auteur_id

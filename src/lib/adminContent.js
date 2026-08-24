@@ -877,6 +877,9 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
         date: formatValidationDate(it.created_at),
         title: it.title,
         status: it.status,
+        excerpt: it.excerpt,
+        content: it.content,
+        bgGradient: it.bg_gradient,
       }));
       state.validationSelectedIdx = 0;
       renderValidations();
@@ -924,10 +927,19 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
       return;
     }
 
+    // Image de couverture réelle de l'article (URL R2 ou dégradé CSS,
+    // exactement comme les cartes Actualités) — plus un dégradé décoratif
+    // codé en dur qui ne reflétait jamais le vrai contenu.
+    const coverStyle = coverStyleFor(selected.bgGradient || 'linear-gradient(150deg,#E8D8BF,#176B4D)');
+
     detailBox.innerHTML = `
       <h3 style="font-size:16px; font-weight:700; color:#1F2925; margin:0 0 6px;">${selected.title}</h3>
       <div style="font-size:13px; color:#5a655f; margin-bottom:16px;">Par ${selected.author} · ${selected.date}</div>
-      <div style="aspect-ratio:16/9; border-radius:14px; background:linear-gradient(150deg,#E8D8BF,#176B4D); margin-bottom:18px;"></div>
+      <div style="aspect-ratio:16/9; border-radius:14px; ${coverStyle} margin-bottom:18px;"></div>
+      <div style="font-size:13px; font-weight:700; color:#1F2925; margin-bottom:6px;">Résumé</div>
+      <div style="font-size:13.5px; color:#3f4a45; line-height:1.5; margin-bottom:16px;">${selected.excerpt || '—'}</div>
+      <div style="font-size:13px; font-weight:700; color:#1F2925; margin-bottom:6px;">Contenu de l'article</div>
+      <div style="font-size:13.5px; color:#3f4a45; line-height:1.6; white-space:pre-wrap; max-height:320px; overflow-y:auto; background:rgba(31,41,37,0.02); padding:14px; border-radius:10px; margin-bottom:16px;">${selected.content || '—'}</div>
       <div style="font-size:13px; font-weight:700; color:#1F2925; margin-bottom:8px;">Commentaire pour l'auteur</div>
       <textarea id="validation-comment-text" rows="2" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:13.5px; resize:vertical; margin-bottom:16px;" placeholder="Optionnel..."></textarea>
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
