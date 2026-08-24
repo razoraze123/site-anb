@@ -958,7 +958,15 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Erreur.');
         alert(`Le contenu "${selected.title}" a été approuvé et publié !`);
-        await loadValidations();
+        // L'article vient de passer à 'Publié' : la copie en mémoire de
+        // data.actualites (chargée une seule fois au démarrage de la page,
+        // via /api/admin/data) est désormais périmée. refresh() la
+        // recharge depuis cette même route existante et rejoue
+        // renderActualites() — sans quoi la vue Actualités continuait
+        // d'afficher l'ancien état jusqu'à un rechargement complet de la
+        // page. Fonction déjà partagée par adminContent.js : le correctif
+        // s'applique donc identiquement à /admin et /superadmin.
+        await Promise.all([loadValidations(), refresh(renderActualites)]);
       } catch (err) {
         alert(err.message);
       }
@@ -975,7 +983,10 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Erreur.');
         alert('Le contenu a été renvoyé avec votre commentaire.');
-        await loadValidations();
+        // Même raison que pour l'approbation : l'article vient de passer à
+        // 'Renvoyé', data.actualites doit être rechargée pour rester
+        // cohérente avec la base.
+        await Promise.all([loadValidations(), refresh(renderActualites)]);
       } catch (err) {
         alert(err.message);
       }
