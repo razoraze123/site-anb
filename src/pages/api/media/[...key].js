@@ -2,10 +2,16 @@ import { env } from "cloudflare:workers";
 
 export const prerender = false;
 
+// Paramètre "rest" ([...key], pas [key]) : nécessaire pour servir les
+// visuels fixes du site dont la clé R2 imposée contient un slash
+// (site/home-hero.jpg, site/home-mission.jpg — voir index.astro).
+// Reste 100% rétrocompatible avec les clés plates existantes
+// (img-<timestamp>-<rand>.ext) utilisées par Actualités/Événements/
+// Galerie/Équipe, qui n'ont qu'un seul segment.
 export async function GET({ params }) {
   const key = params.key;
   const r2 = env.R2;
-  
+
   if (!r2) {
     return new Response(JSON.stringify({ error: "Le bucket R2 n'est pas configuré dans env. R2." }), {
       status: 500,
