@@ -12,7 +12,7 @@
     {
       "binding": "DB",
       "database_name": "anb-db",
-      "database_id": "8afeca22-832e-4204-a9fe-94917848c3ce"
+      "database_id": "cc2b6b66-d66d-49de-8ee8-3b25995a3f84"
     }
   ],
   "r2_buckets": [
@@ -24,7 +24,7 @@
   "kv_namespaces": [
     {
       "binding": "RATE_LIMIT",
-      "id": "e21147b326a94d96844df725b69e5b3d"
+      "id": "b6c3756f16c34b62b35d8710b0540429"
     }
   ]
 }
