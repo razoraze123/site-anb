@@ -2,6 +2,7 @@
 import DashboardCore from '../components/admin/DashboardCore.astro';
 import ViewActualites from '../components/admin/ViewActualites.astro';
 import ViewGalerie from '../components/admin/ViewGalerie.astro';
+import ViewEquipe from '../components/admin/ViewEquipe.astro';
 import ViewEvenements from '../components/admin/ViewEvenements.astro';
 import ViewInscriptions from '../components/admin/ViewInscriptions.astro';
 import ViewRecensement from '../components/admin/ViewRecensement.astro';
@@ -190,6 +191,9 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
         <!-- GALERIE VIEW -->
         <ViewGalerie />
 
+        <!-- EQUIPE VIEW -->
+        <ViewEquipe />
+
         <!-- CONTENUS & VALIDATIONS — vue partagée avec /superadmin depuis
              que l'API accepte aussi 'admin' (workflow éditorial). -->
         <ViewValidations />
@@ -340,6 +344,7 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
       { key: 'dashboard', label: 'Tableau de bord' },
       { key: 'actualites', label: 'Actualités' },
       { key: 'galerie', label: 'Galerie' },
+      { key: 'equipe', label: 'Équipe' },
       { key: 'contenus', label: 'Contenus & validations' },
       { key: 'evenements', label: 'Événements' },
       { key: 'inscriptions', label: 'Inscriptions' },
@@ -355,6 +360,7 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
       dashboard: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="8" height="8" rx="2"></rect><rect x="13" y="3" width="8" height="8" rx="2"></rect><rect x="3" y="13" width="8" height="8" rx="2"></rect><rect x="13" y="13" width="8" height="8" rx="2"></rect></svg>`,
       actualites: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="7" y1="9" x2="17" y2="9"></line><line x1="7" y1="13" x2="17" y2="13"></line><line x1="7" y1="17" x2="12" y2="17"></line></svg>`,
       galerie: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M21 15l-5-5L5 21"></path></svg>`,
+      equipe: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="8" r="3.2"></circle><circle cx="16.5" cy="9" r="2.4"></circle><path d="M3.5 19c0-3.3 2.6-5.6 5.9-5.6s5.9 2.3 5.9 5.6"></path><path d="M14.5 13.7c2.6 0.2 4.3 2.2 4.3 5"></path></svg>`,
       contenus: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="9"></circle></svg>`,
       evenements: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line></svg>`,
       inscriptions: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="9"></circle></svg>`,
@@ -436,6 +442,7 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
       const pageTitleMap = {
         dashboard: 'Tableau de bord', actualites: 'Actualités', 'actualites-new': 'Nouvelle actualité',
         galerie: 'Galerie', 'galerie-new': 'Ajouter un média',
+        equipe: 'Équipe', 'equipe-new': 'Ajouter un membre',
         contenus: 'Contenus & validations',
         evenements: 'Événements', 'evenements-new': 'Créer un événement',
         inscriptions: 'Inscriptions', recensement: 'Recensement',
@@ -513,6 +520,8 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
         content.renderActualites();
       } else if (pageKey === 'galerie') {
         content.renderGalerie();
+      } else if (pageKey === 'equipe') {
+        content.renderEquipe();
       } else if (pageKey === 'contenus') {
         content.loadValidations();
       } else if (pageKey === 'evenements') {
@@ -707,6 +716,9 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
       });
       document.querySelectorAll('.btn-create-galerie').forEach((btn) => {
         btn.addEventListener('click', () => content.resetGalerieForm());
+      });
+      document.querySelectorAll('.btn-create-equipe').forEach((btn) => {
+        btn.addEventListener('click', () => content.resetEquipeForm());
       });
 
       // General nav triggers (buttons)

@@ -53,16 +53,6 @@ export const events = [
 
 export const eventFilters = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontres'] as const;
 
-export const teamMembers = [
-  { name: 'Abdoul Nasser DAN-DAH', role: 'Président', bg: 'linear-gradient(150deg,#176B4D,#1F2925)' },
-  { name: 'Ibrahim ADAMOU LOUCHE', role: 'Secrétaire Général', bg: 'linear-gradient(150deg,#E97824,#E8D8BF)' },
-  { name: 'Moustapha HASSAN KATINKA', role: 'Trésorier', bg: 'linear-gradient(150deg,#1F2925,#176B4D)' },
-  { name: 'Fahd RABO', role: 'Chargé de la communication', bg: 'linear-gradient(150deg,#E8D8BF,#E97824)' },
-  { name: 'Miriam SEYDOU BOZARI', role: 'Adjointe au chargé de la communication', bg: 'linear-gradient(150deg,#176B4D,#E97824)' },
-  { name: 'Salamatou DJIBRILA', role: 'Chargée des affaires académiques et culturelles', bg: 'linear-gradient(150deg,#E97824,#1F2925)' },
-  { name: 'Abdoussamad BOUKARI SEYDOU', role: 'Chargé des affaires sportives', bg: 'linear-gradient(150deg,#E97824,#176B4D)' },
-] as const;
-
 export const timeline = [
   { year: '20XX', text: "Création de l'association par un groupe d'étudiants et de familles nigériennes de Bordeaux." },
   { year: '20XX', text: "Premiers événements culturels et mise en place d'un réseau d'entraide pour les nouveaux arrivants." },

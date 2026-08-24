@@ -121,6 +121,16 @@ export async function handleImageUpload(file, type) {
   const urlInput = document.getElementById(`${type}-form-image-url`);
   if (!zone || !placeholder || !urlInput) return;
 
+  // Galerie et Équipe n'acceptent que des photos (pas de vidéo) —
+  // l'attribut `accept` du champ fichier ne filtre que le sélecteur, pas
+  // un glisser-déposer, donc on revérifie ici avant tout upload. N'affecte
+  // que ces deux types : Actualités/Événements gardent leur comportement
+  // exact d'avant (accept="image/*", pas de cette vérification).
+  if ((type === 'galerie' || type === 'equipe') && !file.type.startsWith('image/')) {
+    placeholder.innerHTML = '<span style="color:#B14524; font-weight:700;">❌ Seules les images sont acceptées (JPEG, PNG, WebP, GIF) — pas de vidéo.</span>';
+    return;
+  }
+
   placeholder.innerHTML = '<span style="color:#176B4D; font-weight:700;">Compression de l\'image…</span>';
   zone.style.opacity = '0.7';
   const compressed = await compressImage(file);
@@ -169,11 +179,12 @@ export function wireUploadZone(type) {
 }
 
 export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) {
-  // galerie n'est volontairement pas dans ce data partagé ni dans
-  // fetchData()/setData() : indépendante des Actualités/Événements
-  // (media_galerie, pas la même table), elle se recharge elle-même via
-  // renderGalerie() plutôt que via le cycle refresh() commun.
-  const data = { actualites: [], evenements: [], messages: [], inscriptions: [], recensement: [], galerie: [] };
+  // galerie/equipe ne sont volontairement pas dans ce data partagé ni dans
+  // fetchData()/setData() : indépendantes des Actualités/Événements
+  // (media_galerie/equipe, pas les mêmes tables), elles se rechargent
+  // elles-mêmes via renderGalerie()/renderEquipe() plutôt que via le
+  // cycle refresh() commun.
+  const data = { actualites: [], evenements: [], messages: [], inscriptions: [], recensement: [], galerie: [], equipe: [] };
 
   const state = {
     newsTab: 'Publiées',
@@ -183,6 +194,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     editingNewsId: null,
     editingEventId: null,
     editingGalerieId: null,
+    editingEquipeId: null,
     // Id d'événement à présélectionner la prochaine fois que la vue
     // Inscrits s'affiche (posé par le bouton "Inscrits" d'une carte
     // événement, consommé une fois par renderInscriptions()).
@@ -482,7 +494,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
         <div style="aspect-ratio:4/3; background:url('${m.url}') center/cover no-repeat, #F8F4EC;"></div>
         <div style="padding:14px; display:flex; flex-direction:column; gap:6px; flex:1;">
           <div style="font-size:14px; font-weight:700; color:#1F2925;">${escapeHtml(m.titre)}</div>
-          <div style="font-size:12px; color:#5a655f;">${escapeHtml(m.type)} · ${escapeHtml(m.credit)}</div>
+          <div style="font-size:12px; color:#5a655f;">${escapeHtml(m.credit)}</div>
           <div style="font-size:11.5px; color:#9aa39c;">${(m.created_at || '').split(' ')[0]}</div>
           <div style="display:flex; gap:8px; margin-top:auto; padding-top:8px;">
             <button class="edit-galerie-btn" style="flex:1; background:#F8F4EC; border:none; padding:8px 10px; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; color:#176B4D;">Modifier</button>
@@ -497,7 +509,6 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
         document.getElementById('galerie-form-titre').value = m.titre;
         document.getElementById('galerie-form-alt').value = m.texte_alternatif;
         document.getElementById('galerie-form-credit').value = m.credit;
-        document.getElementById('galerie-form-type').value = m.type;
         setUploadPreview('galerie', m.url);
         // nom_fichier existant, jamais ré-uploadé lors d'une simple
         // modification de métadonnées.
@@ -528,8 +539,6 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
       const el = document.getElementById(id);
       if (el) el.value = '';
     });
-    const typeSelect = document.getElementById('galerie-form-type');
-    if (typeSelect) typeSelect.value = 'Photo';
     resetUploadZone('galerie');
     const urlInput = document.getElementById('galerie-form-image-url');
     if (urlInput) delete urlInput.dataset.existingKey;
@@ -544,7 +553,9 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
       const titre = document.getElementById('galerie-form-titre').value.trim();
       const texte_alternatif = document.getElementById('galerie-form-alt').value.trim();
       const credit = document.getElementById('galerie-form-credit').value.trim();
-      const type = document.getElementById('galerie-form-type').value;
+      // Galerie = photos uniquement pour l'instant, jamais de vidéo (plus
+      // de champ Type dans le formulaire).
+      const type = 'Photo';
       const urlInput = document.getElementById('galerie-form-image-url');
       const imageUrl = urlInput.value;
       // Nouvel upload : URL "/api/media/{key}" -> on isole la clé réelle.
@@ -586,6 +597,199 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
           alertBox?.classList.add('hidden');
           resetGalerieForm();
           goPage('galerie');
+        }, 1200);
+      } catch (err) {
+        alert('Erreur de sauvegarde : ' + err.message);
+      }
+    });
+  }
+
+  // ----------------------------------------------------------------- Équipe
+  //
+  // equipe est la source de vérité du bloc Bureau/Équipe de /association
+  // (remplace demo-data.ts teamMembers). Se recharge elle-même via
+  // GET /api/admin/equipe (tous les membres, actifs ou non — nécessaire
+  // pour pouvoir réactiver quelqu'un ; la route publique /api/equipe ne
+  // sert qu'à /association, filtrée sur actif=1).
+
+  async function renderEquipe() {
+    const container = document.getElementById('equipe-list-container');
+    if (!container) return;
+
+    try {
+      const res = await fetch('/api/admin/equipe');
+      const payload = await res.json();
+      if (!res.ok) throw new Error(payload.error || 'Erreur de chargement.');
+      data.equipe = payload.membres || [];
+    } catch (err) {
+      container.innerHTML = `<div style="padding: 30px; text-align: center; color: #B14524; font-size: 14.5px;">${escapeHtml(err.message)}</div>`;
+      return;
+    }
+
+    container.innerHTML = '';
+    if (data.equipe.length === 0) {
+      container.innerHTML = '<div style="padding: 30px; text-align: center; color: var(--color-muted-text); font-size: 14.5px;">Aucun membre dans l\'équipe pour l\'instant.</div>';
+      return;
+    }
+
+    data.equipe.forEach((m, idx) => {
+      const isFirst = idx === 0;
+      const isLast = idx === data.equipe.length - 1;
+      const thumb = m.photo_url
+        ? `background:url('${m.photo_url}') center/cover no-repeat;`
+        : `background:linear-gradient(150deg,#176B4D,#1F2925);`;
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex; align-items:center; gap:14px; padding:14px 16px; background:#FFFFFF; border-radius:14px; box-shadow:0 8px 24px rgba(31,41,37,0.05); flex-wrap:wrap;';
+      row.innerHTML = `
+        <div style="width:48px; height:48px; border-radius:50%; flex-shrink:0; ${thumb}"></div>
+        <div style="flex:1; min-width:180px;">
+          <div style="font-size:14px; font-weight:700; color:#1F2925;">${escapeHtml(m.nom)}</div>
+          <div style="font-size:12.5px; color:#5a655f;">${escapeHtml(m.fonction)}</div>
+        </div>
+        ${getBadgeHtml(m.actif ? 'Actif' : 'Désactivé', m.actif ? 'g' : 'n')}
+        <div style="display:flex; gap:6px; align-items:center;">
+          <button class="order-up-equipe-btn" ${isFirst ? 'disabled' : ''} title="Monter" style="width:30px; height:30px; border-radius:8px; background:#F8F4EC; border:none; cursor:${isFirst ? 'default' : 'pointer'}; opacity:${isFirst ? '0.4' : '1'}; font-weight:700;">↑</button>
+          <button class="order-down-equipe-btn" ${isLast ? 'disabled' : ''} title="Descendre" style="width:30px; height:30px; border-radius:8px; background:#F8F4EC; border:none; cursor:${isLast ? 'default' : 'pointer'}; opacity:${isLast ? '0.4' : '1'}; font-weight:700;">↓</button>
+          <button class="toggle-actif-equipe-btn" style="background:#F8F4EC; border:none; padding:8px 12px; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; color:#1F2925;">${m.actif ? 'Désactiver' : 'Activer'}</button>
+          <button class="edit-equipe-btn" style="background:#F8F4EC; border:none; padding:8px 12px; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; color:#176B4D;">Modifier</button>
+          <button class="delete-equipe-btn" style="background:rgba(177,69,36,0.08); border:none; padding:8px 12px; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; color:#B14524;">Supprimer</button>
+        </div>
+      `;
+
+      async function saveMember(patch) {
+        const res = await fetch('/api/admin/equipe', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: m.id, nom: m.nom, fonction: m.fonction, photo: m.photo, ordre: m.ordre, actif: m.actif, ...patch }),
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Erreur serveur.');
+      }
+
+      row.querySelector('.order-up-equipe-btn').addEventListener('click', async () => {
+        if (isFirst) return;
+        const neighbor = data.equipe[idx - 1];
+        try {
+          // Échange simple des deux ordres (deux PUT successifs) — pas de
+          // route de réordonnancement en lot, cohérent avec le reste de
+          // l'API (une action = un PUT).
+          await fetch('/api/admin/equipe', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: m.id, nom: m.nom, fonction: m.fonction, photo: m.photo, actif: m.actif, ordre: neighbor.ordre }) });
+          await fetch('/api/admin/equipe', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: neighbor.id, nom: neighbor.nom, fonction: neighbor.fonction, photo: neighbor.photo, actif: neighbor.actif, ordre: m.ordre }) });
+          await renderEquipe();
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+
+      row.querySelector('.order-down-equipe-btn').addEventListener('click', async () => {
+        if (isLast) return;
+        const neighbor = data.equipe[idx + 1];
+        try {
+          await fetch('/api/admin/equipe', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: m.id, nom: m.nom, fonction: m.fonction, photo: m.photo, actif: m.actif, ordre: neighbor.ordre }) });
+          await fetch('/api/admin/equipe', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: neighbor.id, nom: neighbor.nom, fonction: neighbor.fonction, photo: neighbor.photo, actif: neighbor.actif, ordre: m.ordre }) });
+          await renderEquipe();
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+
+      row.querySelector('.toggle-actif-equipe-btn').addEventListener('click', async () => {
+        try {
+          await saveMember({ actif: m.actif ? 0 : 1 });
+          await renderEquipe();
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+
+      row.querySelector('.edit-equipe-btn').addEventListener('click', () => {
+        state.editingEquipeId = m.id;
+        goPage('equipe-new');
+        document.getElementById('equipe-form-nom').value = m.nom;
+        document.getElementById('equipe-form-fonction').value = m.fonction;
+        if (m.photo_url) setUploadPreview('equipe', m.photo_url);
+        else resetUploadZone('equipe');
+        // Photo existante, jamais ré-uploadée si l'admin ne change rien.
+        document.getElementById('equipe-form-image-url').dataset.existingKey = m.photo || '';
+        document.querySelector('#view-equipe-new h1').textContent = 'Modifier le membre';
+        document.getElementById('publish-equipe-submit-btn').textContent = 'Sauvegarder les modifications';
+      });
+
+      row.querySelector('.delete-equipe-btn').addEventListener('click', async () => {
+        if (!confirm(`Supprimer définitivement « ${m.nom} » de l'équipe ? ${m.photo ? 'Sa photo sera aussi retirée de R2. ' : ''}Cette action est irréversible.`)) return;
+        try {
+          const res = await fetch(`/api/admin/equipe?id=${m.id}`, { method: 'DELETE' });
+          const result = await res.json();
+          if (!res.ok) throw new Error(result.error || 'Erreur lors de la suppression.');
+          await renderEquipe();
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+
+      container.appendChild(row);
+    });
+  }
+
+  function resetEquipeForm() {
+    state.editingEquipeId = null;
+    ['equipe-form-nom', 'equipe-form-fonction'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    resetUploadZone('equipe');
+    const urlInput = document.getElementById('equipe-form-image-url');
+    if (urlInput) delete urlInput.dataset.existingKey;
+    const heading = document.querySelector('#view-equipe-new h1');
+    if (heading) heading.textContent = 'Ajouter un membre';
+    const submitBtn = document.getElementById('publish-equipe-submit-btn');
+    if (submitBtn) submitBtn.textContent = 'Ajouter à l\'équipe';
+  }
+
+  function wireEquipeForm() {
+    document.getElementById('publish-equipe-submit-btn')?.addEventListener('click', async () => {
+      const nom = document.getElementById('equipe-form-nom').value.trim();
+      const fonction = document.getElementById('equipe-form-fonction').value.trim();
+      const urlInput = document.getElementById('equipe-form-image-url');
+      const imageUrl = urlInput.value;
+      // Nouvel upload : URL "/api/media/{key}" -> on isole la clé réelle.
+      // Pas de nouvel upload : on garde la photo existante (ou aucune).
+      const photo = imageUrl
+        ? imageUrl.replace('/api/media/', '')
+        : (urlInput.dataset.existingKey || null);
+
+      if (!nom || !fonction) {
+        alert('Veuillez remplir le nom et la fonction.');
+        return;
+      }
+
+      const isEdit = state.editingEquipeId !== null;
+      try {
+        const res = await fetch('/api/admin/equipe', {
+          method: isEdit ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(
+            isEdit
+              ? (() => {
+                  const existing = data.equipe.find((mb) => mb.id === state.editingEquipeId);
+                  return { id: state.editingEquipeId, nom, fonction, photo, actif: existing?.actif ?? 1, ordre: existing?.ordre ?? 0 };
+                })()
+              : { nom, fonction, photo }
+          ),
+        });
+        if (!res.ok) {
+          const errBody = await res.json();
+          throw new Error(errBody.error || "Erreur lors de l'enregistrement");
+        }
+
+        const alertBox = document.getElementById('equipe-publish-success-alert');
+        alertBox?.classList.remove('hidden');
+        await renderEquipe();
+
+        setTimeout(() => {
+          alertBox?.classList.add('hidden');
+          resetEquipeForm();
+          goPage('equipe');
         }, 1200);
       } catch (err) {
         alert('Erreur de sauvegarde : ' + err.message);
@@ -1475,9 +1679,11 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     wireUploadZone('news');
     wireUploadZone('event');
     wireUploadZone('galerie');
+    wireUploadZone('equipe');
     wireNewsForm();
     wireEventForm();
     wireGalerieForm();
+    wireEquipeForm();
     wireRecensement();
   }
 
@@ -1495,9 +1701,11 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     renderPages,
     renderInscriptions,
     renderGalerie,
+    renderEquipe,
     loadValidations,
     resetNewsForm,
     resetEventForm,
     resetGalerieForm,
+    resetEquipeForm,
   };
 }

@@ -1,6 +1,45 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { timeline, teamMembers } from '../lib/demo-data';
+import { timeline } from '../lib/demo-data';
+import { env } from "cloudflare:workers";
+
+// Le bloc Bureau/Équipe doit refléter les vrais membres (equipe, P2) —
+// jamais les 7 membres fictifs de demo-data.ts (teamMembers, retiré) — ça
+// nécessite un accès D1, donc un rendu dynamique (comme /galerie).
+export const prerender = false;
+
+const db = env.DB;
+let equipeMembres = [];
+let president = null;
+let autresMembres = [];
+
+try {
+  if (db) {
+    const { results } = await db.prepare(
+      "SELECT id, nom, fonction, photo, ordre FROM equipe WHERE actif = 1 ORDER BY ordre ASC, id ASC"
+    ).all();
+    equipeMembres = results;
+
+    // Président = le membre actif de RANG 1, c'est-à-dire le premier
+    // élément une fois trié par ordre ASC (requête SQL ci-dessus), quelle
+    // que soit la valeur numérique brute de `ordre` (le tout premier
+    // membre créé vaut ordre=0, pas 1 — comparer à une valeur littérale
+    // serait donc faux). La `fonction` reste une donnée affichée mais
+    // n'est JAMAIS utilisée pour identifier le Président : c'est le rang
+    // (position ↑/↓ dans l'Admin) qui fait foi. Si la liste est vide,
+    // fallback honnête plus bas — jamais de nom inventé. Ne touche jamais
+    // aux mentions légales (contenu légal séparé, non modifié).
+    president = equipeMembres.length > 0 ? equipeMembres[0] : null;
+
+    // Grille "Le bureau de l'ANB" : tous les membres actifs SAUF le
+    // Président déjà mis en avant dans son propre bloc, ordre D1 conservé.
+    autresMembres = president
+      ? equipeMembres.filter((m) => m.id !== president.id)
+      : equipeMembres;
+  }
+} catch (error) {
+  console.error("Erreur de récupération D1 pour l'équipe (association) :", error);
+}
 ---
 
 <Layout title="L'association" description="L'ANB est une association loi 1901 qui rassemble les Nigériens et les amis du Niger vivant à Bordeaux et dans sa métropole.">
@@ -26,17 +65,26 @@ import { timeline, teamMembers } from '../lib/demo-data';
       </div>
     </section>
 
-    <!-- MOT DU PRESIDENT -->
+    <!-- MOT DU PRESIDENT — nom issu de equipe (fonction="Président"), plus
+         jamais codé en dur ici. Ne touche pas aux mentions légales
+         (contenu légal séparé). Si aucun Président actif n'est trouvé,
+         la citation reste affichée mais sans attribution inventée. -->
     <section data-reveal style="background:#F0E9DA; padding:80px 0;">
       <div style="max-width:1280px; margin:0 auto; padding:0 clamp(20px,4vw,48px); display:flex; flex-wrap:wrap; gap:48px; align-items:center;">
-        <div style="flex:0 1 260px; min-width:200px;">
-          <div style="border-radius:24px; aspect-ratio:1/1; background:linear-gradient(160deg,#176B4D,#1F2925); box-shadow:0 20px 40px rgba(31,41,37,0.14);"></div>
+        <div style="flex:0 0 220px; width:220px; height:220px; border-radius:24px; overflow:hidden; box-shadow:0 20px 40px rgba(31,41,37,0.14);">
+          <div style={`width:100%; height:100%; ${president?.photo ? `background:url('/api/media/${president.photo}') center/cover no-repeat;` : 'background:linear-gradient(160deg,#176B4D,#1F2925);'}`}></div>
         </div>
         <div style="flex:1 1 460px; min-width:280px;">
           <svg width="34" height="34" viewBox="0 0 24 24" fill="#E97824"><path d="M7 8c-2.5 0-4 2-4 4.5S4.5 17 7 17c0-3 1.5-5 4-5.5V8H7zm10 0c-2.5 0-4 2-4 4.5s1.5 4.5 4 4.5c0-3 1.5-5 4-5.5V8h-4z"></path></svg>
           <p style="font-size:19px; line-height:1.7; color:#1F2925; font-style:italic; margin:18px 0 24px; max-width:600px;">« L'ANB est le fruit de l'engagement de celles et ceux qui ont voulu, un jour, que personne ne se sente seul à Bordeaux. Chaque événement, chaque geste d'entraide, fait grandir cette famille que nous construisons ensemble. »</p>
-          <div style="font-weight:700; color:#1F2925; font-size:15px;">Abdoul Nasser DAN-DAH</div>
-          <div style="font-size:14px; color:#5a655f;">Président de l'ANB</div>
+          {president ? (
+            <>
+              <div style="font-weight:700; color:#1F2925; font-size:15px;">{president.nom}</div>
+              <div style="font-size:14px; color:#5a655f;">Président de l'ANB</div>
+            </>
+          ) : (
+            <div style="font-size:14px; color:#5a655f;">Le bureau de l'ANB</div>
+          )}
         </div>
       </div>
     </section>
@@ -60,19 +108,34 @@ import { timeline, teamMembers } from '../lib/demo-data';
       </div>
     </section>
 
-    <!-- EQUIPE -->
+    <!-- EQUIPE — source réelle : table equipe (D1), plus jamais les 7
+         membres fictifs de demo-data.ts (teamMembers, retiré). Le Président
+         est déjà mis en avant plus haut, donc exclu ici (autresMembres).
+         Cartes/photos à dimensions fixes (160px) : le nombre de membres ne
+         doit jamais faire grossir la grille, cohérent à 0/1/2/3+ membres.
+         État vide honnête si aucun membre actif n'est encore enregistré. -->
     <section style="background:#FFFFFF; padding:90px 0;">
       <div style="max-width:1280px; margin:0 auto; padding:0 clamp(20px,4vw,48px);">
         <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.7rem,2.8vw,2.2rem); color:#1F2925; margin:0 0 44px; text-align:center;">Le bureau de l'ANB</h2>
-        <div data-grid-mobile="2" data-reveal-group style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:24px;">
-          {teamMembers.map((member) => (
-            <div style="text-align:center;">
-              <div style={`border-radius:18px; aspect-ratio:1/1; background:${member.bg}; margin-bottom:14px;`}></div>
-              <div style="font-weight:700; color:#1F2925; font-size:15px;">{member.name}</div>
-              <div style="font-size:13px; color:#E97824; font-weight:600;">{member.role}</div>
-            </div>
-          ))}
-        </div>
+        {autresMembres.length > 0 ? (
+          <div data-reveal-group style="display:grid; grid-template-columns:repeat(auto-fill,160px); justify-content:center; gap:28px 24px;">
+            {autresMembres.map((m) => (
+              <div style="text-align:center; width:160px;">
+                <div style="width:160px; height:160px; border-radius:18px; overflow:hidden; margin:0 auto 14px;">
+                  {m.photo ? (
+                    <div style={`width:100%; height:100%; background:url('/api/media/${m.photo}') center/cover no-repeat;`}></div>
+                  ) : (
+                    <div style="width:100%; height:100%; background:linear-gradient(160deg,#176B4D,#1F2925);"></div>
+                  )}
+                </div>
+                <div style="font-weight:700; color:#1F2925; font-size:15px;">{m.nom}</div>
+                <div style="font-size:13px; color:#E97824; font-weight:600;">{m.fonction}</div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p style="text-align:center; color:#5a655f; font-size:15px;">Le bureau de l'ANB sera bientôt présenté ici.</p>
+        )}
       </div>
     </section>
 

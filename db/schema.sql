@@ -215,3 +215,18 @@ CREATE TABLE IF NOT EXISTS recensement (
   rgpd_consent INTEGER DEFAULT 1,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+-- 11. Table equipe (bloc Bureau/Équipe de /association)
+-- photo : clé R2 (nom_fichier), nullable — repli visuel si absente, jamais
+-- de photo inventée. Volontairement AUCUN seed : ne jamais insérer les
+-- vrais membres du bureau sans validation du client (voir aussi
+-- db/migration-2026-08-25-equipe.sql).
+CREATE TABLE IF NOT EXISTS equipe (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  nom TEXT NOT NULL,
+  fonction TEXT NOT NULL,
+  photo TEXT,
+  ordre INTEGER NOT NULL DEFAULT 0,
+  actif INTEGER NOT NULL DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
