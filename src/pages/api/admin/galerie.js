@@ -5,7 +5,10 @@ import { logActivity } from "../../../lib/journal.js";
 export const prerender = false;
 
 const MAX_LENGTHS = { titre: 200, texte_alternatif: 300, credit: 150 };
-const ALLOWED_TYPES = ['Photo', 'Vidéo'];
+// Photos uniquement pour l'instant — aucune vidéo, quoi que le client
+// envoie (le formulaire n'a plus de champ Type, mais la valeur est
+// re-forcée ici aussi, côté serveur).
+const ALLOWED_TYPES = ['Photo'];
 
 function friendlyDbError(error) {
   if (/UNIQUE constraint failed: media_galerie\.nom_fichier/.test(error.message)) {

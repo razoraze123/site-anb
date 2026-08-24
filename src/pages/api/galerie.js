@@ -27,12 +27,14 @@ export async function GET() {
     // service de fichiers.
     const medias = result.results.map((m) => ({ ...m, url: `/api/media/${m.nom_fichier}` }));
 
+    // Pas de Cache-Control ici : /galerie et la home ne passent jamais par
+    // cette route (requêtes D1 directes en SSR, voir galerie.astro et
+    // index.astro) — le seul consommateur réel est renderGalerie() côté
+    // admin, où un cache navigateur ferait apparaître un média supprimé/
+    // modifié comme encore présent après une action (bug constaté).
     return new Response(JSON.stringify({ medias }), {
       status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "public, max-age=60",
-      }
+      headers: { "Content-Type": "application/json" }
     });
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
