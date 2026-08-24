@@ -205,27 +205,43 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
         <!-- PAGES DU SITE VIEW -->
         <ViewPages />
 
-        <!-- STATISTIQUES VIEW -->
+        <!-- STATISTIQUES VIEW — structure restaurée sur la maquette
+             d'origine (commit fa971e8 : période + 4 cartes + "Visites par
+             semaine"), après l'audit Git ayant confirmé la dérive
+             introduite par f7c44fe (page devenue une redite du Dashboard).
+             Même structure et mêmes définitions que Statistiques globales
+             Super Admin (superadmin.astro, non modifié ici). -->
         <section id="view-stats" class="hidden fade-in">
           <div style="display:flex; flex-direction:column; gap:20px;">
-            <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Statistiques</h1>
+            <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:14px;">
+              <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Statistiques</h1>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;" class="stats-period-container">
+                <!-- Period options -->
+              </div>
+            </div>
             <p style="font-size:12.5px; color:#9aa39c; margin:0;">Basé uniquement sur les données de la plateforme — aucun outil de mesure d'audience (pages vues, visiteurs) n'est branché sur le site pour l'instant.</p>
+
             <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px;">
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stats-articles-publies" style="font-size:22px; font-weight:800; color:#176B4D;">—</div><div style="font-size:13px; color:#5a655f;">Actualités publiées</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stats-inscriptions-confirmees" style="font-size:22px; font-weight:800; color:#E97824;">—</div><div style="font-size:13px; color:#5a655f;">Inscriptions aux événements</div></div>
-              <div id="stats-recensement-card" style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stats-recensement" style="font-size:22px; font-weight:800; color:#176B4D;">—</div><div style="font-size:13px; color:#5a655f;">Personnes recensées</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stats-messages-a-traiter" style="font-size:22px; font-weight:800; color:#E97824;">—</div><div style="font-size:13px; color:#5a655f;">Messages à traiter</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:8px;">
+                <div style="font-size:22px; font-weight:800; color:#9aa39c;">—</div>
+                <div style="font-size:13px; color:#5a655f;">Visites du site</div>
+                <span style="align-self:flex-start; background:rgba(31,41,37,0.08); color:#5a655f; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700;">Bientôt disponible</span>
+              </div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stat-period-inscriptions" style="font-size:22px; font-weight:800; color:#176B4D;">—</div><div style="font-size:13px; color:#5a655f;">Inscriptions aux événements</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stat-period-adhesions" style="font-size:22px; font-weight:800; color:#E97824;">—</div><div style="font-size:13px; color:#5a655f;">Nouvelles personnes recensées</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:8px;">
+                <div style="font-size:22px; font-weight:800; color:#9aa39c;">—</div>
+                <div style="font-size:13px; color:#5a655f;">Évolution sur la période</div>
+                <span style="align-self:flex-start; background:rgba(31,41,37,0.08); color:#5a655f; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700;">Bientôt disponible</span>
+              </div>
             </div>
 
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px;">
-              <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
-                <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0 0 14px;">Prochains événements</h3>
-                <div id="stats-upcoming-events"></div>
+            <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:10px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0;">Visites par semaine</h3>
+                <span style="background:rgba(31,41,37,0.08); color:#5a655f; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700;">Bientôt disponible</span>
               </div>
-              <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
-                <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0 0 14px;">Messages récents à traiter</h3>
-                <div id="stats-recent-messages"></div>
-              </div>
+              <p style="font-size:13px; color:#9aa39c; margin:0;">Nécessite un outil de mesure d'audience — aucun n'est branché sur le site pour l'instant.</p>
             </div>
           </div>
         </section>
@@ -313,6 +329,7 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
     const state = {
       user: 'admin',
       page: 'dashboard',
+      statsPeriod: '30 jours',
     };
 
     const navigationItems = [
@@ -372,10 +389,13 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
         // Les vues partagées travaillent sur leur propre copie des données
         // (dont Recensement, désormais mutualisée avec /superadmin).
         content.setData(data);
-        // commonKpis alimente uniquement la page Statistiques (renderStats)
-        // ci-dessous — le dashboard lui-même a son propre chargement
-        // indépendant via dashboard.load() (lib/dashboardCore.js), qui
-        // écrit dans les mêmes 4 éléments mais ne dépend pas de cet appel.
+        // commonKpis (kpisResponse) n'est plus consommé par la page
+        // Statistiques depuis sa restauration sur la structure période +
+        // 4 cartes (voir loadStats() plus bas, qui appelle /api/admin/stats
+        // à la place) — laissé en l'état, fetch inoffensif, pour ne pas
+        // toucher au reste de fetchAdminData() hors du périmètre de cette
+        // correction. Le dashboard a son propre chargement indépendant via
+        // dashboard.load() (lib/dashboardCore.js).
 
         // Re-render current page
         renderPageDetails(state.page);
@@ -497,7 +517,7 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
       } else if (pageKey === 'pages') {
         content.renderPages();
       } else if (pageKey === 'stats') {
-        renderStats();
+        loadStats();
       }
     }
 
@@ -520,43 +540,58 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
     // 9. Pages — vue partagée, voir lib/adminContent.js
     // (content.renderPages(), appelée depuis renderPageDetails()).
 
-    // 10. Statistiques
-    function renderStats() {
-      // Les 4 KPI communs (articles publiés/inscriptions/recensement/
-      // événements à venir, ce dernier via la liste "Prochains événements"
-      // plus bas) viennent de commonKpis, chargé par fetchAdminData() —
-      // même source que le Super Admin (lib/stats.js), pas de nouveau
-      // .filter()/.length recalculé ici. Messages reste local (pas un des
-      // 4 KPI communs).
-      document.getElementById('stats-articles-publies').textContent = commonKpis.actualites_publiees;
-      document.getElementById('stats-inscriptions-confirmees').textContent = commonKpis.inscriptions_evenements;
-      document.getElementById('stats-recensement').textContent = commonKpis.personnes_recensees;
-      document.getElementById('stats-messages-a-traiter').textContent =
-        messages.filter((m) => m.status === 'Non lu' || m.status === 'À traiter').length;
+    // 10. Statistiques — structure restaurée sur la maquette d'origine
+    // (audit Git : commit fa971e8), mêmes définitions et même
+    // comportement que Statistiques globales Super Admin
+    // (superadmin.astro, non modifié). "Inscriptions aux événements" et
+    // "Nouvelles personnes recensées" sont les seules données réelles,
+    // filtrées par la période sélectionnée — via /api/admin/stats
+    // (lib/stats.js getPeriodStats(), même source que côté Super Admin).
+    // "Visites du site" / "Évolution sur la période" / "Visites par
+    // semaine" restent "Bientôt disponible" : aucun outil d'analytics
+    // n'est branché sur le site, aucun chiffre n'est inventé.
+    const STATS_PERIODS = [
+      { label: '7 jours', days: '7' },
+      { label: '30 jours', days: '30' },
+      { label: '3 mois', days: '90' },
+      { label: '1 an', days: '365' }
+    ];
 
-      const upcoming = eventsAdmin.filter((e) => eventBucket(e) === 'Ouvert' || eventBucket(e) === 'Complet').slice(0, 5);
-      const upcomingWrapper = document.getElementById('stats-upcoming-events');
-      upcomingWrapper.innerHTML = upcoming.length
-        ? ''
-        : '<div style="font-size:13.5px; color:#5a655f;">Aucun événement à venir.</div>';
-      upcoming.forEach((ev) => {
-        const item = document.createElement('div');
-        item.style.cssText = 'display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid rgba(31,41,37,0.06); font-size:13.5px; gap:10px;';
-        item.innerHTML = `<span style="color:#1F2925;">${ev.title}</span><span style="font-weight:700; color:#176B4D; white-space:nowrap;">${ev.date}</span>`;
-        upcomingWrapper.appendChild(item);
+    function renderStatsPeriodButtons() {
+      const periodsWrapper = document.querySelector('.stats-period-container');
+      periodsWrapper.innerHTML = '';
+      STATS_PERIODS.forEach(p => {
+        const btn = document.createElement('button');
+        btn.style.cssText = `border:2px solid #176B4D; padding:8px 16px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;`;
+        if (state.statsPeriod === p.label) {
+          btn.style.background = '#176B4D';
+          btn.style.color = '#FFFFFF';
+        } else {
+          btn.style.background = 'transparent';
+          btn.style.color = '#176B4D';
+        }
+        btn.textContent = p.label;
+        btn.addEventListener('click', () => {
+          state.statsPeriod = p.label;
+          loadStats();
+        });
+        periodsWrapper.appendChild(btn);
       });
+    }
 
-      const pending = messages.filter((m) => m.status === 'Non lu' || m.status === 'À traiter').slice(0, 5);
-      const pendingWrapper = document.getElementById('stats-recent-messages');
-      pendingWrapper.innerHTML = pending.length
-        ? ''
-        : '<div style="font-size:13.5px; color:#5a655f;">Rien à traiter.</div>';
-      pending.forEach((m) => {
-        const item = document.createElement('div');
-        item.style.cssText = 'display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid rgba(31,41,37,0.06); font-size:13.5px; gap:10px;';
-        item.innerHTML = `<span style="color:#1F2925;">${m.from_name} — ${m.subject}</span><span style="color:#9aa39c; white-space:nowrap;">${m.status}</span>`;
-        pendingWrapper.appendChild(item);
-      });
+    async function loadStats() {
+      renderStatsPeriodButtons();
+      const periodDef = STATS_PERIODS.find(p => p.label === state.statsPeriod) || STATS_PERIODS[1];
+      try {
+        const res = await fetch(`/api/admin/stats?period=${periodDef.days}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur de chargement.');
+        document.getElementById('stat-period-inscriptions').textContent = data.period_stats.inscriptions;
+        document.getElementById('stat-period-adhesions').textContent = data.period_stats.adhesions;
+      } catch (err) {
+        document.getElementById('stat-period-inscriptions').innerHTML = '—';
+        document.getElementById('stat-period-adhesions').innerHTML = '—';
+      }
     }
 
     // MAIN DOM LISTENERS AND SELECTORS SAFELY WRAPPED

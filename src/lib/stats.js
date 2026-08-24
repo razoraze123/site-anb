@@ -34,3 +34,24 @@ export async function getCommonKpis(db) {
     personnes_recensees: personnesRecensees.n,
   };
 }
+
+// Source de vérité unique pour les 2 KPI filtrés par période, utilisés par
+// les pages Statistiques (Admin ET Super Admin — mêmes définitions,
+// jamais de notion de "confirmation" pour les inscriptions, voir
+// commentaire de getCommonKpis ci-dessus).
+// - Inscriptions aux événements (période) : COUNT(*) sur `inscriptions`
+//   créées depuis `days` jours.
+// - Nouvelles personnes recensées (période) : COUNT(*) sur `recensement`
+//   créées depuis `days` jours (created_at).
+export async function getPeriodStats(db, days) {
+  const sinceExpr = `datetime('now', '-${days} days')`;
+  const [inscriptionsPeriode, recensementPeriode] = await Promise.all([
+    db.prepare(`SELECT COUNT(*) AS n FROM inscriptions WHERE created_at >= ${sinceExpr}`).first(),
+    db.prepare(`SELECT COUNT(*) AS n FROM recensement WHERE created_at >= ${sinceExpr}`).first(),
+  ]);
+
+  return {
+    inscriptions: inscriptionsPeriode.n,
+    adhesions: recensementPeriode.n,
+  };
+}
