@@ -1,0 +1,207 @@
+---
+// Dashboard partagé entre /admin et /superadmin — logique dans
+// src/lib/dashboardCore.js, même principe que les vues Actualités/
+// Événements/Inscriptions/Messages (src/lib/adminContent.js).
+//
+// La page hôte fournit la section englobante (id="view-dashboard" côté
+// admin, id="view-overview" côté super-admin — chacune garde sa propre clé
+// de navigation) ; ce composant n'est que le contenu.
+//
+// role = 'admin'       -> partie opérationnelle commune uniquement.
+// role = 'super_admin' -> partie commune + section "Gouvernance & plateforme".
+interface Props {
+  userName: string;
+  role: 'admin' | 'super_admin';
+}
+const { userName, role } = Astro.props;
+---
+<style>
+  /* Deux colonnes à hauteurs indépendantes (flex, pas grid) : "À traiter en
+     priorité" + "Prochain événement" à gauche, Calendrier seul à droite.
+     Avant ce fix, les deux colonnes étaient les deux items d'une même ligne
+     de CSS Grid — la hauteur de ligne s'alignait sur la colonne la plus
+     haute (le calendrier, intrinsèquement grand : grille 7 colonnes en
+     aspect-ratio:1) et laissait un vide sous la courte liste "À traiter en
+     priorité". Avec flex + align-items:flex-start, chaque colonne garde sa
+     hauteur naturelle, indépendamment de l'autre. */
+  .dashcore-columns {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .dashcore-col-left {
+    flex: 1.6 1 320px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .dashcore-col-right {
+    flex: 1 1 260px;
+    min-width: 0;
+  }
+  @media (max-width: 860px) {
+    .dashcore-col-left,
+    .dashcore-col-right {
+      flex: 1 1 100%;
+    }
+  }
+
+  /* Sous-navigation Opérations / Gouvernance — Super Admin uniquement.
+     Même vocabulaire visuel que .active-nav-btn (pilule verte translucide)
+     pour rester cohérent avec la sidebar : piste crème, onglet actif blanc
+     + texte vert. */
+  .dashcore-subnav {
+    display: inline-flex;
+    gap: 4px;
+    background: #F8F4EC;
+    border-radius: 999px;
+    padding: 4px;
+    width: fit-content;
+  }
+  .dashcore-subnav-tab {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 9px 20px;
+    border-radius: 999px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #5a655f;
+    transition: all 0.15s ease;
+  }
+  .dashcore-subnav-tab:hover {
+    color: #1F2925;
+  }
+  .dashcore-subnav-tab.is-active {
+    background: #FFFFFF;
+    color: #176B4D;
+    box-shadow: 0 2px 8px rgba(31,41,37,0.08);
+  }
+  .dashcore-subnav-tab:focus-visible {
+    outline: 2px solid #176B4D;
+    outline-offset: 2px;
+  }
+</style>
+
+<div style="display:flex; flex-direction:column; gap:24px;">
+  <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:16px;">
+    <div>
+      <h1 id="dashcore-greeting" style="font-size:24px; font-weight:800; color:#1F2925; margin:0 0 6px;">Bonjour {userName.split(' ')[0]} 👋</h1>
+      <p style="font-size:14.5px; color:#5a655f; margin:0;">Voici ce qui se passe pour l'ANB aujourd'hui.</p>
+    </div>
+    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+      <button class="btn-create-news nav-trigger-btn" data-page="actualites-new" style="background:#E97824; color:#FFFFFF; border:none; padding:13px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Créer un contenu</button>
+      <button class="btn-create-event nav-trigger-btn" data-page="evenements-new" style="background:#FFFFFF; color:#176B4D; border:2px solid #176B4D; padding:11px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Créer un événement</button>
+    </div>
+  </div>
+
+  {role === 'super_admin' && (
+    <div class="dashcore-subnav" role="tablist" aria-label="Sous-vues de la vue d'ensemble">
+      <button type="button" class="dashcore-subnav-tab is-active" role="tab" id="dashcore-tab-ops" aria-selected="true" aria-controls="dashcore-ops-panel" data-target="ops">Opérations</button>
+      <button type="button" class="dashcore-subnav-tab" role="tab" id="dashcore-tab-gov" aria-selected="false" aria-controls="dashcore-gov-panel" data-target="gov" tabindex="-1">Gouvernance</button>
+    </div>
+  )}
+
+  <div id="dashcore-ops-panel" role={role === 'super_admin' ? 'tabpanel' : undefined} aria-labelledby={role === 'super_admin' ? 'dashcore-tab-ops' : undefined} style="display:flex; flex-direction:column; gap:24px;">
+
+  <!-- KPI communs — valeurs fournies par /api/admin/kpis (lib/stats.js),
+       jamais recalculées ici. -->
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px;">
+    <div style="background:#FFFFFF; border-radius:18px; padding:22px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
+      <div id="stat-events-count" style="font-size:26px; font-weight:800; color:#176B4D;">0</div>
+      <div style="font-size:13.5px; color:#5a655f; margin-top:4px;">Événements à venir</div>
+    </div>
+    <div style="background:#FFFFFF; border-radius:18px; padding:22px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
+      <div id="stat-members-count" style="font-size:26px; font-weight:800; color:#E97824;">0</div>
+      <div style="font-size:13.5px; color:#5a655f; margin-top:4px;">Inscriptions aux événements</div>
+    </div>
+    <div style="background:#FFFFFF; border-radius:18px; padding:22px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
+      <div id="stat-news-count" style="font-size:26px; font-weight:800; color:#176B4D;">0</div>
+      <div style="font-size:13.5px; color:#5a655f; margin-top:4px;">Actualités publiées</div>
+    </div>
+    <div style="background:#FFFFFF; border-radius:18px; padding:22px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
+      <div id="stat-census-count" style="font-size:26px; font-weight:800; color:#176B4D;">0</div>
+      <div style="font-size:13.5px; color:#5a655f; margin-top:4px;">Personnes recensées</div>
+    </div>
+  </div>
+
+  <div class="dashcore-columns">
+    <div class="dashcore-col-left">
+      <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
+        <h3 style="font-size:16.5px; font-weight:700; color:#1F2925; margin:0 0 18px;">À traiter en priorité</h3>
+        <div id="dashcore-priority-items" style="display:flex; flex-direction:column; gap:4px;">
+          <!-- Dynamic -->
+        </div>
+      </div>
+
+      <div style="background:#176B4D; border-radius:20px; padding:24px; color:#FFFFFF;">
+        <div style="font-size:12px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">Prochain événement</div>
+        <h3 style="font-size:18px; font-weight:700; margin:0 0 10px;" id="dashcore-next-event-title">—</h3>
+        <div style="font-size:13.5px; opacity:0.85; margin-bottom:4px;" id="dashcore-next-event-date"></div>
+        <div style="font-size:13.5px; opacity:0.85; margin-bottom:14px;" id="dashcore-next-event-place"></div>
+        <button class="nav-trigger-btn" data-page="evenements" style="background:#E97824; color:#FFFFFF; border:none; padding:12px 22px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">Gérer l'événement</button>
+      </div>
+    </div>
+
+    <div class="dashcore-col-right">
+      <div style="background:#FFFFFF; border-radius:20px; padding:22px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
+        <h3 id="dashcore-calendar-month-label" style="font-size:15px; font-weight:700; color:#1F2925; margin:0 0 14px;">Calendrier</h3>
+        <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:6px; text-align:center;" id="dashcore-calendar">
+          <div style="font-size:11px; font-weight:700; color:#5a655f;">L</div>
+          <div style="font-size:11px; font-weight:700; color:#5a655f;">M</div>
+          <div style="font-size:11px; font-weight:700; color:#5a655f;">M</div>
+          <div style="font-size:11px; font-weight:700; color:#5a655f;">J</div>
+          <div style="font-size:11px; font-weight:700; color:#5a655f;">V</div>
+          <div style="font-size:11px; font-weight:700; color:#5a655f;">S</div>
+          <div style="font-size:11px; font-weight:700; color:#5a655f;">D</div>
+          <!-- cells dynamically added -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div>
+
+  {role === 'super_admin' && (
+    <div id="dashcore-gov-panel" class="hidden" role="tabpanel" aria-labelledby="dashcore-tab-gov" style="display:flex; flex-direction:column; gap:20px;">
+      <h2 style="font-size:18px; font-weight:800; color:#1F2925; margin:0;">Gouvernance &amp; plateforme</h2>
+
+      <!-- 6 cartes = maquette originale "Vue d'ensemble" (screenshot fourni),
+           dans son ordre exact. "Comptes désactivés" et "Contenus en
+           validation" (ajouts hors maquette) ont été retirés de cette page
+           — restent consultables sur Utilisateurs & rôles / Contenus &
+           validations, rien n'est supprimé du produit. -->
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px;">
+        <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="dashcore-gov-membres" style="font-size:22px; font-weight:800; color:#176B4D;">—</div><div style="font-size:13px; color:#5a655f;">Personnes recensées</div></div>
+        <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="dashcore-gov-adhesions-mois" style="font-size:22px; font-weight:800; color:#176B4D;">—</div><div style="font-size:13px; color:#5a655f;">Nouvelles personnes recensées ce mois</div></div>
+        <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="dashcore-gov-evenements" style="font-size:22px; font-weight:800; color:#176B4D;">—</div><div style="font-size:13px; color:#5a655f;">Événements à venir</div></div>
+        <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="dashcore-gov-demandes" style="font-size:22px; font-weight:800; color:#E97824;">—</div><div style="font-size:13px; color:#5a655f;">Messages à traiter</div></div>
+        <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="dashcore-gov-admins" style="font-size:22px; font-weight:800; color:#176B4D;">—</div><div style="font-size:13px; color:#5a655f;">Administrateurs actifs</div></div>
+        <!-- Aucune donnée : pas de système d'alertes sécurité/maintenance
+             dans le projet. Emplacement conservé (maquette), jamais de
+             faux chiffre — badge "Bientôt disponible" au lieu d'un total. -->
+        <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:8px;">
+          <div style="font-size:22px; font-weight:800; color:#9aa39c;">—</div>
+          <div style="font-size:13px; color:#5a655f;">Alertes sécurité / maintenance</div>
+          <span style="align-self:flex-start; background:rgba(31,41,37,0.08); color:#5a655f; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700;">Bientôt disponible</span>
+        </div>
+      </div>
+
+      <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
+        <h3 style="font-size:16.5px; font-weight:700; color:#1F2925; margin:0 0 16px;">Attention requise</h3>
+        <div style="display:flex; flex-direction:column; gap:10px;" id="dashcore-gov-attention-list">
+          <!-- Dynamic -->
+        </div>
+      </div>
+
+      <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
+        <h3 style="font-size:16.5px; font-weight:700; color:#1F2925; margin:0 0 16px;">Activité récente</h3>
+        <div style="display:flex; flex-direction:column; gap:14px;" id="dashcore-gov-activity-list">
+          <!-- Dynamic -->
+        </div>
+      </div>
+    </div>
+  )}
+</div>

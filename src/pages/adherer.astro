@@ -55,7 +55,7 @@ export const prerender = false;
         <!-- Contact -->
         <div style="background:#F0E9DA; border-radius:20px; padding:22px 24px;">
           <div style="font-size:13.5px; font-weight:700; color:#1F2925; margin-bottom:6px;">Une question avant d'adhérer ?</div>
-          <div style="font-size:13.5px; color:#5a655f;">anbordeaux33@outlook.fr · 07 58 62 42 84</div>
+          <div id="adherer-contact-info" style="font-size:13.5px; color:#5a655f;">anbordeaux33@outlook.fr · 07 58 62 42 84</div>
         </div>
       </div>
 
@@ -264,6 +264,19 @@ export const prerender = false;
 </style>
 
 <script>
+  // Reflète email/téléphone édités depuis le Super Admin
+  // (src/pages/api/settings.js -> site_settings), même principe
+  // best-effort que le Footer.
+  fetch('/api/settings')
+    .then((res) => res.json())
+    .then(({ settings }) => {
+      const info = document.getElementById('adherer-contact-info');
+      if (info && settings.identite_email && settings.identite_telephone) {
+        info.textContent = `${settings.identite_email} · ${settings.identite_telephone}`;
+      }
+    })
+    .catch(() => {});
+
   // Live counter
   fetch('/api/recensement-count')
     .then(r => r.json())

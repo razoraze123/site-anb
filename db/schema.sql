@@ -22,34 +22,46 @@ CREATE TABLE IF NOT EXISTS actualites (
   auteur_id INTEGER,
   status TEXT NOT NULL DEFAULT 'Brouillon',
   bg_gradient TEXT NOT NULL,
+  commentaire_retour TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (auteur_id) REFERENCES utilisateurs(id) ON DELETE SET NULL
 );
 
 -- 3. Table evenements
+-- status : Ouvert (OPEN) | Terminé (COMPLETED) | Annulé (CANCELLED) —
+-- toujours posé manuellement par un admin, jamais déduit automatiquement
+-- de la date. "Complet" n'est PAS un statut stocké : c'est calculé à
+-- l'affichage (registered_count >= max_places), voir requêtes qui lisent
+-- cette table. inscriptions_ouvertes est indépendant du statut de
+-- l'événement (un événement Ouvert peut avoir ses inscriptions fermées).
 CREATE TABLE IF NOT EXISTS evenements (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,
   date TEXT NOT NULL,
+  -- Date ISO (AAAA-MM-JJ) issue du sélecteur de date, uniquement pour le
+  -- tri chronologique. `date` reste le texte affiché (peut différer du
+  -- format ISO, ex. avec l'heure incluse).
+  event_date TEXT,
   place TEXT NOT NULL,
   category TEXT NOT NULL,
   registered_count INTEGER DEFAULT 0,
   max_places INTEGER DEFAULT 100,
   status TEXT NOT NULL DEFAULT 'Ouvert',
+  inscriptions_ouvertes INTEGER NOT NULL DEFAULT 1,
   bg_gradient TEXT NOT NULL,
-  tab TEXT NOT NULL DEFAULT 'À venir',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 4. Table inscriptions
+-- Une inscription à un événement n'a pas de statut de confirmation : elle
+-- existe ou elle n'existe pas (l'admin la supprime si besoin). Elle ne
+-- collecte que prénom + nom — jamais d'e-mail ni de téléphone (différent
+-- du recensement, qui lui les demande).
 CREATE TABLE IF NOT EXISTS inscriptions (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   event_id INTEGER NOT NULL,
   first_name TEXT NOT NULL,
   last_name TEXT NOT NULL,
-  email TEXT NOT NULL,
-  phone TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'Confirmé',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (event_id) REFERENCES evenements(id) ON DELETE CASCADE
 );
@@ -65,9 +77,14 @@ CREATE TABLE IF NOT EXISTS adhesions (
 );
 
 -- 6. Table messages
+-- email : adresse de l'expéditeur, utilisée uniquement pour ouvrir le
+-- client e-mail de l'admin ("Répondre par e-mail", lien mailto:) — ANB
+-- n'envoie jamais d'e-mail depuis l'outil pour ce flux (voir
+-- db/migration-2026-08-25-messages-email.sql).
 CREATE TABLE IF NOT EXISTS messages (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   from_name TEXT NOT NULL,
+  email TEXT NOT NULL DEFAULT '',
   subject TEXT NOT NULL,
   category TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'Non lu',
@@ -114,18 +131,17 @@ INSERT OR IGNORE INTO actualites (title, slug, excerpt, content, category, auteu
 ('Bienvenue aux nouveaux membres de l''ANB', 'bienvenue-nouveaux-membres', 'Un message d''accueil pour tous les nouveaux adhérents de la métropole.', 'Bienvenue à tous et toutes ! L''association grandit...', 'Vie associative', 2, 'Publié', 'linear-gradient(150deg,#E97824,#E8D8BF)'),
 ('Appel à bénévoles pour notre prochain événement', 'appel-benevoles-evenement', 'Nous recherchons des forces vives pour l''organisation logistique.', 'Nous avons besoin d''aide pour installer les stands...', 'Bénévolat', 3, 'Publié', 'linear-gradient(150deg,#E8D8BF,#176B4D)'),
 ('Portrait : parcours d''une étudiante nigérienne à Bordeaux', 'portrait-parcours-etudiante', 'Découvrez le témoignage de Fatouma sur son arrivée et ses études.', 'Arrivée en 2025 pour suivre son master en informatique...', 'Portraits', 3, 'Brouillon', 'linear-gradient(150deg,#1F2925,#E97824)'),
-('Journée culturelle 2026 : le programme complet', 'journee-culturelle-programme', 'Consultez les horaires et les détails des animations du 20 septembre.', 'Le programme complet de notre grande journée annuelle...', 'Événements', 2, 'Programmé', 'linear-gradient(150deg,#176B4D,#E97824)'),
+('Journée culturelle 2026 : le programme complet', 'journee-culturelle-programme', 'Consultez les horaires et les détails des animations du 20 septembre.', 'Le programme complet de notre grande journée annuelle...', 'Événements', 2, 'Publié', 'linear-gradient(150deg,#176B4D,#E97824)'),
 ('Bilan de la collecte solidaire 2025', 'bilan-collecte-solidaire-2025', 'Merci à tous les donateurs pour la collecte d''hiver.', 'Grâce à vos dons, nous avons pu aider...', 'Solidarité', 1, 'Archivé', 'linear-gradient(150deg,#5a655f,#1F2925)');
 
 -- Événements
-INSERT OR IGNORE INTO evenements (title, date, place, category, registered_count, max_places, status, bg_gradient, tab) VALUES
-('Journée culturelle nigérienne', '20 sept. 2026', 'Parc Bordelais', 'Culture', 86, 120, 'Ouvert', 'linear-gradient(150deg,#176B4D,#1F2925)', 'À venir'),
-('Tournoi de football amical', '12 oct. 2026', 'Stade Léo Lagrange', 'Sport', 40, 40, 'Complet', 'linear-gradient(150deg,#E97824,#1F2925)', 'À venir'),
-('Soirée d''entraide et collecte solidaire', '8 nov. 2026', 'Salle associative', 'Solidarité', 12, 80, 'Ouvert', 'linear-gradient(150deg,#1F2925,#176B4D)', 'À venir'),
-('Atelier CV et recherche d''emploi', '3 déc. 2026', 'Bordeaux', 'Formation', 0, 30, 'Annulé', 'linear-gradient(150deg,#5a655f,#1F2925)', 'Annulés'),
-('Pique-nique communautaire', 'juin 2026', 'Bords de Garonne', 'Rencontre', 64, 64, 'Terminé', 'linear-gradient(150deg,#E8D8BF,#176B4D)', 'Passés'),
-('Repas de nouvel an', 'janvier 2026', 'Bordeaux', 'Rencontre', 58, 60, 'Terminé', 'linear-gradient(150deg,#E97824,#E8D8BF)', 'Passés'),
-('Soirée musique — édition 2027', 'à définir', '—', 'Culture', 0, 100, 'Brouillon', 'linear-gradient(150deg,#1F2925,#E8D8BF)', 'Brouillons');
+INSERT OR IGNORE INTO evenements (title, date, event_date, place, category, registered_count, max_places, status, inscriptions_ouvertes, bg_gradient) VALUES
+('Journée culturelle nigérienne', '20 sept. 2026', '2026-09-20', 'Parc Bordelais', 'Culture', 86, 120, 'Ouvert', 1, 'linear-gradient(150deg,#176B4D,#1F2925)'),
+('Tournoi de football amical', '12 oct. 2026', '2026-10-12', 'Stade Léo Lagrange', 'Sport', 40, 40, 'Ouvert', 1, 'linear-gradient(150deg,#E97824,#1F2925)'),
+('Soirée d''entraide et collecte solidaire', '8 nov. 2026', '2026-11-08', 'Salle associative', 'Solidarité', 12, 80, 'Ouvert', 1, 'linear-gradient(150deg,#1F2925,#176B4D)'),
+('Atelier CV et recherche d''emploi', '3 déc. 2026', '2026-12-03', 'Bordeaux', 'Formation', 0, 30, 'Annulé', 1, 'linear-gradient(150deg,#5a655f,#1F2925)'),
+('Pique-nique communautaire', 'juin 2026', '2026-06-01', 'Bords de Garonne', 'Rencontre', 64, 64, 'Terminé', 1, 'linear-gradient(150deg,#E8D8BF,#176B4D)'),
+('Repas de nouvel an', 'janvier 2026', '2026-01-01', 'Bordeaux', 'Rencontre', 58, 60, 'Terminé', 1, 'linear-gradient(150deg,#E97824,#E8D8BF)');
 
 -- Adhésions
 INSERT OR IGNORE INTO adhesions (name, email, motivation, status) VALUES
@@ -135,21 +151,20 @@ INSERT OR IGNORE INTO adhesions (name, email, motivation, status) VALUES
 ('Souley Hassane', 'souley.h@email.fr', 'Renouvellement annuel de cotisation.', 'Renouvellement');
 
 -- Messages
-INSERT OR IGNORE INTO messages (from_name, subject, category, status, content) VALUES
-('Aïcha B.', 'Demande d''adhésion', 'Adhésion', 'À traiter', 'Bonjour, je souhaiterais rejoindre l''ANB et en savoir plus sur les prochains événements.'),
-('Ibrahim M.', 'Question sur le logement', 'Contact', 'Non lu', 'Bonjour, je cherche un logement étudiant à Bordeaux, pouvez-vous m''aider ?'),
-('Fatou K.', 'Proposition de bénévolat', 'Bénévolat', 'Traité', 'Je serais ravie d''aider pour le prochain événement, dites-moi comment m''organiser.'),
-('Assane T.', 'Partenariat commerçant', 'Partenariat', 'Traité', 'Notre restaurant souhaite proposer une réduction aux membres de l''ANB.'),
-('Mariam D.', 'Question générale', 'Autre', 'Archivé', 'Bonjour, à quelle heure se termine la journée culturelle ?');
+INSERT OR IGNORE INTO messages (from_name, email, subject, category, status, content) VALUES
+('Aïcha B.', 'aicha.b@email.fr', 'Demande d''adhésion', 'Adhésion', 'À traiter', 'Bonjour, je souhaiterais rejoindre l''ANB et en savoir plus sur les prochains événements.'),
+('Ibrahim M.', 'ibrahim.m@email.fr', 'Question sur le logement', 'Contact', 'Non lu', 'Bonjour, je cherche un logement étudiant à Bordeaux, pouvez-vous m''aider ?'),
+('Fatou K.', 'fatou.k@email.fr', 'Proposition de bénévolat', 'Bénévolat', 'Traité', 'Je serais ravie d''aider pour le prochain événement, dites-moi comment m''organiser.'),
+('Assane T.', 'assane.t@email.fr', 'Partenariat commerçant', 'Partenariat', 'Traité', 'Notre restaurant souhaite proposer une réduction aux membres de l''ANB.'),
+('Mariam D.', 'mariam.d@email.fr', 'Question générale', 'Autre', 'Archivé', 'Bonjour, à quelle heure se termine la journée culturelle ?');
 
 -- Inscriptions
-INSERT OR IGNORE INTO inscriptions (event_id, first_name, last_name, email, phone, status) VALUES
-(1, 'Aïcha', 'Boubacar', 'aicha.b@email.fr', '06 12 34 56 78', 'Confirmé'),
-(1, 'Ibrahim', 'Moussa', 'ibrahim.m@email.fr', '06 23 45 67 89', 'Confirmé'),
-(1, 'Fatouma', 'Idrissa', 'fatouma.i@email.fr', '06 34 56 78 90', 'En attente'),
-(1, 'Souley', 'Hassane', 'souley.h@email.fr', '06 45 67 89 01', 'Confirmé'),
-(1, 'Mariam', 'Diallo', 'mariam.d@email.fr', '06 56 78 90 12', 'Liste d''attente'),
-(1, 'Assane', 'Traoré', 'assane.t@email.fr', '06 67 89 01 23', 'Annulé');
+INSERT OR IGNORE INTO inscriptions (event_id, first_name, last_name) VALUES
+(1, 'Aïcha', 'Boubacar'),
+(1, 'Ibrahim', 'Moussa'),
+(1, 'Fatouma', 'Idrissa'),
+(1, 'Souley', 'Hassane'),
+(1, 'Mariam', 'Diallo');
 
 -- Journal d'activité (Audit Logs)
 INSERT OR IGNORE INTO journal_activite (utilisateur_email, role, action, details, adresse_ip) VALUES
@@ -160,16 +175,32 @@ INSERT OR IGNORE INTO journal_activite (utilisateur_email, role, action, details
 ('fatou.ibrahim@anb-bordeaux.fr', 'Éditeur', 'Soumission pour validation', 'Portrait : parcours d''une étudiante', '78.232.112.5'),
 ('nasser.diallo@anb-bordeaux.fr', 'Super Admin', 'Connexion', 'Connexion depuis Bordeaux', '90.41.223.15');
 
--- Galerie Médias
-INSERT OR IGNORE INTO media_galerie (nom_fichier, titre, texte_alternatif, credit, type, taille_octets) VALUES
-('photos/galerie_1.jpg', 'Moment de partage traditionnel', 'Membres partageant un repas traditionnel', 'ANB Bordeaux', 'Photo', 2048500),
-('photos/galerie_2.jpg', 'Danses et célébrations', 'Groupe de danse traditionnelle nigérienne', 'ANB Bordeaux', 'Photo', 1850320),
-('videos/galerie_3.mp4', 'Vidéo récapitulative Journée Culturelle', 'Vidéo montrant les temps forts de l''événement', 'ANB Bordeaux', 'Vidéo', 15482000),
-('photos/galerie_4.jpg', 'Atelier de cuisine traditionnelle', 'Préparation du riz au gras', 'ANB Bordeaux', 'Photo', 980450),
-('photos/galerie_5.jpg', 'Remise d''équipements sportifs', 'Membres de l''équipe de football réunis', 'ANB Bordeaux', 'Photo', 1230400),
-('videos/galerie_6.mp4', 'Présentation des danses', 'Vidéo des danseurs au parc', 'ANB Bordeaux', 'Vidéo', 8700500);
+-- Galerie Médias : volontairement AUCUN seed. media_galerie est
+-- désormais la source de vérité de /galerie et de la galerie de la home
+-- (P1.3) — y insérer des lignes fictives (comme avant) ferait apparaître
+-- de fausses images dès l'installation, sans fichier R2 correspondant.
+-- La galerie démarre vide ; elle se peuple via Admin/Super Admin → Galerie.
 
--- 9. Table recensement
+-- 9. Table site_settings (clé/valeur, éditable depuis le Super Admin)
+CREATE TABLE IF NOT EXISTS site_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL DEFAULT '',
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT OR IGNORE INTO site_settings (key, value) VALUES
+('identite_nom', 'Association des Nigériens à Bordeaux'),
+('identite_slogan', 'Ensemble, faire vivre la communauté nigérienne à Bordeaux.'),
+('identite_email', 'anbordeaux33@outlook.fr'),
+('identite_telephone', '07 58 62 42 84'),
+-- Vide par défaut : aucune adresse de siège social réelle n'a encore été
+-- fournie par le client (cf. mentions-legales.astro, "en cours de
+-- finalisation"). Ne jamais y mettre une adresse inventée.
+('identite_adresse', ''),
+('seo_titre', 'ANB — Association des Nigériens à Bordeaux'),
+('seo_description', 'Communauté nigérienne à Bordeaux : événements, entraide et accompagnement.');
+
+-- 10. Table recensement
 CREATE TABLE IF NOT EXISTS recensement (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   first_name TEXT NOT NULL,
@@ -182,5 +213,20 @@ CREATE TABLE IF NOT EXISTS recensement (
   domaine TEXT DEFAULT '',
   benevole INTEGER DEFAULT 0,
   rgpd_consent INTEGER DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 11. Table equipe (bloc Bureau/Équipe de /association)
+-- photo : clé R2 (nom_fichier), nullable — repli visuel si absente, jamais
+-- de photo inventée. Volontairement AUCUN seed : ne jamais insérer les
+-- vrais membres du bureau sans validation du client (voir aussi
+-- db/migration-2026-08-25-equipe.sql).
+CREATE TABLE IF NOT EXISTS equipe (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  nom TEXT NOT NULL,
+  fonction TEXT NOT NULL,
+  photo TEXT,
+  ordre INTEGER NOT NULL DEFAULT 0,
+  actif INTEGER NOT NULL DEFAULT 1,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

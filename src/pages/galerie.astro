@@ -1,6 +1,33 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { fullGallery } from '../lib/demo-data';
+import { env } from "cloudflare:workers";
+
+// La galerie doit refléter les vrais médias uploadés (media_galerie),
+// jamais les blocs fictifs de demo-data.ts (fullGallery, retiré) — ça
+// nécessite un accès D1, donc un rendu dynamique (comme /actualites).
+export const prerender = false;
+
+const db = env.DB;
+let medias = [];
+
+try {
+  if (db) {
+    const { results } = await db.prepare(
+      "SELECT nom_fichier, titre, texte_alternatif, credit, type FROM media_galerie ORDER BY created_at DESC"
+    ).all();
+    medias = results;
+  }
+} catch (error) {
+  console.error("Erreur de récupération D1 pour la galerie :", error);
+}
+
+// Alternance de teintes pour l'arrière-plan pendant le chargement de
+// l'image (identique à l'esprit des dégradés déjà utilisés ailleurs sur
+// le site) — purement décoratif, jamais affiché comme un vrai média.
+const BG_TONES = [
+  'linear-gradient(150deg,#176B4D,#1F2925)', 'linear-gradient(150deg,#E97824,#E8D8BF)',
+  'linear-gradient(150deg,#1F2925,#176B4D)', 'linear-gradient(150deg,#E8D8BF,#E97824)',
+];
 ---
 
 <Layout title="Galerie" description="Les moments qui rassemblent la communauté nigérienne de Bordeaux.">
@@ -8,13 +35,23 @@ import { fullGallery } from '../lib/demo-data';
     <section style="max-width:1280px; margin:0 auto; padding:70px clamp(20px,4vw,48px) 90px;">
       <div style="font-size:13px; font-weight:700; color:#E97824; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:16px;">Galerie</div>
       <h1 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(2.1rem,4vw,3rem); color:#1F2925; margin:0 0 48px; max-width:760px;">Les moments qui nous rassemblent.</h1>
-      <div data-grid-mobile="2" data-reveal-group style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); grid-auto-rows:160px; gap:16px;">
-        {fullGallery.map((img) => (
-          <div style={`grid-row:span ${img.span}; border-radius:20px; background:${img.bg}; position:relative; overflow:hidden; display:flex; align-items:flex-end; padding:14px;`}>
-            <span style="color:rgba(255,255,255,0.9); font-size:12px; font-weight:700;">{img.label}</span>
-          </div>
-        ))}
-      </div>
+
+      {medias.length === 0 ? (
+        <div style="text-align:center; padding:60px 20px; color:#5a655f; font-size:1.05rem;">
+          La galerie est en préparation — revenez bientôt pour découvrir nos photos et vidéos.
+        </div>
+      ) : (
+        <div data-grid-mobile="2" data-reveal-group style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); grid-auto-rows:160px; gap:16px;">
+          {medias.map((m, i) => (
+            <div style={`grid-row:span ${i % 5 === 0 ? 2 : 1}; border-radius:20px; background:${BG_TONES[i % BG_TONES.length]}; position:relative; overflow:hidden;`}>
+              <img src={`/api/media/${m.nom_fichier}`} alt={m.texte_alternatif} loading="lazy" style="width:100%; height:100%; object-fit:cover; display:block;" />
+              <div style="position:absolute; inset:0; display:flex; align-items:flex-end; padding:14px; background:linear-gradient(to top, rgba(0,0,0,0.45), transparent 55%);">
+                <span style="color:rgba(255,255,255,0.95); font-size:12px; font-weight:700;">{m.titre}{m.credit ? ` · ${m.credit}` : ''}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   </main>
 </Layout>

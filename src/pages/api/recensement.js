@@ -78,6 +78,14 @@ export async function POST(context) {
 
     if (env.RESEND_API_KEY) {
       try {
+        // identite_email centralisé (site_settings) plutôt qu'en dur ici —
+        // repli sur l'adresse historique si le réglage n'existe pas encore.
+        let contactEmail = 'anbordeaux33@outlook.fr';
+        try {
+          const setting = await db.prepare("SELECT value FROM site_settings WHERE key = 'identite_email'").first();
+          if (setting?.value) contactEmail = setting.value;
+        } catch { /* garde le repli ci-dessus */ }
+
         await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: {
@@ -89,10 +97,10 @@ export async function POST(context) {
             to: email.trim(),
             subject: "Bienvenue à l'ANB Bordeaux !",
             headers: {
-              "List-Unsubscribe": "<mailto:anbordeaux33@outlook.fr?subject=Desinscription>",
+              "List-Unsubscribe": `<mailto:${contactEmail}?subject=Desinscription>`,
               "List-Unsubscribe-Post": "List-Unsubscribe=One-Click"
             },
-            text: `Bonjour ${first_name.trim()},\n\nVotre adhésion à l'ANB Bordeaux a bien été enregistrée. Vous recevrez nos actualités, événements et annonces à cette adresse.\n\nÀ bientôt !\n\nL'équipe ANB Bordeaux\nanbordeaux33@outlook.fr\n\nPour vous désinscrire, répondez à cet e-mail.`,
+            text: `Bonjour ${first_name.trim()},\n\nVotre adhésion à l'ANB Bordeaux a bien été enregistrée. Vous recevrez nos actualités, événements et annonces à cette adresse.\n\nÀ bientôt !\n\nL'équipe ANB Bordeaux\n${contactEmail}\n\nPour vous désinscrire, répondez à cet e-mail.`,
             html: `<div style="font-family:Arial,sans-serif;font-size:15px;color:#1F2925;line-height:1.6;max-width:520px;margin:0 auto;">
               <p>Bonjour ${first_name.trim()},</p>
               <p>Votre adhésion à l'ANB Bordeaux a bien été enregistrée. Vous recevrez nos actualités, événements et annonces à cette adresse.</p>
@@ -100,8 +108,8 @@ export async function POST(context) {
               <p>L'équipe ANB Bordeaux</p>
               <hr style="border:none;border-top:1px solid #E3DCCB;margin:24px 0;" />
               <p style="font-size:12px;color:#9aa39c;">
-                ANB Bordeaux · anbordeaux33@outlook.fr<br />
-                Vous recevez cet e-mail suite à votre adhésion. <a href="mailto:anbordeaux33@outlook.fr?subject=Desinscription" style="color:#9aa39c;">Se désinscrire</a>
+                ANB Bordeaux · ${contactEmail}<br />
+                Vous recevez cet e-mail suite à votre adhésion. <a href="mailto:${contactEmail}?subject=Desinscription" style="color:#9aa39c;">Se désinscrire</a>
               </p>
             </div>`
           })

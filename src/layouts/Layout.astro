@@ -9,9 +9,15 @@ interface Props {
   description?: string;
 }
 
+// Valeur de repli si la page n'a pas fourni sa propre description — c'est
+// UNIQUEMENT dans ce cas que le script ci-dessous la remplace par
+// site_settings.seo_description : une page qui a rédigé la sienne
+// (ex. /contact) n'est jamais écrasée par le réglage global du site.
+const DEFAULT_DESCRIPTION = "L'ANB rassemble, accompagne et valorise les Nigériens et les amis du Niger à Bordeaux.";
+
 const {
   title,
-  description = "L'ANB rassemble, accompagne et valorise les Nigériens et les amis du Niger à Bordeaux.",
+  description = DEFAULT_DESCRIPTION,
 } = Astro.props;
 ---
 
@@ -21,7 +27,7 @@ const {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/png" href="/logo.png" />
-    <meta name="description" content={description} />
+    <meta name="description" id="meta-description" data-is-default={description === DEFAULT_DESCRIPTION ? 'true' : 'false'} content={description} />
     <title>{title} — ANB Bordeaux</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -37,6 +43,36 @@ const {
       <Footer />
       <Chatbot />
     </div>
+    <script define:vars={{ pageTitle: title, isHome: Astro.url.pathname === '/' }}>
+      // Reflète identite_nom / seo_titre / seo_description édités depuis le
+      // Super Admin (src/pages/api/settings.js -> site_settings), sur le
+      // même principe déjà en place pour le Footer (best-effort, jamais
+      // bloquant).
+      // - identite_nom remplace le suffixe fixe "ANB Bordeaux" sur TOUTES
+      //   les pages (ex. "Contact — Association des Nigériens à Bordeaux").
+      // - seo_titre est une valeur unique et globale (pas un suffixe par
+      //   page) : elle ne remplace le <title> en entier que sur l'accueil,
+      //   seule page où un "titre du site" complet a un sens sans dupliquer
+      //   ni écraser les titres distincts déjà écrits pour chaque page.
+      // - seo_description ne remplace la meta description QUE si la page
+      //   utilise la valeur de repli du Layout — une description
+      //   spécifique déjà rédigée par une page (ex. /contact) n'est jamais
+      //   écrasée par le réglage global.
+      fetch('/api/settings')
+        .then((res) => res.json())
+        .then(({ settings }) => {
+          if (isHome && settings.seo_titre) {
+            document.title = settings.seo_titre;
+          } else if (settings.identite_nom) {
+            document.title = `${pageTitle} — ${settings.identite_nom}`;
+          }
+          const metaDescription = document.getElementById('meta-description');
+          if (metaDescription && metaDescription.dataset.isDefault === 'true' && settings.seo_description) {
+            metaDescription.setAttribute('content', settings.seo_description);
+          }
+        })
+        .catch(() => {});
+    </script>
     <script>
       // Drives the orange "shelf-thread" progress bar under each mobile
       // horizontal scroll shelf. A thread is any `.shelf-thread` element

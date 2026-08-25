@@ -1,5 +1,23 @@
 ---
+import DashboardCore from '../components/admin/DashboardCore.astro';
+import ViewActualites from '../components/admin/ViewActualites.astro';
+import ViewGalerie from '../components/admin/ViewGalerie.astro';
+import ViewEquipe from '../components/admin/ViewEquipe.astro';
+import ViewEvenements from '../components/admin/ViewEvenements.astro';
+import ViewInscriptions from '../components/admin/ViewInscriptions.astro';
+import ViewRecensement from '../components/admin/ViewRecensement.astro';
+import ViewMessages from '../components/admin/ViewMessages.astro';
+import ViewPages from '../components/admin/ViewPages.astro';
+import ViewValidations from '../components/admin/ViewValidations.astro';
+
 export const prerender = false;
+
+// Le middleware garantit déjà le rôle super_admin sur cette route ; on relit
+// la session pour disposer du nom (rédacteur des actualités notamment).
+const user = await Astro.session?.get('user');
+if (!user) {
+  return Astro.redirect('/connexion');
+}
 ---
 <!DOCTYPE html>
 <html lang="fr">
@@ -102,8 +120,8 @@ export const prerender = false;
       <div style="padding:16px; border-top:1px solid rgba(31,41,37,0.06); display:flex; align-items:center; gap:12px;">
         <div style="width:38px; height:38px; border-radius:50%; background:linear-gradient(150deg,#176B4D,#E97824); flex-shrink:0;"></div>
         <div style="flex:1; min-width:0;">
-          <div style="font-size:13.5px; font-weight:700; color:#1F2925; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Nasser Diallo</div>
-          <div style="font-size:11.5px; color:#5a655f;">Super Admin</div>
+          <div id="sidebar-user-name" style="font-size:13.5px; font-weight:700; color:#1F2925; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">—</div>
+          <div id="sidebar-user-role" style="font-size:11.5px; color:#5a655f;">—</div>
         </div>
         <button class="logout-btn" aria-label="Déconnexion" style="width:34px; height:34px; border-radius:10px; background:#F8F4EC; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1F2925" stroke-width="1.8"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path></svg>
@@ -161,37 +179,30 @@ export const prerender = false;
       <!-- VIEWS CONTAINER -->
       <div style="flex:1; padding:clamp(18px,3vw,32px);">
         
-        <!-- OVERVIEW VIEW -->
+        <!-- OVERVIEW VIEW — dashboard partagé avec /admin, voir
+             src/components/admin/DashboardCore.astro + lib/dashboardCore.js.
+             role="super_admin" ajoute la section Gouvernance & plateforme. -->
         <section id="view-overview" class="hidden fade-in">
-          <div style="display:flex; flex-direction:column; gap:24px;">
-            <div>
-              <h1 style="font-size:24px; font-weight:800; color:#1F2925; margin:0 0 6px;">Bonjour Nasser 👋</h1>
-              <p style="font-size:14.5px; color:#5a655f; margin:0;">Vue d'ensemble de la plateforme ANB.</p>
-            </div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px;">
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#176B4D;">248</div><div style="font-size:13px; color:#5a655f;">Membres actifs</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#E97824;">12</div><div style="font-size:13px; color:#5a655f;">Nouvelles adhésions ce mois</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#176B4D;">3</div><div style="font-size:13px; color:#5a655f;">Événements à venir</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#E97824;">12</div><div style="font-size:13px; color:#5a655f;">Demandes à traiter</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#176B4D;">5</div><div style="font-size:13px; color:#5a655f;">Administrateurs actifs</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#B14524;">2</div><div style="font-size:13px; color:#5a655f;">Alertes sécurité / maintenance</div></div>
-            </div>
-
-            <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
-              <h3 style="font-size:16.5px; font-weight:700; color:#1F2925; margin:0 0 16px;">Attention requise</h3>
-              <div style="display:flex; flex-direction:column; gap:10px;" id="overview-attention-list">
-                <!-- Dynamic -->
-              </div>
-            </div>
-
-            <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
-              <h3 style="font-size:16.5px; font-weight:700; color:#1F2925; margin:0 0 16px;">Activité récente</h3>
-              <div style="display:flex; flex-direction:column; gap:14px;" id="overview-activity-list">
-                <!-- Dynamic -->
-              </div>
-            </div>
-          </div>
+          <DashboardCore userName={user.nom} role="super_admin" />
         </section>
+
+        <!-- GESTION DU SITE — vues partagées avec /admin -->
+        <ViewActualites authorName={user.nom} />
+
+        <!-- GALERIE VIEW -->
+        <ViewGalerie />
+
+        <!-- EQUIPE VIEW -->
+        <ViewEquipe />
+        <ViewEvenements />
+        <ViewInscriptions />
+        <ViewRecensement />
+        <ViewMessages />
+        <ViewPages />
+
+        <!-- CONTENUS & VALIDATIONS — vue partagée avec /admin depuis que
+             l'API accepte aussi 'admin' (workflow éditorial). -->
+        <ViewValidations />
 
         <!-- UTILISATEURS ET ROLES VIEW -->
         <section id="view-users" class="hidden fade-in">
@@ -243,21 +254,6 @@ export const prerender = false;
           </div>
         </section>
 
-        <!-- CONTENUS ET VALIDATIONS VIEW -->
-        <section id="view-contenus" class="hidden fade-in">
-          <div style="display:flex; flex-direction:column; gap:20px;">
-            <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Contenus et validations</h1>
-            <div style="display:grid; grid-template-columns:1fr 1.2fr; gap:20px; align-items:start; flex-wrap:wrap;">
-              <div style="background:#FFFFFF; border-radius:20px; padding:8px; box-shadow:0 8px 24px rgba(31,41,37,0.05); min-width:0;" id="validations-queue-list">
-                <!-- Dynamic -->
-              </div>
-              <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05); min-width:0;" id="validation-detail-box">
-                <!-- Dynamic -->
-              </div>
-            </div>
-          </div>
-        </section>
-
         <!-- DONNEES ET EXPORTS VIEW -->
         <section id="view-donnees" class="hidden fade-in">
           <div style="display:flex; flex-direction:column; gap:20px;">
@@ -265,16 +261,15 @@ export const prerender = false;
             <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
               <h3 style="font-size:15.5px; font-weight:700; color:#1F2925; margin:0 0 16px;">Générer un export sécurisé</h3>
               <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;">
-                <label style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:#1F2925;"><input type="checkbox" checked />Demandes d'adhésion</label>
-                <label style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:#1F2925;"><input type="checkbox" checked />Inscriptions aux événements</label>
-                <label style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:#1F2925;"><input type="checkbox" />Messages de contact</label>
-                <label style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:#1F2925;"><input type="checkbox" />Newsletter</label>
+                <label style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:#1F2925;"><input type="checkbox" id="export-check-recensement" checked />Recensement (adhésions)</label>
+                <label style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:#1F2925;"><input type="checkbox" id="export-check-inscriptions" checked />Inscriptions aux événements</label>
+                <label style="display:flex; align-items:center; gap:10px; font-size:13.5px; color:#1F2925;"><input type="checkbox" id="export-check-messages" />Messages de contact</label>
               </div>
               <div style="display:flex; gap:14px; flex-wrap:wrap; margin-bottom:16px;">
-                <select style="flex:1; min-width:180px; padding:11px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:13.5px; background: transparent;">
-                  <option>30 derniers jours</option>
-                  <option>3 derniers mois</option>
-                  <option>Cette année</option>
+                <select id="export-period" style="flex:1; min-width:180px; padding:11px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:13.5px; background: transparent;">
+                  <option value="30">30 derniers jours</option>
+                  <option value="90">3 derniers mois</option>
+                  <option value="">Tout l'historique</option>
                 </select>
                 <input id="export-reason" style="flex:2; min-width:220px; padding:11px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:13.5px;" placeholder="Raison de l'export (obligatoire)" />
               </div>
@@ -290,11 +285,9 @@ export const prerender = false;
               <div id="export-success-alert" class="hidden" style="margin-top:16px; background:rgba(23,107,77,0.08); color:#176B4D; padding:12px 16px; border-radius:10px; font-size:13px; font-weight:700;">✓ Export généré et tracé dans le journal d'activité.</div>
             </div>
 
-            <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05); overflow-x:auto;">
-              <h3 style="font-size:15.5px; font-weight:700; color:#1F2925; margin:0 0 16px;">Demandes liées aux données personnelles</h3>
-              <div style="min-width:560px;" id="personal-data-requests-container">
-                <!-- personal data requests lists -->
-              </div>
+            <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
+              <h3 style="font-size:15.5px; font-weight:700; color:#1F2925; margin:0 0 10px;">Demandes liées aux données personnelles</h3>
+              <div style="font-size:13px; color:#5a655f; line-height:1.7;">Ces demandes (accès, suppression, rectification) ne sont pas encore suivies dans l'outil — elles arrivent par e-mail à <a id="rgpd-email-link" href="mailto:anbordeaux33@outlook.fr" style="color:#176B4D;">anbordeaux33@outlook.fr</a> et sont traitées manuellement.</div>
             </div>
           </div>
         </section>
@@ -321,25 +314,25 @@ export const prerender = false;
               <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
                 <h3 style="font-size:15.5px; font-weight:700; color:#1F2925; margin:0 0 16px;">Identité de l'association</h3>
                 <div style="display:flex; flex-direction:column; gap:14px;">
-                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Nom</label><input value="Association des Nigériens à Bordeaux" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" /><div style="font-size:11.5px; color:#9aa39c; margin-top:4px;">Affiché dans l'en-tête et le pied de page du site.</div></div>
-                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Slogan</label><input value="Ensemble, faire vivre la communauté nigérienne à Bordeaux." style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" /></div>
-                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">E-mail officiel</label><input value="anbordeaux33@outlook.fr" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" /></div>
-                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Téléphone</label><input value="07 58 62 42 84" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" /></div>
+                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Nom</label><input id="settings-identite-nom" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" /></div>
+                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Slogan</label><input id="settings-identite-slogan" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" /></div>
+                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">E-mail officiel</label><input id="settings-identite-email" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" /></div>
+                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Téléphone</label><input id="settings-identite-telephone" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" /></div>
+                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Adresse</label><input id="settings-identite-adresse" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" placeholder="Adresse du siège social" /><div style="font-size:11.5px; color:#9aa39c; margin-top:4px;">Laissée vide, le site public garde son affichage actuel (« Bordeaux Métropole ») et les mentions légales gardent « en cours de finalisation ».</div></div>
                 </div>
-                <button style="margin-top:16px; background:#176B4D; color:#FFFFFF; border:none; padding:10px 20px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;" onclick="alert('Identité sauvegardée !')">Enregistrer</button>
+                <button id="save-identite-btn" style="margin-top:16px; background:#176B4D; color:#FFFFFF; border:none; padding:10px 20px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;">Enregistrer</button>
               </div>
               <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
                 <h3 style="font-size:15.5px; font-weight:700; color:#1F2925; margin:0 0 16px;">Navigation et pages</h3>
-                <div style="font-size:13px; color:#5a655f; line-height:1.7;">Menus, pied de page, pages principales et redirections du site public.<br/><span style="font-size:11.5px; color:#9aa39c;">Modifiez l'ordre et la visibilité des rubriques du menu.</span></div>
-                <button style="margin-top:16px; background:#F8F4EC; color:#1F2925; border:none; padding:10px 20px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;">Gérer les menus</button>
+                <div style="font-size:13px; color:#5a655f; line-height:1.7;">Menus, pied de page, pages principales et redirections du site public.<br/><span style="font-size:11.5px; color:#9aa39c;">Pas encore disponible — aucune structure de menu éditable n'existe côté serveur.</span></div>
               </div>
               <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
                 <h3 style="font-size:15.5px; font-weight:700; color:#1F2925; margin:0 0 16px;">Référencement</h3>
                 <div style="display:flex; flex-direction:column; gap:14px;">
-                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Titre du site</label><input value="ANB — Association des Nigériens à Bordeaux" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" /></div>
-                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Description SEO</label><textarea rows="2" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px; resize:vertical;">Communauté nigérienne à Bordeaux : événements, entraide et accompagnement.</textarea><div style="font-size:11.5px; color:#9aa39c; margin-top:4px;">Affichée dans les résultats de recherche.</div></div>
+                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Titre du site</label><input id="settings-seo-titre" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" /></div>
+                  <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Description SEO</label><textarea id="settings-seo-description" rows="2" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px; resize:vertical;"></textarea><div style="font-size:11.5px; color:#9aa39c; margin-top:4px;">Titre : remplace le titre de l'onglet uniquement sur l'accueil. Description : remplace la meta description des pages qui n'ont pas la leur.</div></div>
                 </div>
-                <button style="margin-top:16px; background:#176B4D; color:#FFFFFF; border:none; padding:10px 20px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;" onclick="alert('Paramètres SEO enregistrés !')">Enregistrer</button>
+                <button id="save-seo-btn" style="margin-top:16px; background:#176B4D; color:#FFFFFF; border:none; padding:10px 20px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;">Enregistrer</button>
               </div>
             </div>
           </div>
@@ -396,36 +389,10 @@ export const prerender = false;
         <section id="view-sauvegardes" class="hidden fade-in">
           <div style="display:flex; flex-direction:column; gap:20px;">
             <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0;">Sauvegardes</h1>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px;">
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:12.5px; color:#5a655f; margin-bottom:6px;">Dernière sauvegarde réussie</div><div style="font-size:16px; font-weight:700; color:#176B4D;">12 juillet 2026, 03:00</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:12.5px; color:#5a655f; margin-bottom:6px;">Prochaine sauvegarde</div><div style="font-size:16px; font-weight:700; color:#1F2925;">13 juillet 2026, 03:00</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:12.5px; color:#5a655f; margin-bottom:6px;">Statut</div><span style="background:rgba(23,107,77,0.1); color:#176B4D; padding:4px 12px; border-radius:999px; font-size:12.5px; font-weight:700; width: fit-content; display: inline-block;">Opérationnel</span></div>
-            </div>
-            <div style="display:flex; gap:12px; flex-wrap:wrap;">
-              <button id="run-backup-btn" style="background:#176B4D; color:#FFFFFF; border:none; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Lancer une sauvegarde maintenant</button>
-              <button id="open-restore-btn" style="background:#FFFFFF; color:#B14524; border:2px solid rgba(177,69,36,0.3); padding:11px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Restaurer</button>
-            </div>
-            
-            <div id="backup-running-alert" class="hidden" style="background:rgba(23,107,77,0.08); color:#176B4D; padding:12px 16px; border-radius:10px; font-size:13px; font-weight:700; max-width: 320px;">✓ Sauvegarde lancée avec succès.</div>
-            
-            <div id="restore-confirm-box" class="hidden" style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:12px; max-width:480px;">
-              <div style="font-size:13.5px; color:#B14524; font-weight:700;">⚠ La restauration remplace le contenu actuel. Vérifiez votre choix avant de continuer.</div>
-              <select style="padding:10px 14px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px; background: transparent;">
-                <option>12 juillet 2026, 03:00</option>
-                <option>11 juillet 2026, 03:00</option>
-                <option>10 juillet 2026, 03:00</option>
-              </select>
-              <div style="display:flex; gap:10px;">
-                <button id="confirm-restore-action" style="background:#B14524; color:#FFFFFF; border:none; padding:10px 20px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;">Confirmer la restauration</button>
-                <button id="cancel-restore-action" style="background:#F8F4EC; color:#1F2925; border:none; padding:10px 20px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;">Annuler</button>
-              </div>
-            </div>
-            
-            <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
-              <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0 0 14px;">Historique des sauvegardes</h3>
-              <div id="backup-history-list">
-                <!-- dynamic history -->
-              </div>
+            <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:14px; max-width:640px;">
+              <div style="font-size:14px; color:#1F2925; line-height:1.7;">La base de données (Cloudflare D1) sauvegarde en continu son historique. Pas de système de sauvegarde maison ici : la restauration se fait directement via l'outil <strong>Time Travel</strong> de Cloudflare, jusqu'à 30 jours en arrière.</div>
+              <a href="https://developers.cloudflare.com/d1/reference/time-travel/" target="_blank" rel="noopener" style="align-self:flex-start; background:#176B4D; color:#FFFFFF; border:none; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Voir la procédure Time Travel ↗</a>
+              <div style="font-size:12.5px; color:#9aa39c;">Commande de restauration : <code>wrangler d1 time-travel restore anb-db --timestamp=...</code></div>
             </div>
           </div>
         </section>
@@ -449,27 +416,49 @@ export const prerender = false;
                 <!-- Period options -->
               </div>
             </div>
+            <p style="font-size:12.5px; color:#9aa39c; margin:0;">Basé uniquement sur les données de la plateforme — aucun outil de mesure d'audience (pages vues, visiteurs) n'est branché sur le site pour l'instant.</p>
+
+            <!-- 4 cartes = maquette originale "Statistiques globales"
+                 (screenshot fourni), dans son ordre exact. "Personnes
+                 recensées (total)" et "Événements à venir" (ajouts hors
+                 maquette, déjà sur le Dashboard) ont été retirés d'ici. -->
             <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px;">
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#176B4D;">4 820</div><div style="font-size:13px; color:#5a655f;">Visites du site</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#E97824;">312</div><div style="font-size:13px; color:#5a655f;">Inscriptions aux événements</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#176B4D;">46</div><div style="font-size:13px; color:#5a655f;">Nouvelles demandes d'adhésion</div></div>
-              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div style="font-size:22px; font-weight:800; color:#E97824;">+18%</div><div style="font-size:13px; color:#5a655f;">Évolution sur la période</div></div>
-            </div>
-            
-            <div style="background:#FFFFFF; border-radius:20px; padding:26px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
-              <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0 0 20px;">Visites par semaine</h3>
-              <div style="display:flex; align-items:flex-end; gap:14px; height:160px;" id="visit-bars-container">
-                <!-- Bar chart dynamically generated -->
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:8px;">
+                <div style="font-size:22px; font-weight:800; color:#9aa39c;">—</div>
+                <div style="font-size:13px; color:#5a655f;">Visites du site</div>
+                <span style="align-self:flex-start; background:rgba(31,41,37,0.08); color:#5a655f; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700;">Bientôt disponible</span>
+              </div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stat-period-inscriptions" style="font-size:22px; font-weight:800; color:#176B4D;">—</div><div style="font-size:13px; color:#5a655f;">Inscriptions aux événements</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05);"><div id="stat-period-adhesions" style="font-size:22px; font-weight:800; color:#E97824;">—</div><div style="font-size:13px; color:#5a655f;">Nouvelles personnes recensées</div></div>
+              <div style="background:#FFFFFF; border-radius:16px; padding:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:8px;">
+                <div style="font-size:22px; font-weight:800; color:#9aa39c;">—</div>
+                <div style="font-size:13px; color:#5a655f;">Évolution sur la période</div>
+                <span style="align-self:flex-start; background:rgba(31,41,37,0.08); color:#5a655f; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700;">Bientôt disponible</span>
               </div>
             </div>
+
+            <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:10px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0;">Visites par semaine</h3>
+                <span style="background:rgba(31,41,37,0.08); color:#5a655f; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700;">Bientôt disponible</span>
+              </div>
+              <p style="font-size:13px; color:#9aa39c; margin:0;">Nécessite un outil de mesure d'audience — aucun n'est branché sur le site pour l'instant.</p>
+            </div>
+
             <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px;">
-              <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
-                <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0 0 14px;">Pages les plus vues</h3>
-                <div id="top-pages-list"></div>
+              <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:10px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                  <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0;">Pages les plus vues</h3>
+                  <span style="background:rgba(31,41,37,0.08); color:#5a655f; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700;">Bientôt disponible</span>
+                </div>
+                <p style="font-size:13px; color:#9aa39c; margin:0;">Nécessite un suivi des pages vues, pas encore en place.</p>
               </div>
-              <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
-                <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0 0 14px;">Articles les plus lus</h3>
-                <div id="top-articles-list"></div>
+              <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:10px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                  <h3 style="font-size:15px; font-weight:700; color:#1F2925; margin:0;">Articles les plus lus</h3>
+                  <span style="background:rgba(31,41,37,0.08); color:#5a655f; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700;">Bientôt disponible</span>
+                </div>
+                <p style="font-size:13px; color:#9aa39c; margin:0;">Nécessite un compteur de lecture par article, pas encore en place.</p>
               </div>
             </div>
           </div>
@@ -483,27 +472,41 @@ export const prerender = false;
               <div style="display:flex; align-items:center; gap:16px;">
                 <div style="width:56px; height:56px; border-radius:50%; background:linear-gradient(150deg,#176B4D,#E97824);"></div>
                 <div>
-                  <div style="font-size:16px; font-weight:700; color:#1F2925;">Nasser Diallo</div>
-                  <div style="font-size:13px; color:#5a655f;">Super Admin</div>
+                  <div id="profile-header-name" style="font-size:16px; font-weight:700; color:#1F2925;">—</div>
+                  <div id="profile-header-role" style="font-size:13px; color:#5a655f;">—</div>
                 </div>
               </div>
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Nom complet</label>
-                <input id="profile-form-name" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" value="Nasser Diallo" />
+                <input id="profile-form-name" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" />
               </div>
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">E-mail</label>
-                <input id="profile-form-email" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="vous@anb-bordeaux.fr" value="nasser.diallo@anb-bordeaux.fr" />
+                <input id="profile-form-email" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="vous@anb-bordeaux.fr" />
               </div>
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Rôle</label>
-                <input readonly style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px; color:#9aa39c;" value="Super Admin" />
+                <input id="profile-form-role" readonly style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px; color:#9aa39c;" />
               </div>
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Nouveau mot de passe</label>
-                <input type="password" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="••••••••" />
+                <div style="position:relative;">
+                  <input id="profile-form-password" type="password" style="width:100%; padding:12px 44px 12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="Laisser vide pour ne pas changer" />
+                  <button type="button" class="toggle-password-visibility-btn" data-target="profile-form-password" aria-label="Afficher le mot de passe" style="position:absolute; top:50%; right:10px; transform:translateY(-50%); background:none; border:none; cursor:pointer; padding:4px; color:#5a655f; display:flex;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  </button>
+                </div>
               </div>
-              <button style="align-self:flex-start; background:#176B4D; color:#FFFFFF; border:none; padding:12px 24px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;" onclick="alert('Profil enregistré !')">Enregistrer</button>
+              <div>
+                <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Confirmer le nouveau mot de passe</label>
+                <div style="position:relative;">
+                  <input id="profile-form-password-confirm" type="password" style="width:100%; padding:12px 44px 12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="Ressaisir le mot de passe" />
+                  <button type="button" class="toggle-password-visibility-btn" data-target="profile-form-password-confirm" aria-label="Afficher le mot de passe" style="position:absolute; top:50%; right:10px; transform:translateY(-50%); background:none; border:none; cursor:pointer; padding:4px; color:#5a655f; display:flex;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  </button>
+                </div>
+              </div>
+              <button id="save-profile-btn" style="align-self:flex-start; background:#176B4D; color:#FFFFFF; border:none; padding:12px 24px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Enregistrer</button>
             </div>
           </div>
         </section>
@@ -513,30 +516,59 @@ export const prerender = false;
   </div>
 
   <script>
+    import { createAdminContent } from '../lib/adminContent.js';
+    import { createDashboardCore } from '../lib/dashboardCore.js';
+
+    // Vues Actualités / Événements / Inscriptions / Messages : exactement
+    // les mêmes que dans /admin (markup dans src/components/admin/,
+    // logique dans lib/adminContent.js) — un super-admin est un admin,
+    // même dans son propre espace.
+    const content = createAdminContent({
+      goPage: (page) => goPage(page),
+      getBadgeHtml: (label, tone) => getBadgeHtml(label, tone),
+      onViewRegistrants: (eventId) => {
+        content.state.pendingInscriptionsEventId = eventId;
+        goPage('inscriptions');
+      },
+    });
+
+    // Dashboard (Vue d'ensemble) : même Dashboard Core que /admin, plus la
+    // section Gouvernance & plateforme (role: 'super_admin').
+    const dashboard = createDashboardCore({
+      goPage: (page) => goPage(page),
+      getBadgeHtml: (label, tone) => getBadgeHtml(label, tone),
+      role: 'super_admin',
+    });
+
     // State management
     const state = {
       user: 'super_admin',
       page: 'overview',
       userSelectedIdx: 0,
       inviteOpen: false,
-      validationSelectedIdx: 0,
       exportConfirmOpen: false,
       twoFA: true,
       backupRunning: false,
       restoreOpen: false,
       statsPeriod: '30 jours',
       journalUserFilter: 'Tous',
+      currentUserId: null,
     };
 
     const navigationItems = [
       { key: 'overview', label: "Vue d'ensemble" },
       { type: 'header', label: 'Gestion du site' },
       { key: 'actualites', label: 'Actualités' },
+      { key: 'galerie', label: 'Galerie' },
+      { key: 'equipe', label: 'Équipe' },
+      { key: 'contenus', label: 'Contenus & validations' },
       { key: 'evenements', label: 'Événements' },
+      { key: 'inscriptions', label: 'Inscriptions' },
+      { key: 'recensement', label: 'Recensement' },
       { key: 'messages', label: 'Messages' },
+      { key: 'pages', label: 'Pages du site' },
       { type: 'header', label: 'Gouvernance' },
       { key: 'users', label: 'Utilisateurs & rôles' },
-      { key: 'contenus', label: 'Contenus & validations' },
       { key: 'donnees', label: 'Données & exports' },
       { key: 'journal', label: "Journal d'activité" },
       { key: 'reglages', label: 'Réglages du site' },
@@ -552,8 +584,13 @@ export const prerender = false;
     const svgMap = {
       overview: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="8" height="8" rx="2"></rect><rect x="13" y="3" width="8" height="8" rx="2"></rect><rect x="3" y="13" width="8" height="8" rx="2"></rect><rect x="13" y="13" width="8" height="8" rx="2"></rect></svg>`,
       actualites: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="7" y1="9" x2="17" y2="9"></line><line x1="7" y1="13" x2="17" y2="13"></line><line x1="7" y1="17" x2="12" y2="17"></line></svg>`,
+      galerie: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M21 15l-5-5L5 21"></path></svg>`,
+      equipe: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="8" r="3.2"></circle><circle cx="16.5" cy="9" r="2.4"></circle><path d="M3.5 19c0-3.3 2.6-5.6 5.9-5.6s5.9 2.3 5.9 5.6"></path><path d="M14.5 13.7c2.6 0.2 4.3 2.2 4.3 5"></path></svg>`,
       evenements: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line></svg>`,
+      inscriptions: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="9"></circle></svg>`,
+      recensement: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 00-3-3.87"></path><path d="M16 3.13a4 4 0 010 7.75"></path></svg>`,
       messages: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 6l9 6 9-6"></path></svg>`,
+      pages: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 3h8l4 4v14a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 017-1z"></path><path d="M15 3v4h4"></path></svg>`,
       users: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="8" r="3.2"></circle><circle cx="17" cy="9" r="2.4"></circle><path d="M3 20c0-3.4 2.7-5.8 6-5.8s6 2.4 6 5.8"></path></svg>`,
       contenus: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="9"></circle></svg>`,
       donnees: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><ellipse cx="12" cy="5.5" rx="8" ry="2.8"></ellipse><path d="M4 5.5V18c0 1.5 3.6 2.8 8 2.8s8-1.3 8-2.8V5.5"></path><path d="M4 12c0 1.5 3.6 2.8 8 2.8s8-1.3 8-2.8"></path></svg>`,
@@ -567,74 +604,117 @@ export const prerender = false;
       profil: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="3.4"></circle><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"></path></svg>`
     };
 
-    const attentionItems = [
-      { text: "3 demandes d'adhésion n'ont pas été traitées depuis plus de 7 jours" },
-      { text: "Un événement à venir ne possède pas encore d'image de couverture" },
-      { text: 'Un compte administrateur est inactif depuis 90 jours' },
-      { text: 'La sauvegarde hebdomadaire doit être vérifiée' }
-    ];
+    // Rempli par loadUsers() depuis GET /api/superadmin/users — plus de données figées.
+    let users = [];
 
-    const govActivity = [
-      { text: 'Mariama a publié l\'actualité « Bienvenue aux nouveaux membres »', time: 'Il y a 3 heures' },
-      { text: "Nasser a configuré la double authentification de sécurité", time: 'Ce matin' },
-      { text: 'Export de données des adhésions effectué par Nasser', time: 'Hier' },
-      { text: 'Connexion administrateur établie depuis l\'IP 82.1XX.XX.XX', time: 'Hier' }
-    ];
+    const ROLE_LABELS = { admin: ['Admin', 'o'], super_admin: ['Super Admin', 'g'], editeur: ['Éditeur', 'n'] };
+    const ROLE_PERMISSIONS = {
+      admin: "Gestion des contenus, événements, médias, messages et demandes. Traitement des inscriptions.",
+      super_admin: "Accès complet : utilisateurs et rôles, réglages globaux, exports, journal d'activité.",
+      editeur: "Création d'articles, événements et ressources en brouillon uniquement."
+    };
+    const AVATAR_GRADIENTS = ['linear-gradient(150deg,#176B4D,#E97824)', 'linear-gradient(150deg,#1F2925,#176B4D)', 'linear-gradient(150deg,#E8D8BF,#176B4D)', 'linear-gradient(150deg,#E97824,#1F2925)', 'linear-gradient(150deg,#5a655f,#1F2925)'];
 
-    const users = [
-      { name: 'Mariama Souley', email: 'mariama.souley@anb-bordeaux.fr', role: 'Admin', roleT: 'o', status: 'Actif', statusT: 'g', last: "Aujourd'hui, 09:12", avatarBg: 'linear-gradient(150deg,#176B4D,#E97824)', permissions: 'Gestion des contenus, événements, médias, messages et demandes. Traitement des inscriptions.' },
-      { name: 'Nasser Diallo', email: 'nasser.diallo@anb-bordeaux.fr', role: 'Super Admin', roleT: 'g', status: 'Actif', statusT: 'g', last: "Aujourd'hui, 08:40", avatarBg: 'linear-gradient(150deg,#1F2925,#176B4D)', permissions: 'Accès complet : utilisateurs et rôles, réglages globaux, exports, sauvegardes, journal d\'activité, sécurité.' },
-      { name: 'Fatou Ibrahim', email: 'fatou.ibrahim@anb-bordeaux.fr', role: 'Éditeur', roleT: 'n', status: 'Actif', statusT: 'g', last: 'Hier, 18:22', avatarBg: 'linear-gradient(150deg,#E8D8BF,#176B4D)', permissions: 'Création d\'articles, événements et ressources en brouillon uniquement.' },
-      { name: 'Aïcha Boubacar', email: 'aicha.boubacar@anb-bordeaux.fr', role: 'Admin', roleT: 'o', status: 'Invitation envoyée', statusT: 'o', last: '—', avatarBg: 'linear-gradient(150deg,#E97824,#1F2925)', permissions: 'Rôle admin en attente de validation.' },
-      { name: 'Ibrahim Moussa', email: 'ibrahim.moussa@anb-bordeaux.fr', role: 'Super Admin', roleT: 'g', status: 'Désactivé', statusT: 'r', last: 'Il y a 92 jours', avatarBg: 'linear-gradient(150deg,#5a655f,#1F2925)', permissions: 'Compte suspendu pour inactivité prolongée.' }
-    ];
+    function decorateUser(u, i) {
+      const [roleLabel, roleT] = ROLE_LABELS[u.role] || [u.role, 'n'];
+      return {
+        id: u.id,
+        name: u.nom,
+        email: u.email,
+        dbRole: u.role,
+        dbStatut: u.statut,
+        role: roleLabel,
+        roleT,
+        status: u.statut === 'actif' ? 'Actif' : 'Désactivé',
+        statusT: u.statut === 'actif' ? 'g' : 'r',
+        last: '—',
+        avatarBg: AVATAR_GRADIENTS[i % AVATAR_GRADIENTS.length],
+        permissions: ROLE_PERMISSIONS[u.role] || ''
+      };
+    }
+
+    async function loadUsers() {
+      const container = document.getElementById('users-list-container');
+      container.innerHTML = '<div style="padding:24px; font-size:13.5px; color:#5a655f;">Chargement…</div>';
+      try {
+        const res = await fetch('/api/superadmin/users');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur de chargement.');
+        users = data.users.map(decorateUser);
+        state.userSelectedIdx = 0;
+        renderUsers();
+      } catch (err) {
+        container.innerHTML = `<div style="padding:24px; font-size:13.5px; color:#B14524;">${err.message}</div>`;
+      }
+    }
 
     const permissionMatrix = [
-      { label: 'Gestion des contenus (articles, événements, médias)', superadmin: '✓', admin: '✓', editeur: 'Brouillon' },
+      { label: 'Gestion des contenus (articles, événements, médias)', superadmin: '✓', admin: '✓', editeur: 'Brouillon (articles)' },
       { label: 'Traitement des inscriptions et adhésions', superadmin: '✓', admin: '✓', editeur: '—' },
       { label: 'Messages et demandes de contact', superadmin: '✓', admin: '✓', editeur: '—' },
-      { label: 'Statistiques de fréquentation', superadmin: '✓', admin: 'Simples', editeur: '—' },
+      { label: 'Statistiques de fréquentation', superadmin: '✓', admin: '✓', editeur: '—' },
       { label: 'Gestion des utilisateurs et rôles', superadmin: '✓', admin: '—', editeur: '—' },
       { label: 'Réglages globaux du site', superadmin: '✓', admin: '—', editeur: '—' },
       { label: 'Exports de données de la plateforme', superadmin: '✓', admin: '—', editeur: '—' },
       { label: 'Sécurité et sauvegardes', superadmin: '✓', admin: '—', editeur: '—' }
     ];
 
-    const validationQueue = [
-      { author: 'Fatou Ibrahim', type: 'Article', date: 'il y a 1 jour', title: "Portrait : parcours d'une étudiante nigérienne", status: 'En attente' },
-      { author: 'Fatou Ibrahim', type: 'Événement', date: 'il y a 2 jours', title: 'Atelier couture traditionnelle', status: 'En attente' },
-      { author: 'Aminata (Bénévole)', type: 'Ressource', date: 'il y a 3 jours', title: 'Guide : renouveler son titre de séjour', status: 'Renvoyé avec commentaire' }
-    ];
+    // Contenus & validations : vue partagée, voir lib/adminContent.js
+    // (content.loadValidations(), appelée depuis renderPageDetails()).
 
-    const dataRequests = [
-      { type: "Demande d'accès", requester: 'Aïcha Boubacar', status: 'Reçue', tone: 'o', responsable: 'Nasser D.', deadline: '25 juillet 2026' },
-      { type: 'Demande de suppression', requester: 'Ancien membre', status: 'En cours', tone: 'o', responsable: 'Nasser D.', deadline: '18 juillet 2026' },
-      { type: 'Demande de rectification', requester: 'Ibrahim Moussa', status: 'Traitée', tone: 'g', responsable: 'Mariama S.', deadline: 'Clôturée' }
-    ];
+    // Rempli par loadJournal() depuis GET /api/superadmin/journal.
+    let journalLogs = [];
 
-    const journalLogs = [
-      { date: '12 juillet 2026, 14:32', user: 'Mariama', role: 'Admin', roleT: 'o', action: "Publication d'une actualité", detail: 'Bienvenue aux nouveaux membres', ip: '82.1XX.XX.XX' },
-      { date: '12 juillet 2026, 11:18', user: 'Nasser', role: 'Super Admin', roleT: 'g', action: 'Modification du rôle utilisateur', detail: "Fatou passe d'Éditeur à Admin", ip: '90.4XX.XX.XX' },
-      { date: '11 juillet 2026, 16:03', user: 'Nasser', role: 'Super Admin', roleT: 'g', action: 'Export de données', detail: 'Inscriptions à la Journée culturelle', ip: '90.4XX.XX.XX' },
-      { date: '10 juillet 2026, 09:47', user: 'Mariama', role: 'Admin', roleT: 'o', action: "Création d'un événement", detail: 'Tournoi de football amical', ip: '82.1XX.XX.XX' },
-      { date: '9 juillet 2026, 19:05', user: 'Fatou', role: 'Éditeur', roleT: 'n', action: 'Soumission pour validation', detail: "Portrait : parcours d'une étudiante", ip: '78.2XX.XX.XX' },
-      { date: '8 juillet 2026, 08:15', user: 'Nasser', role: 'Super Admin', roleT: 'g', action: 'Connexion administrateur', detail: 'Connexion depuis Bordeaux', ip: '90.4XX.XX.XX' }
-    ];
+    const JOURNAL_ROLE_T = { Admin: 'o', 'Super Admin': 'g', 'Éditeur': 'n' };
+    const MONTHS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
 
+    function firstNameFromEmail(email) {
+      const local = (email || '').split('@')[0] || '';
+      const first = local.split('.')[0] || local;
+      return first ? first.charAt(0).toUpperCase() + first.slice(1) : 'Inconnu';
+    }
+
+    function formatJournalDate(sqlDate) {
+      // "YYYY-MM-DD HH:MM:SS" (UTC, tel que stocké par D1) -> "12 juillet 2026, 14:32"
+      if (!sqlDate) return '—';
+      const [datePart, timePart] = sqlDate.split(' ');
+      const [y, m, d] = (datePart || '').split('-').map(Number);
+      const [h, min] = (timePart || '').split(':');
+      if (!y || !m || !d) return sqlDate;
+      return `${d} ${MONTHS_FR[m - 1]} ${y}, ${h}:${min}`;
+    }
+
+    async function loadJournal() {
+      const container = document.getElementById('journal-list-container');
+      container.innerHTML = '<div style="padding:24px; font-size:13.5px; color:#5a655f;">Chargement…</div>';
+      try {
+        const res = await fetch('/api/superadmin/journal');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur de chargement.');
+        journalLogs = data.logs.map(l => ({
+          date: formatJournalDate(l.created_at),
+          user: firstNameFromEmail(l.utilisateur_email),
+          role: l.role,
+          roleT: JOURNAL_ROLE_T[l.role] || 'n',
+          action: l.action,
+          detail: l.details,
+          ip: l.adresse_ip
+        }));
+        renderJournal();
+      } catch (err) {
+        container.innerHTML = `<div style="padding:24px; font-size:13.5px; color:#B14524;">${err.message}</div>`;
+      }
+    }
+
+    // État honnête : aucun outil tiers n'est réellement branché pour
+    // l'instant (à part la réception des formulaires, déjà en D1).
     const integrations = [
-      { name: 'Google Maps', desc: 'Affiche la carte sur la page Contact', status: 'Connecté', tone: 'g', sync: "Aujourd'hui, 07:00", actionLabel: 'Configurer' },
-      { name: 'Outil newsletter', desc: 'Envoi des actualités par e-mail', status: 'Connecté', tone: 'g', sync: 'Hier, 22:00', actionLabel: 'Configurer' },
-      { name: 'Paiement / adhésion en ligne', desc: 'Paiement de la cotisation en ligne', status: 'Non connecté', tone: 'n', sync: '—', actionLabel: 'Connecter' },
-      { name: 'Analytics', desc: 'Statistiques de fréquentation du site', status: 'Connecté', tone: 'g', sync: "Aujourd'hui, 06:00", actionLabel: 'Configurer' },
-      { name: 'Réseaux sociaux', desc: 'Partage automatique sur Facebook et Instagram', status: 'Connecté', tone: 'g', sync: 'Il y a 3h', actionLabel: 'Configurer' },
-      { name: 'Formulaires', desc: 'Réception des formulaires du site', status: 'Connecté', tone: 'g', sync: "Aujourd'hui, 09:00", actionLabel: 'Configurer' }
-    ];
-
-    const backupHistory = [
-      { date: '12 juillet 2026, 03:00', status: 'Réussie', tone: 'g', size: '482 Mo' },
-      { date: '11 juillet 2026, 03:00', status: 'Réussie', tone: 'g', size: '480 Mo' },
-      { date: '10 juillet 2026, 03:00', status: 'Réussie', tone: 'g', size: '479 Mo' },
-      { date: '09 juillet 2026, 03:00', status: 'Échouée', tone: 'r', size: '—' }
+      { name: 'Google Maps', desc: 'Affiche la carte sur la page Contact', status: 'À venir', tone: 'n', sync: '—', actionLabel: 'Bientôt' },
+      { name: 'Outil newsletter', desc: 'Envoi des actualités par e-mail', status: 'À venir', tone: 'n', sync: '—', actionLabel: 'Bientôt' },
+      { name: 'Paiement / adhésion en ligne', desc: 'Paiement de la cotisation en ligne', status: 'À venir', tone: 'n', sync: '—', actionLabel: 'Bientôt' },
+      { name: 'Analytics', desc: 'Statistiques de fréquentation du site', status: 'À venir', tone: 'n', sync: '—', actionLabel: 'Bientôt' },
+      { name: 'Réseaux sociaux', desc: 'Partage automatique sur Facebook et Instagram', status: 'À venir', tone: 'n', sync: '—', actionLabel: 'Bientôt' },
+      { name: 'Formulaires', desc: 'Réception des formulaires du site (recensement/adhésion, contact)', status: 'Connecté', tone: 'g', sync: 'En continu', actionLabel: 'Voir' }
     ];
 
     const legalSections = [
@@ -659,7 +739,48 @@ export const prerender = false;
 
     document.addEventListener('DOMContentLoaded', () => {
       generateNav();
-      goPage('overview');
+
+      // Reflète l'e-mail édité depuis Réglages du site (identite_email) sur
+      // le lien RGPD de la vue "Données et exports" — même principe
+      // best-effort que le site public, via la route publique (pas besoin
+      // de la version admin ici, ce n'est qu'un lien de contact affiché).
+      fetch('/api/settings')
+        .then((res) => res.json())
+        .then(({ settings }) => {
+          const rgpdLink = document.getElementById('rgpd-email-link');
+          if (rgpdLink && settings.identite_email) {
+            rgpdLink.textContent = settings.identite_email;
+            rgpdLink.setAttribute('href', `mailto:${settings.identite_email}`);
+          }
+        })
+        .catch(() => {});
+
+      // Câblage des vues partagées (upload, formulaires) — une seule fois.
+      content.wire();
+      document.querySelectorAll('.btn-create-news').forEach((btn) => {
+        btn.addEventListener('click', () => content.resetNewsForm());
+      });
+      document.querySelectorAll('.btn-create-event').forEach((btn) => {
+        btn.addEventListener('click', () => content.resetEventForm());
+      });
+      document.querySelectorAll('.btn-create-galerie').forEach((btn) => {
+        btn.addEventListener('click', () => content.resetGalerieForm());
+      });
+      document.querySelectorAll('.btn-create-equipe').forEach((btn) => {
+        btn.addEventListener('click', () => content.resetEquipeForm());
+      });
+      // Boutons « Annuler » / retour des formulaires partagés.
+      document.querySelectorAll('.nav-trigger-btn').forEach((btn) => {
+        btn.addEventListener('click', () => goPage(btn.dataset.page));
+      });
+
+      let initialPage = 'overview';
+      try {
+        const saved = sessionStorage.getItem('superadmin-current-page');
+        if (saved && document.getElementById(`view-${saved}`)) initialPage = saved;
+      } catch {}
+      goPage(initialPage);
+      loadSessionIdentity();
 
       document.querySelectorAll('.logout-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -678,7 +799,37 @@ export const prerender = false;
       closeDrawerBtn.addEventListener('click', () => {
         mobileDrawer.classList.add('hidden');
       });
+
+      // Afficher/masquer un champ mot de passe (délégation : couvre tous
+      // les boutons .toggle-password-visibility-btn, y compris ceux
+      // injectés plus tard).
+      document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.toggle-password-visibility-btn');
+        if (!btn) return;
+        const input = document.getElementById(btn.dataset.target);
+        if (!input) return;
+        const showing = input.type === 'text';
+        input.type = showing ? 'password' : 'text';
+        btn.setAttribute('aria-label', showing ? 'Afficher le mot de passe' : 'Masquer le mot de passe');
+      });
     });
+
+    // Identité de session : nom/rôle réels dans la sidebar, la salutation
+    // de la Vue d'ensemble, et l'id nécessaire pour bloquer l'auto-suspension
+    // dans Utilisateurs & rôles.
+    async function loadSessionIdentity() {
+      try {
+        const res = await fetch('/api/superadmin/profile');
+        const data = await res.json();
+        if (!res.ok) return;
+        state.currentUserId = data.id;
+        const roleLabel = PROFILE_ROLE_LABELS[data.role] || data.role;
+        document.getElementById('sidebar-user-name').textContent = data.nom;
+        document.getElementById('sidebar-user-role').textContent = roleLabel;
+      } catch {
+        // Silencieux : la sidebar garde ses tirets par défaut.
+      }
+    }
 
     function goPage(pageKey) {
       state.page = pageKey;
@@ -695,7 +846,13 @@ export const prerender = false;
         overview: "Vue d'ensemble", users: 'Utilisateurs & rôles', contenus: 'Contenus & validations',
         donnees: 'Données & exports', journal: "Journal d'activité", reglages: 'Réglages du site',
         integrations: 'Intégrations', securite: 'Sécurité', sauvegardes: 'Sauvegardes',
-        mentions: 'Mentions & RGPD', stats: 'Statistiques globales', profil: 'Mon profil'
+        mentions: 'Mentions & RGPD', stats: 'Statistiques globales', profil: 'Mon profil',
+        actualites: 'Actualités', 'actualites-new': 'Nouvelle actualité',
+        galerie: 'Galerie', 'galerie-new': 'Ajouter un média',
+        equipe: 'Équipe', 'equipe-new': 'Ajouter un membre',
+        evenements: 'Événements', 'evenements-new': 'Créer un événement',
+        inscriptions: 'Inscriptions', recensement: 'Recensement',
+        messages: 'Messages', pages: 'Pages du site'
       };
 
       document.getElementById('breadcrumb-page-label').textContent = pageTitleMap[pageKey] || '';
@@ -706,7 +863,12 @@ export const prerender = false;
       });
       
       const targetView = document.getElementById(`view-${pageKey}`);
-      if (targetView) targetView.classList.remove('hidden');
+      if (targetView) {
+        targetView.classList.remove('hidden');
+        // Retient l'onglet courant pour qu'un rechargement de page (F5) y
+        // revienne au lieu de repartir sur Vue d'ensemble.
+        try { sessionStorage.setItem('superadmin-current-page', pageKey); } catch {}
+      }
 
       document.getElementById('mobile-sidebar-drawer').classList.add('hidden');
 
@@ -770,54 +932,63 @@ export const prerender = false;
 
     function renderPageDetails(pageKey) {
       if (pageKey === 'overview') {
-        renderOverview();
+        dashboard.load();
       } else if (pageKey === 'users') {
-        renderUsers();
+        loadUsers();
       } else if (pageKey === 'contenus') {
-        renderValidations();
-      } else if (pageKey === 'donnees') {
-        renderDonnees();
+        content.loadValidations();
       } else if (pageKey === 'journal') {
-        renderJournal();
+        loadJournal();
+      } else if (pageKey === 'reglages') {
+        loadSettings();
       } else if (pageKey === 'integrations') {
         renderIntegrations();
       } else if (pageKey === 'securite') {
         renderSecurite();
-      } else if (pageKey === 'sauvegardes') {
-        renderSauvegardes();
       } else if (pageKey === 'mentions') {
         renderMentions();
       } else if (pageKey === 'stats') {
-        renderStats();
+        loadStats();
+      } else if (pageKey === 'profil') {
+        loadProfile();
+      } else if (pageKey === 'actualites') {
+        loadContentThen(content.renderActualites);
+      } else if (pageKey === 'galerie') {
+        content.renderGalerie();
+      } else if (pageKey === 'equipe') {
+        content.renderEquipe();
+      } else if (pageKey === 'evenements') {
+        loadContentThen(content.renderEvenements);
+      } else if (pageKey === 'inscriptions') {
+        loadContentThen(content.renderInscriptions);
+      } else if (pageKey === 'recensement') {
+        loadContentThen(content.renderRecensement);
+      } else if (pageKey === 'messages') {
+        loadContentThen(content.renderMessages);
+      } else if (pageKey === 'pages') {
+        loadContentThen(content.renderPages);
       }
     }
 
-    // 1. Overview
-    function renderOverview() {
-      const attWrapper = document.getElementById('overview-attention-list');
-      attWrapper.innerHTML = '';
-      attentionItems.forEach(a => {
-        const item = document.createElement('div');
-        item.style.cssText = 'display:flex; align-items:center; gap:12px; padding:12px 14px; background:rgba(233,120,36,0.08); border-radius:12px;';
-        item.innerHTML = `
-          <span style="width:8px; height:8px; border-radius:50%; background:#E97824; flex-shrink:0;"></span>
-          <span style="font-size:13.5px; color:#1F2925;">${a.text}</span>
-        `;
-        attWrapper.appendChild(item);
-      });
-
-      const actWrapper = document.getElementById('overview-activity-list');
-      actWrapper.innerHTML = '';
-      govActivity.forEach(a => {
-        const item = document.createElement('div');
-        item.style.cssText = 'display:flex; gap:12px; align-items:flex-start; font-size:14px; color:#3f4a45;';
-        item.innerHTML = `
-          <div style="width:8px; height:8px; border-radius:50%; background:#176B4D; margin-top:7px; flex-shrink:0;"></div>
-          <div>${a.text}<span style="color:#9aa39c; font-size:12.5px; display:block; margin-top:2px;">${a.time}</span></div>
-        `;
-        actWrapper.appendChild(item);
-      });
+    // Les vues partagées ont besoin des données de /api/admin/data. On les
+    // charge à la première ouverture seulement, puis on rejoue le rendu.
+    let contentDataLoaded = false;
+    async function loadContentThen(render) {
+      if (contentDataLoaded) {
+        render();
+        return;
+      }
+      try {
+        content.setData(await content.fetchData());
+        contentDataLoaded = true;
+        render();
+      } catch (err) {
+        alert('Impossible de charger les contenus : ' + err.message);
+      }
     }
+
+    // 1. Overview — vue partagée, voir lib/dashboardCore.js
+    // (dashboard.load(), appelée depuis renderPageDetails()).
 
     // 2. Users
     function renderUsers() {
@@ -870,23 +1041,54 @@ export const prerender = false;
         <p style="font-size:13.5px; line-height:1.6; color:#3f4a45; margin:0 0 20px; background: rgba(31,41,37,0.02); padding: 10px; border-radius:8px;">${selected.permissions}</p>
         <div style="display:flex; flex-direction:column; gap:10px;">
           <button id="user-reset-btn" style="background:#F8F4EC; color:#1F2925; border:none; padding:11px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">Réinitialiser l'accès</button>
-          <button id="user-toggle-btn" style="background:#F8F4EC; color:#1F2925; border:none; padding:11px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">${selected.status === 'Actif' ? 'Suspendre le compte' : 'Activer le compte'}</button>
+          ${selected.id === state.currentUserId
+            ? `<div style="font-size:12.5px; color:#9aa39c; text-align:center; padding:8px;">C'est votre propre compte — utilisez « Mon profil » pour le modifier. Vous ne pouvez pas vous suspendre ni vous supprimer vous-même.</div>`
+            : `<button id="user-toggle-btn" style="background:#F8F4EC; color:#1F2925; border:none; padding:11px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">${selected.status === 'Actif' ? 'Suspendre le compte' : 'Activer le compte'}</button>
+               <button id="user-delete-btn" style="background:rgba(177,69,36,0.08); color:#B14524; border:none; padding:11px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">Supprimer l'utilisateur</button>`}
         </div>
       `;
 
-      document.getElementById('user-reset-btn').addEventListener('click', () => {
-        alert(`Lien de réinitialisation de mot de passe envoyé à ${selected.email}`);
-      });
-      document.getElementById('user-toggle-btn').addEventListener('click', () => {
-        if (selected.status === 'Actif') {
-          selected.status = 'Désactivé';
-          selected.statusT = 'r';
-        } else {
-          selected.status = 'Actif';
-          selected.statusT = 'g';
+      document.getElementById('user-reset-btn').addEventListener('click', async () => {
+        try {
+          const res = await fetch('/api/superadmin/users', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: selected.id, resetPassword: true })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Erreur.');
+          alert(`Nouveau mot de passe temporaire pour ${selected.email} : ${data.tempPassword}\n(à communiquer manuellement — aucun e-mail n'est envoyé)`);
+        } catch (err) {
+          alert(err.message);
         }
-        logActivity('Nasser', 'Super Admin', 'Modification statut utilisateur', `${selected.name} (${selected.status})`);
-        renderUsers();
+      });
+      document.getElementById('user-toggle-btn')?.addEventListener('click', async () => {
+        const newStatut = selected.dbStatut === 'actif' ? 'desactive' : 'actif';
+        try {
+          const res = await fetch('/api/superadmin/users', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: selected.id, statut: newStatut })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Erreur.');
+          state.userSelectedIdx = users.findIndex(u => u.id === selected.id);
+          await loadUsers();
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+      document.getElementById('user-delete-btn')?.addEventListener('click', async () => {
+        if (!confirm(`Supprimer définitivement le compte de ${selected.name} (${selected.email}) ? Cette action est irréversible.`)) return;
+        try {
+          const res = await fetch(`/api/superadmin/users?id=${selected.id}`, { method: 'DELETE' });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Erreur.');
+          state.userSelectedIdx = 0;
+          await loadUsers();
+        } catch (err) {
+          alert(err.message);
+        }
       });
 
       const matrixWrapper = document.getElementById('permission-matrix-rows');
@@ -916,122 +1118,40 @@ export const prerender = false;
       document.getElementById('invite-success-alert').classList.add('hidden');
     });
 
-    document.getElementById('invite-user-submit-btn').addEventListener('click', () => {
+    document.getElementById('invite-user-submit-btn').addEventListener('click', async () => {
       const name = document.getElementById('invite-form-name').value.trim();
       const email = document.getElementById('invite-form-email').value.trim();
-      const role = document.getElementById('invite-form-role').value;
+      const roleSelectValue = document.getElementById('invite-form-role').value;
+      const dbRoleMap = { Admin: 'admin', 'Super Admin': 'super_admin', 'Éditeur / Bénévole': 'editeur' };
 
       if (!name || !email) {
         alert('Veuillez remplir le nom et le mail.');
         return;
       }
 
-      const roleTMap = { Admin: 'o', 'Super Admin': 'g', 'Éditeur / Bénévole': 'n' };
-      const roleMap = { Admin: 'Admin', 'Super Admin': 'Super Admin', 'Éditeur / Bénévole': 'Éditeur' };
+      try {
+        const res = await fetch('/api/superadmin/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nom: name, email, role: dbRoleMap[roleSelectValue] })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur.');
 
-      users.push({
-        name,
-        email,
-        role: roleMap[role],
-        roleT: roleTMap[role],
-        status: 'Invitation envoyée',
-        statusT: 'o',
-        last: '—',
-        avatarBg: 'linear-gradient(150deg,#176B4D,#1F2925)',
-        permissions: `Accès configuré en tant que ${role}`
-      });
+        const successAlert = document.getElementById('invite-success-alert');
+        successAlert.textContent = `✓ Compte créé pour ${email}. Mot de passe temporaire : ${data.tempPassword} (à communiquer manuellement, aucun e-mail n'est envoyé).`;
+        successAlert.classList.remove('hidden');
 
-      logActivity('Nasser', 'Super Admin', 'Invitation utilisateur', `${name} (${role})`);
-
-      document.getElementById('invite-success-alert').classList.remove('hidden');
-      setTimeout(() => {
         document.getElementById('invite-form-name').value = '';
         document.getElementById('invite-form-email').value = '';
-        inviteBox.classList.add('hidden');
-        state.inviteOpen = false;
-        renderUsers();
-      }, 1500);
+        await loadUsers();
+      } catch (err) {
+        alert(err.message);
+      }
     });
 
-    // 3. Validations
-    function renderValidations() {
-      const listWrapper = document.getElementById('validations-queue-list');
-      listWrapper.innerHTML = '';
-
-      validationQueue.forEach((c, i) => {
-        const isSelected = state.validationSelectedIdx === i;
-        const item = document.createElement('div');
-        item.style.cssText = `padding:16px; border-bottom:1px solid rgba(31,41,37,0.06); cursor:pointer; background:${isSelected ? '#F8F4EC' : 'transparent'}; border-left:3px solid ${isSelected ? '#176B4D' : 'transparent'};`;
-        item.innerHTML = `
-          <div style="display:flex; justify-content:space-between; gap:8px;">
-            <span style="background:rgba(23,107,77,0.08); color:#176B4D; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700;">${c.type}</span>
-            <span style="font-size:12px; color:#9aa39c;">${c.date}</span>
-          </div>
-          <div style="font-size:14px; font-weight:700; color:#1F2925; margin-top:8px;">${c.title}</div>
-          <div style="font-size:12.5px; color:#5a655f; margin-top:2px;">Par ${c.author} · ${c.status}</div>
-        `;
-        item.addEventListener('click', () => {
-          state.validationSelectedIdx = i;
-          renderValidations();
-        });
-        listWrapper.appendChild(item);
-      });
-
-      const detailBox = document.getElementById('validation-detail-box');
-      const selected = validationQueue[state.validationSelectedIdx] || validationQueue[0];
-
-      if (!selected) {
-        detailBox.innerHTML = '';
-        return;
-      }
-
-      detailBox.innerHTML = `
-        <h3 style="font-size:16px; font-weight:700; color:#1F2925; margin:0 0 6px;">${selected.title}</h3>
-        <div style="font-size:13px; color:#5a655f; margin-bottom:16px;">Par ${selected.author} · ${selected.date}</div>
-        <div style="aspect-ratio:16/9; border-radius:14px; background:linear-gradient(150deg,#E8D8BF,#176B4D); margin-bottom:18px;"></div>
-        <div style="font-size:13px; font-weight:700; color:#1F2925; margin-bottom:8px;">Commentaire pour l'auteur</div>
-        <textarea id="validation-comment-text" rows="2" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:13.5px; resize:vertical; margin-bottom:16px;" placeholder="Optionnel..."></textarea>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <button id="validation-approve-btn" style="background:#176B4D; color:#FFFFFF; border:none; padding:11px 20px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">Approuver et publier</button>
-          <button id="validation-return-btn" style="background:#F8F4EC; color:#1F2925; border:none; padding:11px 20px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">Renvoyer avec commentaire</button>
-        </div>
-      `;
-
-      document.getElementById('validation-approve-btn').addEventListener('click', () => {
-        validationQueue.splice(state.validationSelectedIdx, 1);
-        state.validationSelectedIdx = 0;
-        logActivity('Nasser', 'Super Admin', 'Validation de contenu', selected.title);
-        alert(`Le contenu "${selected.title}" a été approuvé et publié !`);
-        renderValidations();
-      });
-
-      document.getElementById('validation-return-btn').addEventListener('click', () => {
-        const comment = document.getElementById('validation-comment-text').value.trim() || 'Des ajustements sont requis.';
-        selected.status = 'Renvoyé avec commentaire';
-        logActivity('Nasser', 'Super Admin', 'Retour de contenu', `${selected.title} : ${comment}`);
-        alert(`Le contenu a été renvoyé avec votre commentaire.`);
-        renderValidations();
-      });
-    }
-
-    // 4. Données
-    function renderDonnees() {
-      const wrapper = document.getElementById('personal-data-requests-container');
-      wrapper.innerHTML = '';
-      
-      dataRequests.forEach(r => {
-        const row = document.createElement('div');
-        row.style.cssText = 'display:flex; align-items:center; gap:16px; padding:14px 0; border-bottom:1px solid rgba(31,41,37,0.06); flex-wrap:wrap;';
-        row.innerHTML = `
-          <div style="flex:1; min-width:180px; font-size:14px; font-weight:700; color:#1F2925;">${r.type}</div>
-          <div style="min-width:140px; font-size:13px; color:#5a655f;">${r.requester}</div>
-          ${getBadgeHtml(r.status, r.tone)}
-          <div style="min-width:140px; font-size:13px; color:#5a655f;">Resp. : ${r.responsable}</div>
-          <div style="min-width:140px; font-size:13px; color:#5a655f;">Échéance : ${r.deadline}</div>
-        `;
-        wrapper.appendChild(row);
-      });
-    }
+    // 3. Validations — vue partagée, voir lib/adminContent.js
+    // (content.loadValidations(), appelée depuis renderPageDetails()).
 
     const generateExportBtn = document.getElementById('generate-export-btn');
     const exportConfirmBox = document.getElementById('export-confirm-box');
@@ -1047,15 +1167,48 @@ export const prerender = false;
       exportSuccessAlert.classList.add('hidden');
     });
 
-    document.getElementById('confirm-export-action').addEventListener('click', () => {
+    document.getElementById('confirm-export-action').addEventListener('click', async () => {
       const reason = document.getElementById('export-reason').value.trim();
-      exportConfirmBox.classList.add('hidden');
-      exportSuccessAlert.classList.remove('hidden');
-      logActivity('Nasser', 'Super Admin', 'Export de données sécurisé', reason);
-      setTimeout(() => {
-        exportSuccessAlert.classList.add('hidden');
-        document.getElementById('export-reason').value = '';
-      }, 2000);
+      const period = document.getElementById('export-period').value;
+      const include = ['recensement', 'inscriptions', 'messages'].filter(
+        (k) => document.getElementById(`export-check-${k}`).checked
+      );
+
+      if (include.length === 0) {
+        alert('Sélectionnez au moins une source de données.');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/superadmin/export', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ include, period, reason })
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || 'Erreur lors de la génération de l\'export.');
+        }
+        const csv = await res.text();
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `export-anb-${Date.now()}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+
+        exportConfirmBox.classList.add('hidden');
+        exportSuccessAlert.classList.remove('hidden');
+        setTimeout(() => {
+          exportSuccessAlert.classList.add('hidden');
+          document.getElementById('export-reason').value = '';
+        }, 3000);
+      } catch (err) {
+        alert(err.message);
+      }
     });
 
     document.getElementById('cancel-export-action').addEventListener('click', () => {
@@ -1066,7 +1219,7 @@ export const prerender = false;
     function renderJournal() {
       const tabsWrapper = document.querySelector('.journal-tab-container');
       tabsWrapper.innerHTML = '';
-      const filters = ['Tous', 'Mariama', 'Nasser', 'Fatou'];
+      const filters = ['Tous', ...new Set(journalLogs.map(j => j.user))];
 
       filters.forEach(f => {
         const btn = document.createElement('button');
@@ -1104,6 +1257,99 @@ export const prerender = false;
         container.appendChild(row);
       });
     }
+
+    // 5bis. Réglages du site (identité + SEO -> site_settings)
+    async function loadSettings() {
+      try {
+        const res = await fetch('/api/superadmin/settings');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur de chargement.');
+        const s = data.settings;
+        document.getElementById('settings-identite-nom').value = s.identite_nom || '';
+        document.getElementById('settings-identite-slogan').value = s.identite_slogan || '';
+        document.getElementById('settings-identite-email').value = s.identite_email || '';
+        document.getElementById('settings-identite-telephone').value = s.identite_telephone || '';
+        document.getElementById('settings-identite-adresse').value = s.identite_adresse || '';
+        document.getElementById('settings-seo-titre').value = s.seo_titre || '';
+        document.getElementById('settings-seo-description').value = s.seo_description || '';
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function saveSettings(keys) {
+      const payload = {};
+      keys.forEach((k) => { payload[k] = document.getElementById(`settings-${k.replace(/_/g, '-')}`).value.trim(); });
+      try {
+        const res = await fetch('/api/superadmin/settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur.');
+        alert('Réglages enregistrés.');
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    document.getElementById('save-identite-btn').addEventListener('click', () => {
+      saveSettings(['identite_nom', 'identite_slogan', 'identite_email', 'identite_telephone', 'identite_adresse']);
+    });
+    document.getElementById('save-seo-btn').addEventListener('click', () => {
+      saveSettings(['seo_titre', 'seo_description']);
+    });
+
+    // 5ter. Mon profil
+    const PROFILE_ROLE_LABELS = { admin: 'Admin', super_admin: 'Super Admin', editeur: 'Éditeur' };
+
+    async function loadProfile() {
+      try {
+        const res = await fetch('/api/superadmin/profile');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur de chargement.');
+        const roleLabel = PROFILE_ROLE_LABELS[data.role] || data.role;
+        document.getElementById('profile-form-name').value = data.nom;
+        document.getElementById('profile-form-email').value = data.email;
+        document.getElementById('profile-form-role').value = roleLabel;
+        document.getElementById('profile-form-password').value = '';
+        document.getElementById('profile-form-password-confirm').value = '';
+        document.getElementById('profile-header-name').textContent = data.nom;
+        document.getElementById('profile-header-role').textContent = roleLabel;
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    document.getElementById('save-profile-btn').addEventListener('click', async () => {
+      const nom = document.getElementById('profile-form-name').value.trim();
+      const email = document.getElementById('profile-form-email').value.trim();
+      const password = document.getElementById('profile-form-password').value;
+      const passwordConfirm = document.getElementById('profile-form-password-confirm').value;
+
+      if (password && password !== passwordConfirm) {
+        alert('Les deux mots de passe ne correspondent pas.');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/superadmin/profile', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nom, email, password: password || undefined })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur.');
+        alert('Profil enregistré !');
+        document.getElementById('profile-form-password').value = '';
+        document.getElementById('profile-form-password-confirm').value = '';
+        document.getElementById('profile-header-name').textContent = nom;
+        document.getElementById('sidebar-user-name').textContent = nom;
+      } catch (err) {
+        alert(err.message);
+      }
+    });
 
     // 6. Intégrations
     function renderIntegrations() {
@@ -1180,62 +1426,6 @@ export const prerender = false;
       };
     }
 
-    // 8. Sauvegardes
-    function renderSauvegardes() {
-      const historyList = document.getElementById('backup-history-list');
-      historyList.innerHTML = '';
-
-      backupHistory.forEach(b => {
-        const row = document.createElement('div');
-        row.style.cssText = 'display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid rgba(31,41,37,0.06); font-size:13.5px; flex-wrap:wrap; gap:8px;';
-        row.innerHTML = `
-          <span style="color:#1F2925;">${b.date}</span>
-          ${getBadgeHtml(b.status, b.tone)}
-          <span style="color:#9aa39c;">${b.size}</span>
-        `;
-        historyList.appendChild(row);
-      });
-    }
-
-    const runBackupBtn = document.getElementById('run-backup-btn');
-    const backupAlert = document.getElementById('backup-running-alert');
-    runBackupBtn.addEventListener('click', () => {
-      backupAlert.classList.remove('hidden');
-      const date = new Date();
-      const pad = (n) => String(n).padStart(2, '0');
-      const dateStr = `${date.getDate()} juillet 2026, ${pad(date.getHours())}:${pad(date.getMinutes())}`;
-      
-      backupHistory.unshift({
-        date: dateStr,
-        status: 'Réussie',
-        tone: 'g',
-        size: '483 Mo'
-      });
-
-      logActivity('Nasser', 'Super Admin', 'Lancement de sauvegarde', 'Sauvegarde manuelle du système');
-
-      setTimeout(() => {
-        backupAlert.classList.add('hidden');
-        renderSauvegardes();
-      }, 1500);
-    });
-
-    const openRestoreBtn = document.getElementById('open-restore-btn');
-    const restoreBox = document.getElementById('restore-confirm-box');
-
-    openRestoreBtn.addEventListener('click', () => {
-      restoreBox.classList.remove('hidden');
-    });
-    document.getElementById('cancel-restore-action').addEventListener('click', () => {
-      restoreBox.classList.add('hidden');
-    });
-    document.getElementById('confirm-restore-action').addEventListener('click', () => {
-      restoreBox.classList.add('hidden');
-      alert('Restauration système complétée.');
-      logActivity('Nasser', 'Super Admin', 'Restauration système', 'Restauration effectuée avec succès');
-      renderSauvegardes();
-    });
-
     // 9. Mentions
     function renderMentions() {
       const container = document.getElementById('legal-sections-container');
@@ -1256,79 +1446,54 @@ export const prerender = false;
     }
 
     // 10. Statistiques
-    function renderStats() {
+    const STATS_PERIODS = [
+      { label: '7 jours', days: '7' },
+      { label: '30 jours', days: '30' },
+      { label: '3 mois', days: '90' },
+      { label: '1 an', days: '365' }
+    ];
+
+    function renderStatsPeriodButtons() {
       const periodsWrapper = document.querySelector('.stats-period-container');
       periodsWrapper.innerHTML = '';
-      const periodDefs = ['7 jours', '30 jours', '3 mois', '1 an'];
-
-      periodDefs.forEach(p => {
+      STATS_PERIODS.forEach(p => {
         const btn = document.createElement('button');
         btn.style.cssText = `border:2px solid #176B4D; padding:8px 16px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;`;
-        if (state.statsPeriod === p) {
+        if (state.statsPeriod === p.label) {
           btn.style.background = '#176B4D';
           btn.style.color = '#FFFFFF';
         } else {
           btn.style.background = 'transparent';
           btn.style.color = '#176B4D';
         }
-        btn.textContent = p;
+        btn.textContent = p.label;
         btn.addEventListener('click', () => {
-          state.statsPeriod = p;
-          renderStats();
+          state.statsPeriod = p.label;
+          loadStats();
         });
         periodsWrapper.appendChild(btn);
       });
+    }
 
-      const barsWrapper = document.getElementById('visit-bars-container');
-      barsWrapper.innerHTML = '';
-      const visitHeights = {
-        '7 jours': [45, 60, 50, 75, 60, 90, 70],
-        '30 jours': [65, 80, 55, 90, 75, 100, 85],
-        '3 mois': [50, 55, 45, 70, 65, 80, 75],
-        '1 an': [30, 45, 40, 60, 50, 75, 65]
-      };
-      
-      const heights = visitHeights[state.statsPeriod] || visitHeights['30 jours'];
-      const days = ['L','M','M','J','V','S','D'];
+    async function loadStats() {
+      renderStatsPeriodButtons();
+      const periodDef = STATS_PERIODS.find(p => p.label === state.statsPeriod) || STATS_PERIODS[1];
+      try {
+        const res = await fetch(`/api/superadmin/stats?period=${periodDef.days}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur de chargement.');
 
-      heights.forEach((h, idx) => {
-        const barCol = document.createElement('div');
-        barCol.style.cssText = 'flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; height:100%; justify-content:flex-end;';
-        barCol.innerHTML = `
-          <div style="width:100%; max-width:32px; height:${h}%; background:#176B4D; border-radius:8px 8px 0 0; transition: height 0.3s ease;"></div>
-          <span style="font-size:11px; color:#9aa39c;">${days[idx]}</span>
-        `;
-        barsWrapper.appendChild(barCol);
-      });
-
-      const pagesList = document.getElementById('top-pages-list');
-      pagesList.innerHTML = '';
-      const pData = [
-        { name: 'Accueil', views: state.statsPeriod === '7 jours' ? '410' : '2 140' },
-        { name: 'Événements', views: state.statsPeriod === '7 jours' ? '180' : '980' },
-        { name: "L'association", views: state.statsPeriod === '7 jours' ? '120' : '640' },
-        { name: 'Culture nigérienne', views: state.statsPeriod === '7 jours' ? '82' : '410' }
-      ];
-      pData.forEach(tp => {
-        const item = document.createElement('div');
-        item.style.cssText = 'display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid rgba(31,41,37,0.06); font-size:13.5px;';
-        item.innerHTML = `<span style="color:#1F2925;">${tp.name}</span><span style="font-weight:700; color:#176B4D;">${tp.views}</span>`;
-        pagesList.appendChild(item);
-      });
-
-      const articlesList = document.getElementById('top-articles-list');
-      articlesList.innerHTML = '';
-      const aData = [
-        { name: 'Retour sur notre rencontre', views: state.statsPeriod === '7 jours' ? '92' : '520' },
-        { name: 'Bienvenue aux membres', views: state.statsPeriod === '7 jours' ? '70' : '380' },
-        { name: 'Appel à bénévoles', views: state.statsPeriod === '7 jours' ? '54' : '310' }
-      ];
-      aData.forEach(ta => {
-        const item = document.createElement('div');
-        item.style.cssText = 'display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid rgba(31,41,37,0.06); font-size:13.5px;';
-        item.innerHTML = `<span style="color:#1F2925;">${ta.name}</span><span style="font-weight:700; color:#176B4D;">${ta.views}</span>`;
-        articlesList.appendChild(item);
-      });
+        // Les 4 cartes de la maquette originale ("Statistiques globales")
+        // sont désormais toutes réellement filtrées par la période
+        // sélectionnée — period_stats.inscriptions/adhesions, pas
+        // overview.* (qui reste le total non filtré, source commune avec
+        // le Dashboard, lib/stats.js — non modifié, non dupliqué).
+        document.getElementById('stat-period-inscriptions').textContent = data.period_stats.inscriptions;
+        document.getElementById('stat-period-adhesions').textContent = data.period_stats.adhesions;
+      } catch (err) {
+        document.getElementById('stat-period-inscriptions').innerHTML = '—';
+        document.getElementById('stat-period-adhesions').innerHTML = '—';
+      }
     }
   </script>
 

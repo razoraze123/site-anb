@@ -41,6 +41,15 @@ export async function hashPassword(password) {
 }
 
 /**
+ * Génère un mot de passe temporaire lisible (invitation, réinitialisation)
+ * à communiquer manuellement — aucun envoi d'e-mail n'est branché.
+ */
+export function generateTempPassword() {
+  const bytes = crypto.getRandomValues(new Uint8Array(9));
+  return bufToHex(bytes.buffer).slice(0, 12);
+}
+
+/**
  * Retourne true si `password` correspond au hash stocké.
  */
 export async function verifyPassword(password, stored) {

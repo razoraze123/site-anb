@@ -1,0 +1,65 @@
+---
+// Vue Recensement — identique à /admin, logique dans lib/adminContent.js
+// (renderRecensement(), câblage recherche/onglets/export dans wireRecensement(),
+// appelée par content.wire()). Markup repris tel quel de l'ancien
+// src/pages/admin.astro (section #view-recensement).
+---
+<section id="view-recensement" class="hidden fade-in">
+  <div style="display:flex; flex-direction:column; gap:20px;">
+    <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:14px;">
+      <div>
+        <h1 style="font-size:22px; font-weight:800; color:#1F2925; margin:0 0 4px;">Recensement</h1>
+        <div style="font-size:13px; color:#5a655f;">
+          <span id="rec-count-label" style="font-weight:700; color:#176B4D;">0</span> membres recensés
+          · <span id="rec-benevole-label" style="font-weight:700; color:#E97824;">0</span> bénévoles potentiels
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <a href="/recensement" target="_blank" style="background:#F8F4EC; color:#1F2925; border:none; padding:11px 18px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer; text-decoration:none; display:flex; align-items:center; gap:6px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+          Voir le formulaire
+        </a>
+        <button id="recensement-export-csv-btn" style="background:#176B4D; color:#FFFFFF; border:none; padding:11px 18px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer; display:flex; align-items:center; gap:6px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Exporter CSV
+        </button>
+      </div>
+    </div>
+
+    <!-- Filters & Search -->
+    <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:16px; background:#FFFFFF; padding:14px 16px; border-radius:18px; box-shadow:0 8px 24px rgba(31,41,37,0.03);">
+      <div style="display:flex; gap:6px; flex-wrap:wrap;" id="recensement-tabs">
+        <button class="rec-tab-btn" data-status="Tous" style="padding:7px 14px; border-radius:10px; font-size:13px; font-weight:700; border:none; cursor:pointer; background:#176B4D; color:#FFFFFF;">Tous</button>
+        <button class="rec-tab-btn" data-status="Étudiant" style="padding:7px 14px; border-radius:10px; font-size:13px; font-weight:700; border:none; cursor:pointer; background:#F8F4EC; color:#1F2925;">🎓 Étudiants</button>
+        <button class="rec-tab-btn" data-status="Employé" style="padding:7px 14px; border-radius:10px; font-size:13px; font-weight:700; border:none; cursor:pointer; background:#F8F4EC; color:#1F2925;">💼 Employés</button>
+        <button class="rec-tab-btn" data-status="benevole" style="padding:7px 14px; border-radius:10px; font-size:13px; font-weight:700; border:none; cursor:pointer; background:#F8F4EC; color:#1F2925;">🤝 Bénévoles</button>
+      </div>
+      <div style="position:relative; width:100%; max-width:280px;">
+        <input id="recensement-search-input" placeholder="Rechercher…" style="width:100%; padding:9px 14px 9px 34px; border-radius:10px; border:1.5px solid #e3dccb; font-size:13px; box-sizing:border-box;" />
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#5a655f" stroke-width="2" style="position:absolute; left:11px; top:50%; transform:translateY(-50%);"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div style="background:#FFFFFF; border-radius:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05); overflow:hidden;">
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13.5px; min-width:900px;">
+          <thead>
+            <tr style="background:#F8F4EC; border-bottom:1px solid rgba(31,41,37,0.06); color:#5a655f; font-weight:700;">
+              <th style="padding:14px 18px;">Nom Complet</th>
+              <th style="padding:14px 18px;">Statut</th>
+              <th style="padding:14px 18px;">Domaine</th>
+              <th style="padding:14px 18px;">Bénévole</th>
+              <th style="padding:14px 18px;">E-mail</th>
+              <th style="padding:14px 18px;">Tél.</th>
+              <th style="padding:14px 18px; text-align:right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="recensement-table-body">
+            <!-- Dynamic -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>

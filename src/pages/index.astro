@@ -1,6 +1,83 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { homeGallery, newsArticles, nextEvent } from '../lib/demo-data';
+import { env } from "cloudflare:workers";
+
+// La home doit refléter les vraies actualités publiées (pas de mock) — ça
+// nécessite un accès D1, donc un rendu dynamique (comme /actualites).
+export const prerender = false;
+
+const db = env.DB;
+let newsArticles = [];
+let nextEvent = null;
+let galleryMedias = [];
+const GALLERY_BG_TONES = [
+  'linear-gradient(150deg,#176B4D,#1F2925)', 'linear-gradient(150deg,#E97824,#E8D8BF)',
+  'linear-gradient(150deg,#1F2925,#176B4D)', 'linear-gradient(150deg,#E8D8BF,#E97824)',
+];
+
+try {
+  if (db) {
+    const { results } = await db.prepare(
+      "SELECT title, slug, excerpt, category, bg_gradient, created_at FROM actualites WHERE status = 'Publié' ORDER BY created_at DESC LIMIT 3"
+    ).all();
+    newsArticles = results;
+
+    // Prochain événement mis en avant — même définition que "Événements à
+    // venir" (lib/stats.js getCommonKpis) : statut Ouvert ET event_date
+    // (date réelle de tri, pas le texte affiché `date`) à partir
+    // d'aujourd'hui. Plus jamais le `nextEvent` fictif de demo-data.ts.
+    // Pas de description en base pour un événement : on reprend le même
+    // repli par catégorie que /evenements (evenements.astro), pas une
+    // phrase inventée pour l'occasion.
+    nextEvent = await db.prepare(
+      "SELECT title, date, place, category, bg_gradient FROM evenements WHERE status = 'Ouvert' AND event_date >= date('now') ORDER BY event_date ASC LIMIT 1"
+    ).first();
+    if (nextEvent) {
+      nextEvent.description = nextEvent.category === 'Culture'
+        ? "Célébration des traditions nigériennes."
+        : "Rencontre solidaire et conviviale.";
+    }
+
+    // Aperçu galerie — media_galerie (jamais plus homeGallery/demo-data.ts).
+    const galleryResult = await db.prepare(
+      "SELECT nom_fichier, titre, texte_alternatif FROM media_galerie ORDER BY created_at DESC LIMIT 8"
+    ).all();
+    galleryMedias = galleryResult.results;
+  }
+} catch (error) {
+  console.error("Erreur de récupération D1 pour les actualités/événements/galerie (home) :", error);
+}
+
+// Deux visuels fixes du site (hero + Notre mission) — clés R2 imposées,
+// jamais configurables depuis les Réglages, pas de table/API dédiée : on
+// réutilise juste le mécanisme public existant /api/media/[key].js. On
+// vérifie leur présence réelle dans R2 avant de les afficher, pour ne
+// jamais casser le visuel avec une image manquante — repli honnête vers
+// le dégradé actuel si l'objet n'existe pas.
+const HERO_IMAGE_KEY = 'site/home-hero.jpg';
+const MISSION_IMAGE_KEY = 'site/home-mission.jpg';
+let heroImageAvailable = false;
+let missionImageAvailable = false;
+
+try {
+  const r2 = env.R2;
+  if (r2) {
+    const [heroHead, missionHead] = await Promise.all([
+      r2.head(HERO_IMAGE_KEY),
+      r2.head(MISSION_IMAGE_KEY),
+    ]);
+    heroImageAvailable = !!heroHead;
+    missionImageAvailable = !!missionHead;
+  }
+} catch (error) {
+  console.error("Erreur de vérification R2 pour les visuels fixes de la home :", error);
+}
+
+const dateFormatter = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+function formatArticleDate(created_at) {
+  // "2026-07-28 09:15:00" -> objet Date fiable (format ISO avec 'T')
+  return dateFormatter.format(new Date(created_at.replace(' ', 'T')));
+}
 ---
 
 <Layout title="Accueil">
@@ -27,22 +104,28 @@ import { homeGallery, newsArticles, nextEvent } from '../lib/demo-data';
       </div>
 
       <div style="flex:1 1 420px; min-width:300px; position:relative; z-index:1;">
-        <div style="position:relative; border-radius:32px; overflow:hidden; aspect-ratio:4/5; background:linear-gradient(155deg, #E97824 0%, #E97824 35%, #176B4D 100%); box-shadow:0 30px 60px rgba(31,41,37,0.18);">
-          <div style="position:absolute; inset:0; opacity:0.5; background-image:repeating-linear-gradient(135deg, rgba(255,255,255,0.12) 0px, rgba(255,255,255,0.12) 2px, transparent 2px, transparent 26px);"></div>
-          <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; color:#FFFFFF;">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.3" opacity="0.85"><circle cx="9" cy="8" r="3.2"></circle><circle cx="16.5" cy="9" r="2.4"></circle><path d="M3.5 19c0-3.3 2.6-5.6 5.9-5.6s5.9 2.3 5.9 5.6"></path><path d="M14.5 13.7c2.6 0.2 4.3 2.2 4.3 5"></path></svg>
-            <span style="font-size:13px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; opacity:0.85;">Photo — moment communautaire</span>
-          </div>
+        <div style={`position:relative; border-radius:32px; overflow:hidden; aspect-ratio:4/5; box-shadow:0 30px 60px rgba(31,41,37,0.18); ${heroImageAvailable ? `background:url('/api/media/${HERO_IMAGE_KEY}') center/cover no-repeat;` : 'background:linear-gradient(155deg, #E97824 0%, #E97824 35%, #176B4D 100%);'}`}>
+          {!heroImageAvailable && (
+            <>
+              <div style="position:absolute; inset:0; opacity:0.5; background-image:repeating-linear-gradient(135deg, rgba(255,255,255,0.12) 0px, rgba(255,255,255,0.12) 2px, transparent 2px, transparent 26px);"></div>
+              <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; color:#FFFFFF;">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.3" opacity="0.85"><circle cx="9" cy="8" r="3.2"></circle><circle cx="16.5" cy="9" r="2.4"></circle><path d="M3.5 19c0-3.3 2.6-5.6 5.9-5.6s5.9 2.3 5.9 5.6"></path><path d="M14.5 13.7c2.6 0.2 4.3 2.2 4.3 5"></path></svg>
+                <span style="font-size:13px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; opacity:0.85;">Photo — moment communautaire</span>
+              </div>
+            </>
+          )}
         </div>
-        <div class="hero-float-card" style="position:absolute; bottom:-24px; left:-20px; background:#FFFFFF; border-radius:20px; padding:20px 24px; box-shadow:0 20px 40px rgba(31,41,37,0.15); display:flex; align-items:center; gap:14px; max-width:300px; animation:floatSlow 5s ease-in-out infinite;">
-          <div style="width:44px; height:44px; border-radius:12px; background:#E97824; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line></svg>
+        {nextEvent && (
+          <div class="hero-float-card" style="position:absolute; bottom:-24px; left:-20px; background:#FFFFFF; border-radius:20px; padding:20px 24px; box-shadow:0 20px 40px rgba(31,41,37,0.15); display:flex; align-items:center; gap:14px; max-width:300px; animation:floatSlow 5s ease-in-out infinite;">
+            <div style="width:44px; height:44px; border-radius:12px; background:#E97824; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="16" y1="3" x2="16" y2="7"></line></svg>
+            </div>
+            <div>
+              <div style="font-size:11px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em;">Prochain rendez-vous</div>
+              <div style="font-size:14px; font-weight:700; color:#1F2925; margin-top:2px;">{nextEvent.title} — {nextEvent.place}</div>
+            </div>
           </div>
-          <div>
-            <div style="font-size:11px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em;">Prochain rendez-vous</div>
-            <div style="font-size:14px; font-weight:700; color:#1F2925; margin-top:2px;">{nextEvent.title} — Bordeaux</div>
-          </div>
-        </div>
+        )}
       </div>
     </section>
 
@@ -67,11 +150,13 @@ import { homeGallery, newsArticles, nextEvent } from '../lib/demo-data';
     <!-- MISSION -->
     <section data-reveal style="max-width:1280px; margin:0 auto; padding:20px clamp(20px,4vw,48px) 100px; display:flex; flex-wrap:wrap; gap:56px; align-items:center;">
       <div style="flex:1 1 380px; min-width:280px; order:2;">
-        <div style="border-radius:28px; overflow:hidden; aspect-ratio:3/4; background:linear-gradient(165deg,#E8D8BF,#176B4D); position:relative; box-shadow:0 24px 50px rgba(31,41,37,0.14);">
-          <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px; color:#FFFFFF;">
-            <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.3" opacity="0.9"><path d="M12 21s-7-4.35-7-10A5 5 0 0112 6a5 5 0 017 5c0 5.65-7 10-7 10z"></path></svg>
-            <span style="font-size:12px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; opacity:0.85; text-align:center; padding:0 20px;">Photo — accompagnement &amp; transmission</span>
-          </div>
+        <div style={`border-radius:28px; overflow:hidden; aspect-ratio:3/4; position:relative; box-shadow:0 24px 50px rgba(31,41,37,0.14); ${missionImageAvailable ? `background:url('/api/media/${MISSION_IMAGE_KEY}') center/cover no-repeat;` : 'background:linear-gradient(165deg,#E8D8BF,#176B4D);'}`}>
+          {!missionImageAvailable && (
+            <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px; color:#FFFFFF;">
+              <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.3" opacity="0.9"><path d="M12 21s-7-4.35-7-10A5 5 0 0112 6a5 5 0 017 5c0 5.65-7 10-7 10z"></path></svg>
+              <span style="font-size:12px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; opacity:0.85; text-align:center; padding:0 20px;">Photo — accompagnement &amp; transmission</span>
+            </div>
+          )}
         </div>
       </div>
       <div style="flex:1 1 460px; min-width:300px; order:1;">
@@ -83,16 +168,22 @@ import { homeGallery, newsArticles, nextEvent } from '../lib/demo-data';
       </div>
     </section>
 
-    <!-- PROCHAIN EVENEMENT -->
+    <!-- PROCHAIN EVENEMENT — masquée si aucun événement Ouvert à venir en
+         base (jamais de contenu inventé pour combler cette section). -->
+    {nextEvent && (
     <section data-band data-reveal style="background:#176B4D; padding:90px 0;">
       <div style="max-width:1280px; margin:0 auto; padding:0 clamp(20px,4vw,48px);">
         <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.8rem,3.4vw,2.5rem); color:#FFFFFF; margin:0 0 44px; text-align:center;">Le prochain rendez-vous de la communauté</h2>
         <div style="background:#FFFFFF; border-radius:28px; overflow:hidden; display:flex; flex-wrap:wrap; box-shadow:0 30px 60px rgba(0,0,0,0.2);">
-          <div style="flex:1 1 420px; min-width:280px; aspect-ratio:16/11; background:linear-gradient(150deg,#E97824,#1F2925); position:relative;">
-            <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#FFFFFF;">
-              <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.3" opacity="0.85"><path d="M12 3l2.5 5 5.5 0.8-4 3.9 0.9 5.5-4.9-2.6-4.9 2.6 0.9-5.5-4-3.9 5.5-0.8z"></path></svg>
+          {nextEvent.bg_gradient.startsWith('/') || nextEvent.bg_gradient.startsWith('http') ? (
+            <div style={`flex:1 1 420px; min-width:280px; aspect-ratio:16/11; background:url('${nextEvent.bg_gradient}') center/cover no-repeat;`}></div>
+          ) : (
+            <div style={`flex:1 1 420px; min-width:280px; aspect-ratio:16/11; background:${nextEvent.bg_gradient}; position:relative;`}>
+              <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#FFFFFF;">
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.3" opacity="0.85"><path d="M12 3l2.5 5 5.5 0.8-4 3.9 0.9 5.5-4.9-2.6-4.9 2.6 0.9-5.5-4-3.9 5.5-0.8z"></path></svg>
+              </div>
             </div>
-          </div>
+          )}
           <div style="flex:1 1 420px; min-width:280px; padding:clamp(28px,3.5vw,48px); display:flex; flex-direction:column; justify-content:center;">
             <div style="font-size:13px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">{nextEvent.date}</div>
             <h3 style="font-family:'Unbounded',sans-serif; font-size:clamp(1.4rem,2.2vw,1.9rem); font-weight:700; color:#1F2925; margin:0 0 10px;">{nextEvent.title}</h3>
@@ -106,6 +197,7 @@ import { homeGallery, newsArticles, nextEvent } from '../lib/demo-data';
         </div>
       </div>
     </section>
+    )}
 
     <!-- NOS ACTIONS -->
     <section style="max-width:1280px; margin:0 auto; padding:100px clamp(20px,4vw,48px);">
@@ -178,20 +270,26 @@ import { homeGallery, newsArticles, nextEvent } from '../lib/demo-data';
       </div>
     </section>
 
-    <!-- GALERIE -->
+    <!-- GALERIE — masquée si aucun média réel n'existe encore
+         (media_galerie), jamais de bloc fictif pour combler la section. -->
+    {galleryMedias.length > 0 && (
     <section style="max-width:1280px; margin:0 auto; padding:100px clamp(20px,4vw,48px);">
       <div style="display:flex; flex-wrap:wrap; align-items:end; justify-content:space-between; gap:20px; margin-bottom:40px;">
         <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.9rem,3.2vw,2.5rem); color:#1F2925; margin:0;">Les moments qui nous rassemblent</h2>
         <a href="/galerie" style="background:transparent; border:2px solid #176B4D; color:#176B4D; padding:13px 26px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer; white-space:nowrap; display:inline-block;">Voir toute la galerie</a>
       </div>
       <div class="gallery-grid" data-reveal-group>
-        {homeGallery.map((img) => (
-          <div style={`grid-row:span ${img.span}; border-radius:20px; background:${img.bg}; position:relative; overflow:hidden; display:flex; align-items:flex-end; padding:14px;`}>
-            <span style="color:rgba(255,255,255,0.9); font-size:12px; font-weight:700;">{img.label}</span>
+        {galleryMedias.map((m, i) => (
+          <div style={`grid-row:span ${i === 0 ? 2 : 1}; border-radius:20px; background:${GALLERY_BG_TONES[i % GALLERY_BG_TONES.length]}; position:relative; overflow:hidden;`}>
+            <img src={`/api/media/${m.nom_fichier}`} alt={m.texte_alternatif} loading="lazy" style="width:100%; height:100%; object-fit:cover; display:block;" />
+            <div style="position:absolute; inset:0; display:flex; align-items:flex-end; padding:14px; background:linear-gradient(to top, rgba(0,0,0,0.4), transparent 55%);">
+              <span style="color:rgba(255,255,255,0.95); font-size:12px; font-weight:700;">{m.titre}</span>
+            </div>
           </div>
         ))}
       </div>
     </section>
+    )}
 
     <!-- ACTUALITES -->
     <section style="background:#FFFFFF; padding:100px 0;">
@@ -200,19 +298,29 @@ import { homeGallery, newsArticles, nextEvent } from '../lib/demo-data';
           <h2 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.9rem,3.2vw,2.5rem); color:#1F2925; margin:0;">Actualités de l'ANB</h2>
           <a href="/actualites" style="background:transparent; border:2px solid #176B4D; color:#176B4D; padding:13px 26px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer; white-space:nowrap; display:inline-block;">Toutes les actualités</a>
         </div>
-        <div class="mobile-shelf" data-reveal-group style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:28px;">
-          {newsArticles.map((article) => (
-            <div style="background:#F8F4EC; border-radius:24px; overflow:hidden;">
-              <div style={`aspect-ratio:16/10; background:${article.bg};`}></div>
-              <div style="padding:26px;">
-                <div style="font-size:12px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">{article.category} · {article.date}</div>
-                <h3 style="font-size:18px; font-weight:700; color:#1F2925; margin:0 0 12px; line-height:1.35;">{article.title}</h3>
-                <p style="font-size:14.5px; line-height:1.6; color:#5a655f; margin:0 0 18px;">{article.excerpt}</p>
-                <a href="/actualites" style="font-size:14px; font-weight:700; color:#176B4D; cursor:pointer;">Lire l'article →</a>
-              </div>
-            </div>
-          ))}
-        </div>
+        {newsArticles.length === 0 ? (
+          <div style="text-align:center; padding:50px; color:#5a655f; font-size:1.1rem;">
+            Aucune actualité publiée pour le moment. Revenez bientôt !
+          </div>
+        ) : (
+          <div class="mobile-shelf" data-reveal-group style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:28px;">
+            {newsArticles.map((article) => (
+              <a href={`/actualites/${article.slug}`} style="background:#F8F4EC; border-radius:24px; overflow:hidden; display:block; color:inherit; text-decoration:none;">
+                {article.bg_gradient.startsWith('/') || article.bg_gradient.startsWith('http') ? (
+                  <div style={`aspect-ratio:16/10; background:url('${article.bg_gradient}') center/cover no-repeat;`}></div>
+                ) : (
+                  <div style={`aspect-ratio:16/10; background:${article.bg_gradient};`}></div>
+                )}
+                <div style="padding:26px;">
+                  <div style="font-size:12px; font-weight:700; color:#E97824; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px;">{article.category} · {formatArticleDate(article.created_at)}</div>
+                  <h3 style="font-size:18px; font-weight:700; color:#1F2925; margin:0 0 12px; line-height:1.35;">{article.title}</h3>
+                  <p style="font-size:14.5px; line-height:1.6; color:#5a655f; margin:0 0 18px;">{article.excerpt}</p>
+                  <span style="font-size:14px; font-weight:700; color:#176B4D;">Lire l'article →</span>
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
         <div class="shelf-thread"><span></span></div>
       </div>
     </section>

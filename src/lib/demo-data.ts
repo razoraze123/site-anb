@@ -11,17 +11,6 @@ export const navItems = [
   { href: '/contact', label: 'Contact' },
 ] as const;
 
-export const homeGallery = [
-  { bg: 'linear-gradient(150deg,#176B4D,#1F2925)', span: 2, label: 'Repas communautaire' },
-  { bg: 'linear-gradient(150deg,#E97824,#E8D8BF)', span: 1, label: 'Journée culturelle' },
-  { bg: 'linear-gradient(150deg,#1F2925,#176B4D)', span: 1, label: 'Bénévoles en action' },
-  { bg: 'linear-gradient(150deg,#E8D8BF,#E97824)', span: 2, label: 'Musique et danse' },
-  { bg: 'linear-gradient(150deg,#176B4D,#E97824)', span: 1, label: 'Rencontre des familles' },
-  { bg: 'linear-gradient(150deg,#E97824,#1F2925)', span: 1, label: 'Sport communautaire' },
-  { bg: 'linear-gradient(150deg,#1F2925,#E8D8BF)', span: 1, label: 'Sourires partagés' },
-  { bg: 'linear-gradient(150deg,#E8D8BF,#176B4D)', span: 1, label: 'Artistes locaux' },
-] as const;
-
 export const newsArticles = [
   {
     category: 'Communauté',
@@ -64,24 +53,8 @@ export const events = [
 
 export const eventFilters = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontres'] as const;
 
-export const teamMembers = [
-  { name: 'Abdoul Nasser DAN-DAH', role: 'Président', bg: 'linear-gradient(150deg,#176B4D,#1F2925)' },
-  { name: 'Ibrahim ADAMOU LOUCHE', role: 'Secrétaire Général', bg: 'linear-gradient(150deg,#E97824,#E8D8BF)' },
-  { name: 'Moustapha HASSAN KATINKA', role: 'Trésorier', bg: 'linear-gradient(150deg,#1F2925,#176B4D)' },
-  { name: 'Fahd RABO', role: 'Chargé de la communication', bg: 'linear-gradient(150deg,#E8D8BF,#E97824)' },
-  { name: 'Miriam SEYDOU BOZARI', role: 'Adjointe au chargé de la communication', bg: 'linear-gradient(150deg,#176B4D,#E97824)' },
-  { name: 'Salamatou DJIBRILA', role: 'Chargée des affaires académiques et culturelles', bg: 'linear-gradient(150deg,#E97824,#1F2925)' },
-  { name: 'Abdoussamad BOUKARI SEYDOU', role: 'Chargé des affaires sportives', bg: 'linear-gradient(150deg,#E97824,#176B4D)' },
-] as const;
-
 export const timeline = [
-  { year: '20XX', text: "Création de l'association par un groupe d'étudiants et de familles nigériennes de Bordeaux." },
-  { year: '20XX', text: "Premiers événements culturels et mise en place d'un réseau d'entraide pour les nouveaux arrivants." },
-  { year: '20XX', text: 'Structuration du bureau et lancement des actions solidaires en direction du Niger.' },
+  { year: '1992', text: "Création de l'Association des Nigériens à Bordeaux." },
+  { year: 'À venir', text: "Vidéo documentaire à venir — les anciens membres du bureau raconteront l'histoire de l'ANB et les actions réalisées au fil des années." },
   { year: "Aujourd'hui", text: 'Une communauté active, des événements réguliers et un accompagnement renforcé pour chacun.' },
 ] as const;
-
-export const fullGallery = [
-  ...homeGallery,
-  ...homeGallery.map((g, i) => ({ ...g, label: `${g.label} — ${i + 2}` })),
-];

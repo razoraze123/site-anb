@@ -1,11 +1,16 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
+// Visuels dédiés — assets statiques du site (public/culture/), pas des
+// médias administrables : pas de table D1, pas d'API, pas de R2 pour ces
+// 5 images. Remplace uniquement le fond de chaque .culture-swatch,
+// gradient conservé en repli si l'image venait à manquer.
 const entries = [
   {
     titre: "Langues",
     texte: "Le français est la langue officielle, aux côtés de langues nationales comme le haoussa, le zarma, le tamasheq, le peul, le kanouri et bien d'autres, parlées avec fierté au quotidien.",
     gradient: "linear-gradient(150deg,#E8D8BF,#E97824)",
+    image: "/culture/langues.jpg",
     accent: "#E97824",
     icon: `<path d="M4 5h16v10H9l-4 4V5z"/><line x1="7" y1="8" x2="17" y2="8"/><line x1="7" y1="12" x2="14" y2="12"/>`
   },
@@ -13,6 +18,7 @@ const entries = [
     titre: "Traditions et fêtes",
     texte: "Cérémonies, mariages, fêtes religieuses et rites de passage rythment la vie sociale nigérienne, célébrés avec musique, habits traditionnels et générosité.",
     gradient: "linear-gradient(150deg,#176B4D,#E8D8BF)",
+    image: "/culture/tradition_fetes.png",
     accent: "#176B4D",
     icon: `<circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/>`
   },
@@ -20,6 +26,7 @@ const entries = [
     titre: "Gastronomie",
     texte: "Riz au gras, tô, sauces d'arachide ou de gombo, brochettes et thé partagé : la cuisine nigérienne est faite pour être partagée en communauté.",
     gradient: "linear-gradient(150deg,#E97824,#1F2925)",
+    image: "/culture/gastronomie.jpg",
     accent: "#E97824",
     icon: `<path d="M4 12h16a8 8 0 01-16 0z"/><path d="M9 12V9M12 12V7M15 12V9"/>`
   },
@@ -27,6 +34,7 @@ const entries = [
     titre: "Musique et danse",
     texte: "Du takamba touareg aux rythmes haoussa, la musique nigérienne accompagne chaque grand moment de la vie communautaire.",
     gradient: "linear-gradient(150deg,#E8D8BF,#176B4D)",
+    image: "/culture/musique_danse.png",
     accent: "#176B4D",
     icon: `<path d="M9 18V5l10-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="16" cy="16" r="3"/>`
   },
@@ -34,6 +42,7 @@ const entries = [
     titre: "Artisanat",
     texte: "Maroquinerie touareg, poteries, tissages et bijoux témoignent d'un savoir-faire transmis de génération en génération.",
     gradient: "linear-gradient(150deg,#1F2925,#E97824)",
+    image: "/culture/artisanat.png",
     accent: "#E97824",
     icon: `<path d="M12 3l9 9-9 9-9-9z"/><path d="M12 8l4 4-4 4-4-4z"/>`
   }
@@ -106,7 +115,7 @@ const peuples = [
             <h2 style="font-family:'Unbounded',sans-serif; font-size:clamp(1.4rem,2.2vw,1.8rem); font-weight:700; color:#1F2925; margin:0 0 16px;">{e.titre}</h2>
             <p style="font-size:15.5px; line-height:1.75; color:#3f4a45; margin:0;">{e.texte}</p>
           </div>
-          <div class="culture-swatch" style={`flex:1 1 300px; min-width:220px; aspect-ratio:4/3; background:${e.gradient};`}>
+          <div class="culture-swatch" style={`flex:1 1 300px; min-width:220px; aspect-ratio:4/3; background:${e.image ? `url('${e.image}') center/cover no-repeat, ${e.gradient}` : e.gradient};`}>
             <svg width="88" height="88" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.28" set:html={e.icon} />
           </div>
         </div>
