@@ -1,0 +1,18 @@
+# Headers de sécurité — Correction P1.1 (audit-auth.md §1/§12/§18).
+#
+# Couvre les pages STATIQUES/prérendues (ex. /connexion, /, /mentions-legales,
+# /cgu, /confidentialite, /culture-nigerienne, /contact, /vie-pratique/*) —
+# servies directement par le binding ASSETS de Cloudflare, sans jamais passer
+# par le Worker/middleware.ts. Les pages et API dynamiques (/admin,
+# /superadmin, /editeur, /api/*) sont couvertes séparément par
+# src/middleware.ts (via src/lib/securityHeaders.js) — les deux mécanismes
+# sont nécessaires, aucun des deux ne couvre l'autre.
+#
+# SYNCHRONISATION MANUELLE : les valeurs ci-dessous doivent rester
+# identiques à celles de src/lib/securityHeaders.js. Ce fichier est un
+# format texte propre à Cloudflare, il ne peut pas importer ce module JS.
+
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'self';
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin

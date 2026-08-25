@@ -60,6 +60,62 @@ if (!user) {
     }
     .fade-in { animation: fadeInUp 0.4s ease both; }
     .hidden { display: none !important; }
+
+    /* Modal "Inviter un utilisateur" — même langage visuel que la modal
+       événement publique (evenements.astro : .event-modal), pattern déjà
+       établi dans le projet. */
+    .invite-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .invite-modal.is-hidden { display: none; }
+    .invite-modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(31, 41, 37, 0.55);
+    }
+    .invite-modal-card {
+      position: relative;
+      background: #FFFFFF;
+      border-radius: 24px;
+      max-width: 480px;
+      width: 100%;
+      max-height: 86vh;
+      overflow-y: auto;
+      padding: 32px 28px 28px;
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.3);
+      box-sizing: border-box;
+    }
+    .invite-modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: #F8F4EC;
+      border: none;
+      color: #1F2925;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    @media (max-width: 560px) {
+      .invite-modal-card { padding: 28px 20px 20px; max-height: 90vh; }
+    }
+    .form-error {
+      background: rgba(177, 69, 36, 0.09);
+      color: #B14524;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 12px 16px;
+      border-radius: 10px;
+      border-left: 3px solid #B14524;
+    }
     .active-nav-btn {
       color: var(--color-green) !important;
       background: rgba(23, 107, 77, 0.09) !important;
@@ -210,19 +266,47 @@ if (!user) {
               <button id="toggle-invite-btn" style="background:#E97824; color:#FFFFFF; border:none; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Inviter un utilisateur</button>
             </div>
 
-            <div id="invite-user-box" class="hidden" style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05); display:flex; flex-direction:column; gap:14px; max-width:520px;">
-              <h3 style="font-size:16px; font-weight:700; color:#1F2925; margin:0;">Inviter un utilisateur</h3>
-              <input id="invite-form-name" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="Nom complet" />
-              <input id="invite-form-email" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="E-mail" />
-              <select id="invite-form-role" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px; background: transparent;">
-                <option>Admin</option>
-                <option>Super Admin</option>
-                <option>Éditeur / Bénévole</option>
-              </select>
-              <input id="invite-form-périmètre" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="Périmètre d'accès (ex : Actualités, Événements)" />
-              <textarea id="invite-form-msg" rows="2" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px; resize:vertical;" placeholder="Message d'invitation (facultatif)"></textarea>
-              <button id="invite-user-submit-btn" style="align-self:flex-start; background:#176B4D; color:#FFFFFF; border:none; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Envoyer l'invitation</button>
-              <div id="invite-success-alert" class="hidden" style="background:rgba(23,107,77,0.08); color:#176B4D; padding:12px 16px; border-radius:10px; font-size:13px; font-weight:700;">✓ Invitation envoyée.</div>
+            <!-- INVITE USER MODAL — même formulaire, mêmes champs, même
+                 logique de soumission qu'avant, uniquement présenté dans
+                 une modal au lieu d'être affiché en permanence. -->
+            <div id="invite-user-modal" class="invite-modal is-hidden">
+              <div class="invite-modal-backdrop" data-invite-close></div>
+              <div class="invite-modal-card" role="dialog" aria-modal="true" aria-labelledby="invite-modal-title">
+                <button type="button" class="invite-modal-close" data-invite-close aria-label="Fermer">✕</button>
+
+                <div id="invite-form-panel">
+                  <h3 id="invite-modal-title" style="font-size:18px; font-weight:800; color:#1F2925; margin:0 0 18px;">Inviter un utilisateur</h3>
+                  <div style="display:flex; flex-direction:column; gap:14px;">
+                    <input id="invite-form-name" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px; box-sizing:border-box;" placeholder="Nom complet" />
+                    <input id="invite-form-email" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px; box-sizing:border-box;" placeholder="E-mail" />
+                    <select id="invite-form-role" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px; background: transparent; box-sizing:border-box;">
+                      <option>Admin</option>
+                      <option>Super Admin</option>
+                      <option>Éditeur / Bénévole</option>
+                    </select>
+                    <input id="invite-form-périmètre" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px; box-sizing:border-box;" placeholder="Périmètre d'accès (ex : Actualités, Événements)" />
+                    <textarea id="invite-form-msg" rows="2" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px; resize:vertical; box-sizing:border-box;" placeholder="Message d'invitation (facultatif)"></textarea>
+                    <div id="invite-form-error" class="hidden form-error"></div>
+                    <div style="display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;">
+                      <button type="button" id="invite-cancel-btn" data-invite-close style="background:#F8F4EC; color:#1F2925; border:none; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Annuler</button>
+                      <button type="button" id="invite-user-submit-btn" style="background:#176B4D; color:#FFFFFF; border:none; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Envoyer l'invitation</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="invite-success-panel" class="hidden">
+                  <h3 style="font-size:18px; font-weight:800; color:#1F2925; margin:0 0 6px;">Utilisateur créé avec succès</h3>
+                  <p id="invite-success-email" style="font-size:14px; color:#5a655f; margin:0 0 18px;"></p>
+                  <div style="font-size:13px; font-weight:700; color:#1F2925; margin-bottom:8px;">Mot de passe temporaire</div>
+                  <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                    <code id="invite-temp-password" style="flex:1; background:#F8F4EC; padding:12px 14px; border-radius:10px; font-size:15px; font-weight:700; letter-spacing:0.03em; color:#1F2925; word-break:break-all;"></code>
+                    <button type="button" id="invite-copy-btn" style="background:#176B4D; color:#FFFFFF; border:none; padding:12px 16px; border-radius:10px; font-weight:700; font-size:13px; cursor:pointer; white-space:nowrap;">Copier</button>
+                  </div>
+                  <div id="invite-copy-feedback" class="hidden" style="font-size:12.5px; color:#176B4D; font-weight:700; margin-bottom:14px;">✓ Copié !</div>
+                  <p style="font-size:13px; color:#5a655f; margin:0 0 22px;">Transmettez ce mot de passe à l'utilisateur de manière sécurisée.</p>
+                  <button type="button" id="invite-close-success-btn" style="width:100%; background:#F8F4EC; color:#1F2925; border:none; padding:12px; border-radius:999px; font-weight:700; font-size:14px; cursor:pointer;">Fermer</button>
+                </div>
+              </div>
             </div>
 
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; flex-wrap:wrap;">
@@ -480,7 +564,7 @@ if (!user) {
               </div>
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">E-mail</label>
-                <input id="profile-form-email" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="vous@anb-bordeaux.fr" />
+                <input id="profile-form-email" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="vous@exemple.com" />
               </div>
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Rôle</label>
@@ -996,8 +1080,8 @@ if (!user) {
         item.innerHTML = `
           <div style="width:36px; height:36px; border-radius:50%; background:${u.avatarBg}; flex-shrink:0;"></div>
           <div style="flex:1; min-width:160px;">
-            <div style="font-size:14px; font-weight:700; color:#1F2925;">${u.name}</div>
-            <div style="font-size:12.5px; color:#5a655f;">${u.email}</div>
+            <div style="font-size:14px; font-weight:700; color:#1F2925;">${escapeHtml(u.name)}</div>
+            <div style="font-size:12.5px; color:#5a655f;">${escapeHtml(u.email)}</div>
           </div>
           ${getBadgeHtml(u.role, u.roleT)}
           ${getBadgeHtml(u.status, u.statusT)}
@@ -1022,8 +1106,8 @@ if (!user) {
         <div style="display:flex; align-items:center; gap:14px; margin-bottom:18px;">
           <div style="width:48px; height:48px; border-radius:50%; background:${selected.avatarBg};"></div>
           <div>
-            <div style="font-size:16px; font-weight:700; color:#1F2925;">${selected.name}</div>
-            <div style="font-size:13px; color:#5a655f;">${selected.email}</div>
+            <div style="font-size:16px; font-weight:700; color:#1F2925;">${escapeHtml(selected.name)}</div>
+            <div style="font-size:13px; color:#5a655f;">${escapeHtml(selected.email)}</div>
           </div>
         </div>
         <div style="display:flex; gap:8px; margin-bottom:18px;">
@@ -1101,15 +1185,55 @@ if (!user) {
     }
 
     const toggleInviteBtn = document.getElementById('toggle-invite-btn');
-    const inviteBox = document.getElementById('invite-user-box');
-    toggleInviteBtn.addEventListener('click', () => {
-      state.inviteOpen = !state.inviteOpen;
-      if (state.inviteOpen) {
-        inviteBox.classList.remove('hidden');
-      } else {
-        inviteBox.classList.add('hidden');
+    const inviteModal = document.getElementById('invite-user-modal');
+    const inviteFormPanel = document.getElementById('invite-form-panel');
+    const inviteSuccessPanel = document.getElementById('invite-success-panel');
+    const inviteFormError = document.getElementById('invite-form-error');
+    const inviteTempPasswordEl = document.getElementById('invite-temp-password');
+    const inviteSubmitBtn = document.getElementById('invite-user-submit-btn');
+
+    function resetInviteForm() {
+      ['invite-form-name', 'invite-form-email', 'invite-form-périmètre', 'invite-form-msg'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      document.getElementById('invite-form-role').selectedIndex = 0;
+      inviteFormError.textContent = '';
+      inviteFormError.classList.add('hidden');
+      inviteSubmitBtn.disabled = false;
+      inviteSubmitBtn.textContent = "Envoyer l'invitation";
+    }
+
+    function openInviteModal() {
+      resetInviteForm();
+      inviteFormPanel.classList.remove('hidden');
+      inviteSuccessPanel.classList.add('hidden');
+      // Jamais de mot de passe résiduel dans le DOM entre deux ouvertures.
+      inviteTempPasswordEl.textContent = '';
+      state.inviteOpen = true;
+      inviteModal.classList.remove('is-hidden');
+    }
+
+    function closeInviteModal() {
+      state.inviteOpen = false;
+      inviteModal.classList.add('is-hidden');
+      // Le mot de passe temporaire ne doit pas rester en mémoire dans le
+      // DOM plus longtemps que nécessaire, une fois la modal refermée.
+      inviteTempPasswordEl.textContent = '';
+      document.getElementById('invite-copy-feedback').classList.add('hidden');
+    }
+
+    toggleInviteBtn.addEventListener('click', openInviteModal);
+
+    inviteModal.querySelectorAll('[data-invite-close]').forEach((el) => {
+      el.addEventListener('click', closeInviteModal);
+    });
+    document.getElementById('invite-close-success-btn').addEventListener('click', closeInviteModal);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !inviteModal.classList.contains('is-hidden')) {
+        closeInviteModal();
       }
-      document.getElementById('invite-success-alert').classList.add('hidden');
     });
 
     document.getElementById('invite-user-submit-btn').addEventListener('click', async () => {
@@ -1118,10 +1242,16 @@ if (!user) {
       const roleSelectValue = document.getElementById('invite-form-role').value;
       const dbRoleMap = { Admin: 'admin', 'Super Admin': 'super_admin', 'Éditeur / Bénévole': 'editeur' };
 
+      inviteFormError.classList.add('hidden');
+
       if (!name || !email) {
-        alert('Veuillez remplir le nom et le mail.');
+        inviteFormError.textContent = 'Veuillez remplir le nom et le mail.';
+        inviteFormError.classList.remove('hidden');
         return;
       }
+
+      inviteSubmitBtn.disabled = true;
+      inviteSubmitBtn.textContent = 'Envoi…';
 
       try {
         const res = await fetch('/api/superadmin/users', {
@@ -1132,15 +1262,54 @@ if (!user) {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Erreur.');
 
-        const successAlert = document.getElementById('invite-success-alert');
-        successAlert.textContent = `✓ Compte créé pour ${email}. Mot de passe temporaire : ${data.tempPassword} (à communiquer manuellement, aucun e-mail n'est envoyé).`;
-        successAlert.classList.remove('hidden');
-
-        document.getElementById('invite-form-name').value = '';
-        document.getElementById('invite-form-email').value = '';
+        // La liste se rafraîchit tout de suite ; la modal reste ouverte sur
+        // l'état de succès jusqu'à ce que l'admin ait récupéré le mot de
+        // passe temporaire et clique explicitement sur "Fermer".
         await loadUsers();
+
+        document.getElementById('invite-success-email').textContent = `Compte créé pour ${email}.`;
+        inviteTempPasswordEl.textContent = data.tempPassword;
+        inviteFormPanel.classList.add('hidden');
+        inviteSuccessPanel.classList.remove('hidden');
       } catch (err) {
-        alert(err.message);
+        inviteFormError.textContent = err.message;
+        inviteFormError.classList.remove('hidden');
+        inviteSubmitBtn.disabled = false;
+        inviteSubmitBtn.textContent = "Envoyer l'invitation";
+      }
+    });
+
+    document.getElementById('invite-copy-btn').addEventListener('click', async () => {
+      const password = inviteTempPasswordEl.textContent;
+      if (!password) return;
+      const feedback = document.getElementById('invite-copy-feedback');
+
+      // navigator.clipboard peut être refusé (permissions, contexte non
+      // sécurisé) — repli propre sur un textarea temporaire + execCommand,
+      // jamais de log/console/URL du mot de passe dans les deux cas.
+      let copied = false;
+      try {
+        await navigator.clipboard.writeText(password);
+        copied = true;
+      } catch {
+        try {
+          const tmp = document.createElement('textarea');
+          tmp.value = password;
+          tmp.style.position = 'fixed';
+          tmp.style.opacity = '0';
+          document.body.appendChild(tmp);
+          tmp.focus();
+          tmp.select();
+          copied = document.execCommand('copy');
+          document.body.removeChild(tmp);
+        } catch {
+          copied = false;
+        }
+      }
+
+      if (copied) {
+        feedback.classList.remove('hidden');
+        setTimeout(() => feedback.classList.add('hidden'), 2000);
       }
     });
 

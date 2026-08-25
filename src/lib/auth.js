@@ -61,6 +61,45 @@ export function unauthorized() {
   });
 }
 
+// Protection CSRF (Correction P1.2, audit-auth.md §11/§13/§18). Pour les
+// mutations (POST/PUT/DELETE/PATCH), vérifie que la requête provient bien
+// de ce site — en complément du cookie de session SameSite=Lax déjà en
+// place (qui bloque déjà l'essentiel du CSRF classique), pour refermer les
+// cas limites (anciens navigateurs, comportements non standard). Les
+// lectures (GET) ne sont jamais concernées : ce n'est pas une cible CSRF
+// et ça n'affecte donc aucune des routes GET protégées par requireRole()
+// (ex. GET /api/admin/data, GET /api/superadmin/users).
+//
+// L'origine attendue est dérivée de LA REQUÊTE ELLE-MÊME (context.request.url),
+// jamais d'une valeur codée en dur : reste valide automatiquement si le
+// site change de domaine (workers.dev aujourd'hui, domaine personnalisé
+// demain), sans aucune configuration à maintenir.
+//
+// Choix assumé sur les en-têtes absents : Origin est envoyé de façon
+// fiable par tous les navigateurs modernes sur une requête fetch()/XHR
+// POST/PUT/DELETE, y compris en same-origin — le panneau admin de ce
+// projet n'utilise que fetch() (jamais de <form> natif), donc le trafic
+// légitime envoie toujours cet en-tête et n'est jamais affecté par cette
+// règle. Une mutation sans Origin NI Referer est donc rejetée par défaut
+// plutôt que laissée passer par prudence excessive.
+export function checkOrigin(context) {
+  const method = context.request.method.toUpperCase();
+  if (!['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) return true;
+
+  const headerValue = context.request.headers.get('origin') || context.request.headers.get('referer');
+  if (!headerValue) return false;
+
+  let requestOrigin;
+  try {
+    requestOrigin = new URL(headerValue).origin;
+  } catch {
+    return false;
+  }
+
+  const expectedOrigin = new URL(context.request.url).origin;
+  return requestOrigin === expectedOrigin;
+}
+
 // Hiérarchie des rôles : "Super Admin = Admin + privilèges supplémentaires".
 // Un rôle listé dans `roles` donne aussi accès à tout rôle qui hérite de
 // lui — super_admin hérite d'admin, donc demander 'admin' laisse aussi
@@ -79,7 +118,11 @@ const ROLE_HIERARCHY = {
 };
 
 // Retourne l'utilisateur en session si son rôle est autorisé, sinon null.
+// checkOrigin() est vérifié avant même la session : une mutation refusée
+// pour cause d'origine invalide ne doit rien révéler sur l'état de la
+// session (comportement identique, qu'on soit connecté ou non).
 export async function requireRole(context, roles) {
+  if (!checkOrigin(context)) return null;
   const user = await getSessionUser(context);
   if (!user) return null;
   const allowedRoles = new Set(roles.flatMap((role) => ROLE_HIERARCHY[role] || [role]));
