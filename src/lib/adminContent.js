@@ -43,7 +43,7 @@ const CSV_BOM = String.fromCharCode(0xFEFF);
 // authentifié), un message peut désormais être écrit par n'importe quel
 // visiteur anonyme : from_name/subject/content/email doivent être
 // échappés partout où ils sont affichés dans l'espace admin.
-function escapeHtml(str) {
+export function escapeHtml(str) {
   return String(str ?? '').replace(/[&<>"']/g, (c) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
   }[c]));
@@ -375,7 +375,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
       card.innerHTML = `
         <div style="width:64px; height:48px; border-radius:10px; ${coverStyleFor(n.bg_gradient)} flex-shrink:0;"></div>
         <div style="flex:2; min-width:220px;">
-          <div style="font-size:14.5px; font-weight:700; color:#1F2925;">${n.title}</div>
+          <div style="font-size:14.5px; font-weight:700; color:#1F2925;">${escapeHtml(n.title)}</div>
           <div style="font-size:12.5px; color:#5a655f; margin-top:3px;">${n.category}</div>
         </div>
         <div style="font-size:12.5px; color:#5a655f; min-width:120px;">Modifié le ${n.created_at.split(' ')[0]}</div>
@@ -883,7 +883,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
               <div style="font-size:12px; font-weight:700; color:#E97824; text-transform:uppercase;">${ev.category} · ${ev.date}</div>
               ${getBadgeHtml(bucket, tone)}
             </div>
-            <h3 style="font-size:16px; font-weight:700; color:#1F2925; margin:0 0 6px;">${ev.title}</h3>
+            <h3 style="font-size:16px; font-weight:700; color:#1F2925; margin:0 0 6px;">${escapeHtml(ev.title)}</h3>
             <p style="font-size:13px; color:#5a655f; margin:0 0 4px;">${ev.place} · ${ev.registered_count}/${ev.max_places} inscrits</p>
             <p style="font-size:12.5px; margin:0 0 16px;">${getBadgeHtml(ev.inscriptions_ouvertes ? 'Inscriptions ouvertes' : 'Inscriptions fermées', ev.inscriptions_ouvertes ? 'g' : 'n')}</p>
           </div>
@@ -1060,7 +1060,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
       const row = document.createElement('div');
       row.style.cssText = 'display:flex; align-items:center; gap:16px; padding:14px 16px; border-bottom:1px solid rgba(31,41,37,0.06); flex-wrap:wrap;';
       row.innerHTML = `
-        <div style="flex:1; min-width:160px; font-size:14px; font-weight:700; color:#1F2925;">${p.first_name} ${p.last_name}</div>
+        <div style="flex:1; min-width:160px; font-size:14px; font-weight:700; color:#1F2925;">${escapeHtml(p.first_name)} ${escapeHtml(p.last_name)}</div>
         <div style="min-width:120px; font-size:13px; color:#5a655f;">${p.created_at ? p.created_at.split(' ')[0] : '—'}</div>
         <button class="delete-registrant-btn" style="background:rgba(177,69,36,0.08); border:none; padding:7px 14px; border-radius:999px; font-size:12px; font-weight:700; cursor:pointer; color:#B14524;">Supprimer</button>
       `;
@@ -1288,8 +1288,8 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
           <span style="background:rgba(23,107,77,0.08); color:#176B4D; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700;">${c.type}</span>
           <span style="font-size:12px; color:#9aa39c;">${c.date}</span>
         </div>
-        <div style="font-size:14px; font-weight:700; color:#1F2925; margin-top:8px;">${c.title}</div>
-        <div style="font-size:12.5px; color:#5a655f; margin-top:2px;">Par ${c.author} · ${c.status}</div>
+        <div style="font-size:14px; font-weight:700; color:#1F2925; margin-top:8px;">${escapeHtml(c.title)}</div>
+        <div style="font-size:12.5px; color:#5a655f; margin-top:2px;">Par ${escapeHtml(c.author)} · ${c.status}</div>
       `;
       item.addEventListener('click', () => {
         state.validationSelectedIdx = i;
@@ -1312,13 +1312,13 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     const coverStyle = coverStyleFor(selected.bgGradient || 'linear-gradient(150deg,#E8D8BF,#176B4D)');
 
     detailBox.innerHTML = `
-      <h3 style="font-size:16px; font-weight:700; color:#1F2925; margin:0 0 6px;">${selected.title}</h3>
-      <div style="font-size:13px; color:#5a655f; margin-bottom:16px;">Par ${selected.author} · ${selected.date}</div>
+      <h3 style="font-size:16px; font-weight:700; color:#1F2925; margin:0 0 6px;">${escapeHtml(selected.title)}</h3>
+      <div style="font-size:13px; color:#5a655f; margin-bottom:16px;">Par ${escapeHtml(selected.author)} · ${selected.date}</div>
       <div style="aspect-ratio:16/9; border-radius:14px; ${coverStyle} margin-bottom:18px;"></div>
       <div style="font-size:13px; font-weight:700; color:#1F2925; margin-bottom:6px;">Résumé</div>
-      <div style="font-size:13.5px; color:#3f4a45; line-height:1.5; margin-bottom:16px;">${selected.excerpt || '—'}</div>
+      <div style="font-size:13.5px; color:#3f4a45; line-height:1.5; margin-bottom:16px;">${selected.excerpt ? escapeHtml(selected.excerpt) : '—'}</div>
       <div style="font-size:13px; font-weight:700; color:#1F2925; margin-bottom:6px;">Contenu de l'article</div>
-      <div style="font-size:13.5px; color:#3f4a45; line-height:1.6; white-space:pre-wrap; max-height:320px; overflow-y:auto; background:rgba(31,41,37,0.02); padding:14px; border-radius:10px; margin-bottom:16px;">${selected.content || '—'}</div>
+      <div style="font-size:13.5px; color:#3f4a45; line-height:1.6; white-space:pre-wrap; max-height:320px; overflow-y:auto; background:rgba(31,41,37,0.02); padding:14px; border-radius:10px; margin-bottom:16px;">${selected.content ? escapeHtml(selected.content) : '—'}</div>
       <div style="font-size:13px; font-weight:700; color:#1F2925; margin-bottom:8px;">Commentaire pour l'auteur</div>
       <textarea id="validation-comment-text" rows="2" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:13.5px; resize:vertical; margin-bottom:16px;" placeholder="Optionnel..."></textarea>
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
@@ -1428,12 +1428,12 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
         : `<span style="color:#9aa39c; font-size:12px;">—</span>`;
 
       tr.innerHTML = `
-        <td style="padding:13px 18px; font-weight:700; color:#1F2925; white-space:nowrap;">${r.first_name} ${r.last_name}</td>
+        <td style="padding:13px 18px; font-weight:700; color:#1F2925; white-space:nowrap;">${escapeHtml(r.first_name)} ${escapeHtml(r.last_name)}</td>
         <td style="padding:13px 18px;">${getBadgeHtml(r.status, statusTone)}</td>
-        <td style="padding:13px 18px; color:#5a655f; font-size:13px; max-width:140px; overflow:hidden; text-overflow:ellipsis;">${r.domaine || '—'}</td>
+        <td style="padding:13px 18px; color:#5a655f; font-size:13px; max-width:140px; overflow:hidden; text-overflow:ellipsis;">${r.domaine ? escapeHtml(r.domaine) : '—'}</td>
         <td style="padding:13px 18px;">${benevoleHtml}</td>
-        <td style="padding:13px 18px; color:#5a655f; font-size:13px;">${r.email}</td>
-        <td style="padding:13px 18px; color:#5a655f; font-size:13px; white-space:nowrap;">${r.phone}</td>
+        <td style="padding:13px 18px; color:#5a655f; font-size:13px;">${escapeHtml(r.email)}</td>
+        <td style="padding:13px 18px; color:#5a655f; font-size:13px; white-space:nowrap;">${escapeHtml(r.phone)}</td>
         <td style="padding:13px 18px; text-align:right; white-space:nowrap;">
           <span style="font-size:11.5px; color:#9aa39c; margin-right:8px;">${dateStr}</span>
           <button class="delete-rec-btn" data-id="${r.id}" style="background:transparent; border:none; color:#B14524; font-size:12.5px; font-weight:700; cursor:pointer; padding:5px 10px; border-radius:6px; transition:background-color 0.15s;">Suppr.</button>

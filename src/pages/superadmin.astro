@@ -514,7 +514,7 @@ if (!user) {
   </div>
 
   <script>
-    import { createAdminContent } from '../lib/adminContent.js';
+    import { createAdminContent, escapeHtml } from '../lib/adminContent.js';
     import { createDashboardCore } from '../lib/dashboardCore.js';
 
     // Vues Actualités / Événements / Inscriptions / Messages : exactement
@@ -1243,9 +1243,9 @@ if (!user) {
         row.style.cssText = 'display:flex; gap:16px; padding:16px; border-bottom:1px solid rgba(31,41,37,0.06); flex-wrap:wrap; font-size: 13.5px;';
         row.innerHTML = `
           <div style="min-width:170px; color:#5a655f;">${j.date}</div>
-          <div style="min-width:110px; font-weight:700; color:#1F2925;">${j.user}</div>
+          <div style="min-width:110px; font-weight:700; color:#1F2925;">${escapeHtml(j.user)}</div>
           <div style="min-width:120px;">${getBadgeHtml(j.role, j.roleT)}</div>
-          <div style="flex:1; min-width:220px; color:#1F2925;"><strong>${j.action}</strong> — <span style="color:#5a655f;">${j.detail}</span></div>
+          <div style="flex:1; min-width:220px; color:#1F2925;"><strong>${escapeHtml(j.action)}</strong> — <span style="color:#5a655f;">${escapeHtml(j.detail)}</span></div>
           <div style="font-size:11.5px; color:#9aa39c;">IP ${j.ip}</div>
         `;
         container.appendChild(row);

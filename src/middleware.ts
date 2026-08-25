@@ -1,4 +1,5 @@
 import { defineMiddleware } from 'astro:middleware';
+import { getSessionUser } from './lib/auth.js';
 
 // Routes protégées qui nécessitent une session authentifiée
 const PROTECTED_ROUTES = [
@@ -25,7 +26,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
   );
 
   if (protectedMatch) {
-    const user = (await context.session?.get('user')) ?? null;
+    // getSessionUser() (lib/auth.js) revérifie statut/role en D1, pas
+    // seulement la session KV — même fonction que requireRole(), pour que
+    // page et API réagissent de façon identique (Correction P0.4).
+    const user = await getSessionUser(context);
     if (!user) {
       return context.redirect('/connexion?redirect=' + encodeURIComponent(pathname));
     }

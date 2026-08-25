@@ -47,14 +47,29 @@ export async function PUT(context) {
 
     if (nom) await db.prepare("UPDATE utilisateurs SET nom = ? WHERE id = ?").bind(nom, user.id).run();
     if (email) await db.prepare("UPDATE utilisateurs SET email = ? WHERE id = ?").bind(email, user.id).run();
+
+    // mot_de_passe_updated_at : calculé ici en JS (plutôt que CURRENT_TIMESTAMP
+    // côté SQL) pour connaître la valeur EXACTE écrite en D1 et la reporter
+    // telle quelle dans la session ci-dessous — sans ce match exact,
+    // getSessionUser() (lib/auth.js) couperait la session de l'utilisateur
+    // juste après qu'il ait changé son propre mot de passe, ce qui serait un
+    // bug (l'auto-édition doit rester sans impact sur la session courante).
+    let newPasswordTimestamp = null;
     if (password) {
       const hashed = await hashPassword(password);
-      await db.prepare("UPDATE utilisateurs SET mot_de_passe = ? WHERE id = ?").bind(hashed, user.id).run();
+      newPasswordTimestamp = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      await db.prepare("UPDATE utilisateurs SET mot_de_passe = ?, mot_de_passe_updated_at = ? WHERE id = ?").bind(hashed, newPasswordTimestamp, user.id).run();
     }
 
-    // La session doit refléter le nom/email à jour (utilisés par le middleware
-    // et affichés côté client).
-    const updatedUser = { ...user, ...(nom && { nom }), ...(email && { email }) };
+    // La session doit refléter le nom/email/mot_de_passe_updated_at à jour
+    // (utilisés par le middleware et par getSessionUser() pour la
+    // revérification à chaque requête, Correction P0.4).
+    const updatedUser = {
+      ...user,
+      ...(nom && { nom }),
+      ...(email && { email }),
+      ...(newPasswordTimestamp && { mot_de_passe_updated_at: newPasswordTimestamp }),
+    };
     context.session.set('user', updatedUser);
 
     await logActivity(db, context, updatedUser, "Modification du profil", password ? "Mot de passe changé" : "Informations mises à jour");

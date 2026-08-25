@@ -144,7 +144,9 @@ export async function PUT(context) {
     if (resetPassword) {
       const tempPassword = generateTempPassword();
       const hashed = await hashPassword(tempPassword);
-      await db.prepare("UPDATE utilisateurs SET mot_de_passe = ? WHERE id = ?").bind(hashed, id).run();
+      // mot_de_passe_updated_at à jour : coupe immédiatement toute session
+      // déjà ouverte de ce compte (voir getSessionUser(), lib/auth.js).
+      await db.prepare("UPDATE utilisateurs SET mot_de_passe = ?, mot_de_passe_updated_at = CURRENT_TIMESTAMP WHERE id = ?").bind(hashed, id).run();
       await logActivity(db, context, user, "Réinitialisation de mot de passe", `Utilisateur #${id}`);
       return new Response(JSON.stringify({
         success: true,

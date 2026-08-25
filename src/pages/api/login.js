@@ -29,7 +29,7 @@ export async function POST(context) {
 
     // On récupère le hash stocké — NE PAS comparer en SQL
     const user = await db
-      .prepare("SELECT id, nom, email, role, mot_de_passe FROM utilisateurs WHERE email = ? AND statut = 'actif'")
+      .prepare("SELECT id, nom, email, role, mot_de_passe, mot_de_passe_updated_at FROM utilisateurs WHERE email = ? AND statut = 'actif'")
       .bind(email)
       .first();
 

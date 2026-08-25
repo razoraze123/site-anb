@@ -6,7 +6,7 @@
 //   const dashboard = createDashboardCore({ goPage, getBadgeHtml, role });
 //   await dashboard.load();   // à chaque affichage de la vue dashboard
 
-import { eventBucket } from './adminContent.js';
+import { eventBucket, escapeHtml } from './adminContent.js';
 
 const MONTHS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
 
@@ -265,7 +265,7 @@ export function createDashboardCore({ goPage, getBadgeHtml, role }) {
       const name = firstName.charAt(0).toUpperCase() + firstName.slice(1);
       item.innerHTML = `
         <div style="width:8px; height:8px; border-radius:50%; background:#E97824; margin-top:7px; flex-shrink:0;"></div>
-        <div>${name} — ${l.action}${l.details ? ` : ${l.details}` : ''}<span style="color:#9aa39c; font-size:12.5px; display:block; margin-top:2px;">${formatJournalDate(l.created_at)}</span></div>
+        <div>${escapeHtml(name)} — ${escapeHtml(l.action)}${l.details ? ` : ${escapeHtml(l.details)}` : ''}<span style="color:#9aa39c; font-size:12.5px; display:block; margin-top:2px;">${formatJournalDate(l.created_at)}</span></div>
       `;
       actWrapper.appendChild(item);
     });

@@ -1,11 +1,18 @@
 -- Complete Database Schema for ANB Bordeaux Platform (D1 SQL)
 
 -- 1. Table utilisateurs
+-- mot_de_passe_updated_at : utilisé par getSessionUser() (lib/auth.js,
+-- Correction P0.4) pour couper immédiatement toute session déjà ouverte
+-- quand le mot de passe est réinitialisé par un tiers. Présent ici pour
+-- qu'une installation fraîche ait la colonne dès le départ ; pour un
+-- environnement déjà initialisé, voir
+-- db/migration-2026-08-25-mot-de-passe-updated-at.sql (ALTER TABLE).
 CREATE TABLE IF NOT EXISTS utilisateurs (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   nom TEXT NOT NULL,
   email TEXT NOT NULL UNIQUE,
   mot_de_passe TEXT NOT NULL,
+  mot_de_passe_updated_at DATETIME,
   role TEXT NOT NULL DEFAULT 'editeur',
   statut TEXT NOT NULL DEFAULT 'actif',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -117,22 +124,29 @@ CREATE TABLE IF NOT EXISTS media_galerie (
 
 
 -- SEED DEMO DATA
--- Utilisateurs (mot de passe démo pour tous : "demo1234", hashé PBKDF2 comme l'exige src/lib/password.js)
-INSERT OR IGNORE INTO utilisateurs (id, nom, email, mot_de_passe, role, statut) VALUES
-(1, 'Nasser Diallo', 'nasser.diallo@anb-bordeaux.fr', 'd803102d05cd5be2eea11649b3bd22e1:5759a250f0864d379e256ab35156ba3cc4218b261c74310432595e661b946cf2', 'super_admin', 'actif'),
-(2, 'Mariama Souley', 'mariama.souley@anb-bordeaux.fr', 'd803102d05cd5be2eea11649b3bd22e1:5759a250f0864d379e256ab35156ba3cc4218b261c74310432595e661b946cf2', 'admin', 'actif'),
-(3, 'Fatou Ibrahim', 'fatou.ibrahim@anb-bordeaux.fr', 'd803102d05cd5be2eea11649b3bd22e1:5759a250f0864d379e256ab35156ba3cc4218b261c74310432595e661b946cf2', 'editeur', 'actif'),
-(4, 'Aïcha Boubacar', 'aicha.boubacar@anb-bordeaux.fr', 'd803102d05cd5be2eea11649b3bd22e1:5759a250f0864d379e256ab35156ba3cc4218b261c74310432595e661b946cf2', 'admin', 'actif'),
-(5, 'Ibrahim Moussa', 'ibrahim.moussa@anb-bordeaux.fr', 'd803102d05cd5be2eea11649b3bd22e1:5759a250f0864d379e256ab35156ba3cc4218b261c74310432595e661b946cf2', 'super_admin', 'desactive');
+-- Utilisateurs : AUCUN seed de compte ici (retiré — voir audit-auth.md §2/§15).
+-- Les 5 comptes de démonstration partageaient tous le même mot de passe
+-- de démonstration, pré-rempli en clair sur la page /connexion : accès
+-- super_admin exploitable sans aucune connaissance préalable. Corrigé le
+-- 2026-08-25 (Correction P0.1, audit-auth.md).
+--
+-- CONSÉQUENCE : une toute nouvelle installation à partir de ce schema.sql
+-- ne contient plus aucun compte super_admin — pas de bootstrap possible
+-- tant qu'un premier compte n'est pas créé manuellement (INSERT direct en
+-- D1 avec un hash généré via hashPassword(), ou futur script de bootstrap
+-- dédié). C'est un trou volontairement laissé visible, déjà identifié en
+-- P1 de l'audit ("bootstrap sécurisé du premier super_admin") — non
+-- résolu ici par choix, pas oublié.
 
--- Actualités
-INSERT OR IGNORE INTO actualites (title, slug, excerpt, content, category, auteur_id, status, bg_gradient) VALUES
-('Retour sur notre dernière rencontre communautaire', 'retour-rencontre-communautaire', 'Résumé chaleureux de notre dernière assemblée.', 'Le contenu détaillé du bilan de la rencontre associative...', 'Communauté', 2, 'Publié', 'linear-gradient(150deg,#176B4D,#1F2925)'),
-('Bienvenue aux nouveaux membres de l''ANB', 'bienvenue-nouveaux-membres', 'Un message d''accueil pour tous les nouveaux adhérents de la métropole.', 'Bienvenue à tous et toutes ! L''association grandit...', 'Vie associative', 2, 'Publié', 'linear-gradient(150deg,#E97824,#E8D8BF)'),
-('Appel à bénévoles pour notre prochain événement', 'appel-benevoles-evenement', 'Nous recherchons des forces vives pour l''organisation logistique.', 'Nous avons besoin d''aide pour installer les stands...', 'Bénévolat', 3, 'Publié', 'linear-gradient(150deg,#E8D8BF,#176B4D)'),
-('Portrait : parcours d''une étudiante nigérienne à Bordeaux', 'portrait-parcours-etudiante', 'Découvrez le témoignage de Fatouma sur son arrivée et ses études.', 'Arrivée en 2025 pour suivre son master en informatique...', 'Portraits', 3, 'Brouillon', 'linear-gradient(150deg,#1F2925,#E97824)'),
-('Journée culturelle 2026 : le programme complet', 'journee-culturelle-programme', 'Consultez les horaires et les détails des animations du 20 septembre.', 'Le programme complet de notre grande journée annuelle...', 'Événements', 2, 'Publié', 'linear-gradient(150deg,#176B4D,#E97824)'),
-('Bilan de la collecte solidaire 2025', 'bilan-collecte-solidaire-2025', 'Merci à tous les donateurs pour la collecte d''hiver.', 'Grâce à vos dons, nous avons pu aider...', 'Solidarité', 1, 'Archivé', 'linear-gradient(150deg,#5a655f,#1F2925)');
+-- Actualités : AUCUN seed ici (retiré, trouvé pendant la revue finale du
+-- P0 authentification). Les 6 lignes de démonstration référençaient
+-- auteur_id 1/2/3, qui n'existent plus depuis le retrait du seed
+-- utilisateurs (Correction P0.1) — D1 impose les FOREIGN KEY par défaut,
+-- donc une installation fraîche échouait entièrement à l'application de
+-- schema.sql ("FOREIGN KEY constraint failed"), confirmé par test réel.
+-- Retiré entièrement plutôt que de mettre auteur_id à NULL, par cohérence
+-- avec le choix déjà fait pour utilisateurs : pas de contenu de
+-- démonstration par défaut.
 
 -- Événements
 INSERT OR IGNORE INTO evenements (title, date, event_date, place, category, registered_count, max_places, status, inscriptions_ouvertes, bg_gradient) VALUES
