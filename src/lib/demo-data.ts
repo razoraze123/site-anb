@@ -54,8 +54,7 @@ export const events = [
 export const eventFilters = ['Tous', 'Culture', 'Solidarité', 'Sport', 'Rencontres'] as const;
 
 export const timeline = [
-  { year: '20XX', text: "Création de l'association par un groupe d'étudiants et de familles nigériennes de Bordeaux." },
-  { year: '20XX', text: "Premiers événements culturels et mise en place d'un réseau d'entraide pour les nouveaux arrivants." },
-  { year: '20XX', text: 'Structuration du bureau et lancement des actions solidaires en direction du Niger.' },
+  { year: '1992', text: "Création de l'Association des Nigériens à Bordeaux." },
+  { year: 'À venir', text: "Vidéo documentaire à venir — les anciens membres du bureau raconteront l'histoire de l'ANB et les actions réalisées au fil des années." },
   { year: "Aujourd'hui", text: 'Une communauté active, des événements réguliers et un accompagnement renforcé pour chacun.' },
 ] as const;
