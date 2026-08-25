@@ -1513,37 +1513,6 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     }
   }
 
-  // ----------------------------------------------------------- Pages du site
-  // Maquette figée (BACKLOG.md P3) : aucune donnée réelle, aucune action.
-  // Reprise telle quelle depuis l'ancien admin.astro.
-
-  function renderPages() {
-    const container = document.getElementById('site-pages-container');
-    if (!container) return;
-    container.innerHTML = '';
-    const pList = [
-      { name: 'Accueil', modified: '12 juil. 2026', author: 'Mariama S.', status: 'Publié' },
-      { name: "L'association", modified: '20 juin 2026', author: 'Nasser D.', status: 'Publié' },
-      { name: 'Culture nigérienne', modified: '15 mai 2026', author: 'Fatou I.', status: 'Publié' },
-      { name: 'Contact', modified: '2 avr. 2026', author: 'Mariama S.', status: 'Publié' },
-      { name: 'Mentions légales', modified: '12 juil. 2026', author: 'Nasser D.', status: 'Publié' },
-      { name: 'CGU', modified: '12 juil. 2026', author: 'Nasser D.', status: 'Publié' },
-      { name: 'Politique de confidentialité', modified: '12 juil. 2026', author: 'Nasser D.', status: 'Publié' }
-    ];
-
-    pList.forEach(p => {
-      const row = document.createElement('div');
-      row.style.cssText = 'display:flex; align-items:center; gap:16px; padding:16px; border-bottom:1px solid rgba(31,41,37,0.06); flex-wrap:wrap;';
-      row.innerHTML = `
-        <div style="flex:1; min-width:160px; font-size:14.5px; font-weight:700; color:#1F2925;">${p.name}</div>
-        <div style="font-size:12.5px; color:#5a655f; min-width:120px;">Modifié le ${p.modified}</div>
-        <div style="font-size:12.5px; color:#5a655f; min-width:120px;">Par ${p.author}</div>
-        ${getBadgeHtml(p.status, 'g')}
-      `;
-      container.appendChild(row);
-    });
-  }
-
   // ------------------------------------------- câblage des zones statiques
   // wireUploadZone est désormais un export du module (voir plus haut).
 
@@ -1698,7 +1667,6 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     renderEvenements,
     renderMessages,
     renderRecensement,
-    renderPages,
     renderInscriptions,
     renderGalerie,
     renderEquipe,

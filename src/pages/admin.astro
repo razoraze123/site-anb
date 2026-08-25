@@ -7,7 +7,6 @@ import ViewEvenements from '../components/admin/ViewEvenements.astro';
 import ViewInscriptions from '../components/admin/ViewInscriptions.astro';
 import ViewRecensement from '../components/admin/ViewRecensement.astro';
 import ViewMessages from '../components/admin/ViewMessages.astro';
-import ViewPages from '../components/admin/ViewPages.astro';
 import ViewValidations from '../components/admin/ViewValidations.astro';
 
 export const prerender = false;
@@ -210,8 +209,6 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
         <!-- MESSAGES VIEW -->
         <ViewMessages />
 
-        <!-- PAGES DU SITE VIEW -->
-        <ViewPages />
 
         <!-- STATISTIQUES VIEW — structure restaurée sur la maquette
              d'origine (commit fa971e8 : période + 4 cartes + "Visites par
@@ -350,7 +347,6 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
       { key: 'inscriptions', label: 'Inscriptions' },
       { key: 'recensement', label: 'Recensement' },
       { key: 'messages', label: 'Messages' },
-      { key: 'pages', label: 'Pages du site' },
       { key: 'stats', label: 'Statistiques' },
       { type: 'separator' },
       { key: 'profil', label: 'Mon profil' }
@@ -366,7 +362,6 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
       inscriptions: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 12l2 2 4-4"></path><circle cx="12" cy="12" r="9"></circle></svg>`,
       recensement: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 00-3-3.87"></path><path d="M16 3.13a4 4 0 010 7.75"></path></svg>`,
       messages: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 6l9 6 9-6"></path></svg>`,
-      pages: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 3h8l4 4v14a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 017-1z"></path><path d="M15 3v4h4"></path></svg>`,
       stats: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 20V10M12 20V4M20 20v-7"></path></svg>`,
       profil: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="3.4"></circle><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"></path></svg>`
     };
@@ -446,7 +441,7 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
         contenus: 'Contenus & validations',
         evenements: 'Événements', 'evenements-new': 'Créer un événement',
         inscriptions: 'Inscriptions', recensement: 'Recensement',
-        messages: 'Messages', pages: 'Pages du site', stats: 'Statistiques', profil: 'Mon profil'
+        messages: 'Messages', stats: 'Statistiques', profil: 'Mon profil'
       };
 
       document.getElementById('breadcrumb-page-label').textContent = pageTitleMap[pageKey] || '';
@@ -532,8 +527,6 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
         content.renderRecensement();
       } else if (pageKey === 'messages') {
         content.renderMessages();
-      } else if (pageKey === 'pages') {
-        content.renderPages();
       } else if (pageKey === 'stats') {
         loadStats();
       }
@@ -554,9 +547,6 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
     // (content.renderRecensement(), appelée depuis renderPageDetails()).
 
     // 7. Messages
-
-    // 9. Pages — vue partagée, voir lib/adminContent.js
-    // (content.renderPages(), appelée depuis renderPageDetails()).
 
     // 10. Statistiques — structure restaurée sur la maquette d'origine
     // (audit Git : commit fa971e8), mêmes définitions et même
