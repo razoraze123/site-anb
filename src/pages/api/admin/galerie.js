@@ -76,10 +76,13 @@ export async function POST(context) {
   }
 }
 
-// Modification des métadonnées uniquement — nom_fichier (la clé R2)
-// n'est jamais modifiable depuis ce formulaire, pour ne jamais faire
-// pointer une ligne existante vers un fichier différent sans repasser
-// par un vrai upload.
+// Modification d'un média : métadonnées, et éventuellement le fichier
+// (nom_fichier) si l'admin a choisi une nouvelle photo depuis le
+// formulaire d'édition (le champ n'est envoyé que si un nouvel upload a
+// été fait ; sinon le client renvoie la clé existante inchangée — voir
+// wireGalerieForm() dans adminContent.js). Si la clé change, l'ancien
+// objet R2 n'est supprimé QU'APRÈS confirmation de l'écriture D1, pour
+// ne jamais casser le média en cas d'échec intermédiaire.
 export async function PUT(context) {
   try {
     const user = await requireRole(context, ['admin', 'super_admin']);
@@ -95,13 +98,14 @@ export async function PUT(context) {
 
     const body = await context.request.json();
     const { id } = body;
+    const nom_fichier = (body.nom_fichier || '').trim();
     const titre = (body.titre || '').trim();
     const texte_alternatif = (body.texte_alternatif || '').trim();
     const credit = (body.credit || '').trim();
     const type = ALLOWED_TYPES.includes(body.type) ? body.type : 'Photo';
 
-    if (!id || !titre || !texte_alternatif || !credit) {
-      return new Response(JSON.stringify({ error: "Les paramètres id, titre, texte alternatif et crédit sont requis." }), {
+    if (!id || !nom_fichier || !titre || !texte_alternatif || !credit) {
+      return new Response(JSON.stringify({ error: "Les paramètres id, fichier, titre, texte alternatif et crédit sont requis." }), {
         status: 400,
         headers: { "Content-Type": "application/json" }
       });
@@ -113,9 +117,33 @@ export async function PUT(context) {
       });
     }
 
+    const existing = await db.prepare("SELECT nom_fichier FROM media_galerie WHERE id = ?").bind(id).first();
+    if (!existing) {
+      return new Response(JSON.stringify({ error: "Média introuvable." }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
     await db.prepare(
-      "UPDATE media_galerie SET titre = ?, texte_alternatif = ?, credit = ?, type = ? WHERE id = ?"
-    ).bind(titre, texte_alternatif, credit, type, id).run();
+      "UPDATE media_galerie SET nom_fichier = ?, titre = ?, texte_alternatif = ?, credit = ?, type = ? WHERE id = ?"
+    ).bind(nom_fichier, titre, texte_alternatif, credit, type, id).run();
+
+    // La référence D1 pointe désormais sur le nouveau fichier : l'ancien
+    // objet R2 (si différent) peut être nettoyé. Échec R2 ignoré ici —
+    // le média est déjà correct côté D1/affichage, seul un fichier R2
+    // orphelin resterait (même compromis que la suppression, non
+    // bloquant pour l'utilisateur).
+    if (existing.nom_fichier && existing.nom_fichier !== nom_fichier) {
+      const r2 = env.R2;
+      if (r2) {
+        try {
+          await r2.delete(existing.nom_fichier);
+        } catch (r2Error) {
+          console.error("Échec de la suppression de l'ancienne photo R2 :", r2Error);
+        }
+      }
+    }
 
     await logActivity(db, context, user, "Modification d'un média de la galerie", titre);
 

@@ -580,7 +580,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(
             isEdit
-              ? { id: state.editingGalerieId, titre, texte_alternatif, credit, type }
+              ? { id: state.editingGalerieId, nom_fichier, titre, texte_alternatif, credit, type }
               : { nom_fichier, titre, texte_alternatif, credit, type }
           ),
         });
