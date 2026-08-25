@@ -65,36 +65,10 @@ const eventFilters = ['Toutes', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 
       </div>
       <h1 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(2.1rem,4vw,3rem); color:#1F2925; margin:0 0 40px; max-width:760px;">Se retrouver, célébrer et partager toute l'année.</h1>
 
-      <!-- Filtre temporel — priorité sur la catégorie, séparé visuellement -->
-      <div id="time-filters" class="filter-row" style="display:flex; gap:28px; margin-bottom:16px;">
-        {timeFilters.map((f, i) => (
-          <button
-            type="button"
-            data-time-filter={f}
-            class="time-filter-btn"
-            aria-pressed={i === 0 ? 'true' : 'false'}
-            style={`background:none; color:${i === 0 ? '#176B4D' : '#5a655f'}; border:none; border-bottom:2px solid ${i === 0 ? '#176B4D' : 'transparent'}; padding:0 0 10px; font-weight:800; font-size:16px; cursor:pointer; white-space:nowrap;`}
-          >
-            {f}
-          </button>
-        ))}
-      </div>
-
-      <div id="event-filters" class="filter-row" style="display:flex; gap:clamp(18px,3vw,32px); flex-wrap:wrap; margin-bottom:52px; border-bottom:1px solid rgba(31,41,37,0.1);">
-        {eventFilters.map((f, i) => (
-          <button
-            type="button"
-            data-filter={f}
-            class="filter-btn"
-            aria-pressed={i === 0 ? 'true' : 'false'}
-            style={`background:none; color:${i === 0 ? '#176B4D' : '#5a655f'}; border:none; border-bottom:2px solid ${i === 0 ? '#E97824' : 'transparent'}; padding:0 0 14px; margin-bottom:-1px; font-weight:700; font-size:14.5px; cursor:pointer; white-space:nowrap;`}
-          >
-            {f}
-          </button>
-        ))}
-      </div>
-
-      <!-- NEXT EVENT: TICKET -->
+      <!-- NEXT EVENT: TICKET — bloc éditorial mis en avant, indépendant
+           des filtres ci-dessous (jamais masqué par applyFilters(), voir
+           script : il ne cible que .event-card). Volontairement affiché
+           avant les filtres pour respecter la hiérarchie visuelle. -->
       {next && (
         <div data-reveal class="ticket" style="margin-bottom:70px; box-shadow:0 24px 50px rgba(31,41,37,0.15);">
           {next.bg_gradient.startsWith('/') || next.bg_gradient.startsWith('http') ? (
@@ -146,6 +120,37 @@ const eventFilters = ['Toutes', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 
           </div>
         </div>
       )}
+
+      <!-- Filtre temporel — priorité sur la catégorie, séparé visuellement.
+           Contrôle uniquement la liste ci-dessous (voir applyFilters()) :
+           le bloc "Prochain événement" au-dessus n'est jamais affecté. -->
+      <div id="time-filters" class="filter-row" style="display:flex; gap:28px; margin-bottom:16px;">
+        {timeFilters.map((f, i) => (
+          <button
+            type="button"
+            data-time-filter={f}
+            class="time-filter-btn"
+            aria-pressed={i === 0 ? 'true' : 'false'}
+            style={`background:none; color:${i === 0 ? '#176B4D' : '#5a655f'}; border:none; border-bottom:2px solid ${i === 0 ? '#176B4D' : 'transparent'}; padding:0 0 10px; font-weight:800; font-size:16px; cursor:pointer; white-space:nowrap;`}
+          >
+            {f}
+          </button>
+        ))}
+      </div>
+
+      <div id="event-filters" class="filter-row" style="display:flex; gap:clamp(18px,3vw,32px); flex-wrap:wrap; margin-bottom:52px; border-bottom:1px solid rgba(31,41,37,0.1);">
+        {eventFilters.map((f, i) => (
+          <button
+            type="button"
+            data-filter={f}
+            class="filter-btn"
+            aria-pressed={i === 0 ? 'true' : 'false'}
+            style={`background:none; color:${i === 0 ? '#176B4D' : '#5a655f'}; border:none; border-bottom:2px solid ${i === 0 ? '#E97824' : 'transparent'}; padding:0 0 14px; margin-bottom:-1px; font-weight:700; font-size:14.5px; cursor:pointer; white-space:nowrap;`}
+          >
+            {f}
+          </button>
+        ))}
+      </div>
 
       <h2 id="events-list-title" style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.5rem,2.4vw,1.9rem); color:#1F2925; margin:0 0 8px;">Tous les événements à venir</h2>
 
