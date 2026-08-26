@@ -1,7 +1,16 @@
 ---
 import { navItems } from '../lib/demo-data';
 
-const currentPath = Astro.url.pathname;
+// Normalise le slash final avant comparaison : les pages prérendues
+// statiquement (build.format 'directory') figent Astro.url.pathname avec
+// un slash final (ex. /culture-nigerienne/), alors que les pages SSR
+// (prerender = false) reflètent le pathname réel de la requête (souvent
+// sans slash final). navItems n'a jamais de slash final, donc on aligne
+// currentPath dessus pour que la détection de l'onglet actif fonctionne
+// dans les deux cas.
+const normalize = (p) =>
+  p.endsWith('/') && p !== '/' ? p.slice(0, -1) : p;
+const currentPath = normalize(Astro.url.pathname);
 ---
 
 <header style="position:sticky; top:0; z-index:100; background:#F8F4EC;">
