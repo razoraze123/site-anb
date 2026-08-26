@@ -40,6 +40,28 @@ button {
   color: #FFFFFF;
 }
 
+/* ---- sticky footer (structural) -----------------------------------------
+   .site-shell (Layout.astro's root wrapper: Header + page <main> + Footer +
+   Chatbot) had `min-height:100vh` but no flex layout, so it never
+   distributed leftover space to its children — on a short page the
+   wrapper still reached 100vh, but as blank space stranded *after* the
+   Footer, not between <main> and the Footer. Making it a flex column and
+   letting each page's <main> (the one variable-height child — Header/
+   Footer keep their natural height, Chatbot is position:fixed so it's out
+   of flow either way) grow to fill the remaining space pushes the Footer
+   to the bottom of the viewport on short pages, while long pages are
+   unaffected since <main> already exceeds the available space and the
+   page scrolls normally. */
+.site-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.site-shell > main {
+  flex: 1 0 auto;
+  width: 100%;
+}
+
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(24px); }
   to { opacity: 1; transform: translateY(0); }
