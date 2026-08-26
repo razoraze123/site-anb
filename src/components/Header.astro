@@ -11,6 +11,21 @@ import { navItems } from '../lib/demo-data';
 const normalize = (p) =>
   p.endsWith('/') && p !== '/' ? p.slice(0, -1) : p;
 const currentPath = normalize(Astro.url.pathname);
+
+// Regroupement "Découvrir" (nav desktop uniquement) : Vie pratique, Culture
+// nigérienne et Galerie sont apparentées (ressources à explorer, pas des
+// rubriques d'actualité) et leur ajout successif a rendu le header trop
+// dense en liens de premier niveau. On les replie sous un seul menu
+// déroulant pour revenir à une largeur raisonnable, sans dupliquer
+// navItems ni changer aucune route — le menu mobile, lui, reste une liste
+// à plat (l'empilement vertical n'a pas le même problème de densité).
+const DISCOVER_HREFS = ['/vie-pratique', '/culture-nigerienne', '/galerie'];
+const discoverItems = navItems.filter((item) => DISCOVER_HREFS.includes(item.href));
+const contactItem = navItems.find((item) => item.href === '/contact');
+const leadingItems = navItems.filter(
+  (item) => !DISCOVER_HREFS.includes(item.href) && item.href !== '/contact'
+);
+const discoverActive = discoverItems.some((item) => currentPath === item.href);
 ---
 
 <header style="position:sticky; top:0; z-index:100; background:#F8F4EC;">
@@ -28,7 +43,7 @@ const currentPath = normalize(Astro.url.pathname);
     </button>
 
     <nav class="nav-desktop-only" style="align-items:center; gap:clamp(14px,2vw,30px); flex-wrap:wrap;">
-      {navItems.map((item) => {
+      {leadingItems.map((item) => {
         const active = currentPath === item.href;
         return (
           <a
@@ -39,6 +54,42 @@ const currentPath = normalize(Astro.url.pathname);
           </a>
         );
       })}
+
+      <div class="nav-dropdown" style="position:relative;">
+        <button
+          type="button"
+          id="discover-trigger"
+          aria-haspopup="true"
+          aria-expanded="false"
+          style={`display:flex; align-items:center; gap:5px; background:none; border:none; margin:0; font-family:inherit; font-size:15px; font-weight:600; color:${discoverActive ? '#176B4D' : '#1F2925'}; cursor:pointer; padding:0 0 4px; border-bottom:2px solid ${discoverActive ? '#E97824' : 'transparent'}; white-space:nowrap;`}
+        >
+          Découvrir
+          <svg id="discover-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.15s ease;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <div id="discover-panel" role="menu" class="nav-dropdown-panel" style="position:absolute; top:calc(100% + 14px); left:50%; min-width:210px; background:#FFFFFF; border-radius:16px; padding:10px; box-shadow:0 20px 40px rgba(31,41,37,0.15); display:flex; flex-direction:column; gap:2px; z-index:50;">
+          {discoverItems.map((item) => {
+            const itemActive = currentPath === item.href;
+            return (
+              <a
+                href={item.href}
+                role="menuitem"
+                style={`display:block; padding:10px 14px; border-radius:10px; font-size:14.5px; font-weight:600; color:${itemActive ? '#176B4D' : '#1F2925'}; background:${itemActive ? 'rgba(23,107,77,0.08)' : 'transparent'}; white-space:nowrap;`}
+              >
+                {item.label}
+              </a>
+            );
+          })}
+        </div>
+      </div>
+
+      {contactItem && (
+        <a
+          href={contactItem.href}
+          style={`font-size:15px; font-weight:600; color:${currentPath === contactItem.href ? '#176B4D' : '#1F2925'}; cursor:pointer; padding-bottom:4px; border-bottom:2px solid ${currentPath === contactItem.href ? '#E97824' : 'transparent'}; white-space:nowrap;`}
+        >
+          {contactItem.label}
+        </a>
+      )}
     </nav>
 
     <a href="/adherer" class="nav-desktop-only" style="align-items:center; background:#176B4D; color:#FFFFFF; border:none; padding:12px 24px; border-radius:8px; font-weight:700; font-size:14px; cursor:pointer; white-space:nowrap; transition:background 0.2s;" onmouseover="this.style.background='#E97824'" onmouseout="this.style.background='#176B4D'">Adhérer à l'ANB</a>
@@ -66,6 +117,23 @@ const currentPath = normalize(Astro.url.pathname);
   .mobile-drawer:not(.is-hidden) {
     display: flex;
   }
+
+  .nav-dropdown-panel {
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, 4px);
+    transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+    pointer-events: none;
+  }
+  .nav-dropdown-panel.is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+    pointer-events: auto;
+  }
+  #discover-chevron.is-open {
+    transform: rotate(180deg);
+  }
 </style>
 
 <script>
@@ -77,5 +145,41 @@ const currentPath = normalize(Astro.url.pathname);
   closeBtn?.addEventListener('click', () => drawer?.classList.add('is-hidden'));
   drawer?.querySelectorAll('a').forEach((link) => {
     link.addEventListener('click', () => drawer.classList.add('is-hidden'));
+  });
+
+  // Menu déroulant desktop "Découvrir" (Vie pratique / Culture nigérienne /
+  // Galerie) : ouverture/fermeture au clic, fermeture au clic extérieur,
+  // à l'échappement, ou en choisissant un lien.
+  const discoverTrigger = document.getElementById('discover-trigger');
+  const discoverPanel = document.getElementById('discover-panel');
+  const discoverChevron = document.getElementById('discover-chevron');
+
+  function closeDiscoverPanel() {
+    discoverPanel?.classList.remove('is-open');
+    discoverChevron?.classList.remove('is-open');
+    discoverTrigger?.setAttribute('aria-expanded', 'false');
+  }
+
+  function toggleDiscoverPanel() {
+    const isOpen = discoverPanel?.classList.toggle('is-open');
+    discoverChevron?.classList.toggle('is-open', !!isOpen);
+    discoverTrigger?.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  }
+
+  discoverTrigger?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleDiscoverPanel();
+  });
+  document.addEventListener('click', (e) => {
+    if (
+      discoverPanel?.classList.contains('is-open') &&
+      !discoverTrigger?.contains(e.target as Node) &&
+      !discoverPanel?.contains(e.target as Node)
+    ) {
+      closeDiscoverPanel();
+    }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeDiscoverPanel();
   });
 </script>

@@ -8,6 +8,7 @@ export const navItems = [
   { href: '/actualites', label: 'Actualités' },
   { href: '/vie-pratique', label: 'Vie pratique' },
   { href: '/culture-nigerienne', label: 'Culture nigérienne' },
+  { href: '/galerie', label: 'Galerie' },
   { href: '/contact', label: 'Contact' },
 ] as const;
 
