@@ -84,10 +84,11 @@ CREATE TABLE IF NOT EXISTS adhesions (
 );
 
 -- 6. Table messages
--- email : adresse de l'expéditeur, utilisée uniquement pour ouvrir le
--- client e-mail de l'admin ("Répondre par e-mail", lien mailto:) — ANB
--- n'envoie jamais d'e-mail depuis l'outil pour ce flux (voir
--- db/migration-2026-08-25-messages-email.sql).
+-- email : adresse de l'expéditeur. Historiquement utilisée uniquement pour
+-- le lien mailto: "Répondre par e-mail" (voir
+-- db/migration-2026-08-25-messages-email.sql) ; sert désormais aussi de
+-- destinataire réel pour l'envoi de réponse depuis l'admin via Resend
+-- (src/lib/email.js, voir table message_reponses ci-dessous).
 CREATE TABLE IF NOT EXISTS messages (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   from_name TEXT NOT NULL,
@@ -97,6 +98,20 @@ CREATE TABLE IF NOT EXISTS messages (
   status TEXT NOT NULL DEFAULT 'Non lu',
   content TEXT NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 6bis. Table message_reponses — historique des réponses envoyées depuis
+-- l'admin (Resend). admin_id référence utilisateurs.id, même principe que
+-- actualites.auteur_id (ON DELETE SET NULL, voir
+-- db/migration-2026-08-29-message-reponses.sql).
+CREATE TABLE IF NOT EXISTS message_reponses (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  message_id INTEGER NOT NULL,
+  contenu TEXT NOT NULL,
+  admin_id INTEGER,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE,
+  FOREIGN KEY (admin_id) REFERENCES utilisateurs(id) ON DELETE SET NULL
 );
 
 -- 7. Table journal_activite

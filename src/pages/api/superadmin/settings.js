@@ -10,8 +10,14 @@ export const prerender = false;
 // complète des consommateurs.
 const ALLOWED_KEYS = [
   'identite_nom', 'identite_slogan', 'identite_email', 'identite_telephone',
-  'identite_adresse', 'seo_titre', 'seo_description',
+  'identite_adresse', 'seo_titre', 'seo_description', 'messages_notification_email',
 ];
+
+// Clés nécessitant un format email valide — seule messages_notification_email
+// pour l'instant (identite_email n'a historiquement jamais été validée ici,
+// pas de changement de comportement pour les clés existantes).
+const EMAIL_KEYS = ['messages_notification_email'];
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function GET(context) {
   try {
@@ -63,6 +69,15 @@ export async function PUT(context) {
         status: 400,
         headers: { "Content-Type": "application/json" }
       });
+    }
+
+    for (const [key, value] of entries) {
+      if (EMAIL_KEYS.includes(key) && !EMAIL_REGEX.test(String(value ?? '').trim())) {
+        return new Response(JSON.stringify({ error: `Format d'adresse email invalide pour ${key}.` }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
     }
 
     for (const [key, value] of entries) {

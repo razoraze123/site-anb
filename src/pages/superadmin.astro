@@ -409,6 +409,17 @@ if (!user) {
                 <div style="font-size:13px; color:#5a655f; line-height:1.7;">Menus, pied de page, pages principales et redirections du site public.<br/><span style="font-size:11.5px; color:#9aa39c;">Pas encore disponible — aucune structure de menu éditable n'existe côté serveur.</span></div>
               </div>
               <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
+                <h3 style="font-size:15.5px; font-weight:700; color:#1F2925; margin:0 0 16px;">Notifications</h3>
+                <div style="display:flex; flex-direction:column; gap:14px;">
+                  <div>
+                    <label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Email de notification des messages</label>
+                    <input id="settings-messages-notification-email" type="email" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" />
+                    <div style="font-size:11.5px; color:#9aa39c; margin-top:4px;">Cette adresse recevra une notification lorsqu'un visiteur vous contacte via le formulaire du site.</div>
+                  </div>
+                </div>
+                <button id="save-notifications-btn" style="margin-top:16px; background:#176B4D; color:#FFFFFF; border:none; padding:10px 20px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer;">Enregistrer</button>
+              </div>
+              <div style="background:#FFFFFF; border-radius:20px; padding:24px; box-shadow:0 8px 24px rgba(31,41,37,0.05);">
                 <h3 style="font-size:15.5px; font-weight:700; color:#1F2925; margin:0 0 16px;">Référencement</h3>
                 <div style="display:flex; flex-direction:column; gap:14px;">
                   <div><label style="font-size:12.5px; font-weight:700; color:#1F2925; display:block; margin-bottom:4px;">Titre du site</label><input id="settings-seo-titre" style="width:100%; padding:10px 12px; border-radius:9px; border:1.5px solid #e3dccb; font-size:13.5px;" /></div>
@@ -1435,6 +1446,9 @@ if (!user) {
         document.getElementById('settings-identite-adresse').value = s.identite_adresse || '';
         document.getElementById('settings-seo-titre').value = s.seo_titre || '';
         document.getElementById('settings-seo-description').value = s.seo_description || '';
+        // Repli d'affichage identique à celui appliqué côté serveur
+        // (api/messages.js) si la clé n'existe pas encore en base.
+        document.getElementById('settings-messages-notification-email').value = s.messages_notification_email || 'anbordeaux33@outlook.fr';
       } catch (err) {
         alert(err.message);
       }
@@ -1462,6 +1476,9 @@ if (!user) {
     });
     document.getElementById('save-seo-btn').addEventListener('click', () => {
       saveSettings(['seo_titre', 'seo_description']);
+    });
+    document.getElementById('save-notifications-btn').addEventListener('click', () => {
+      saveSettings(['messages_notification_email']);
     });
 
     // 5ter. Mon profil

@@ -1,12 +1,16 @@
 import { env } from "cloudflare:workers";
 import { isRateLimited, tooManyRequests } from "../../lib/rateLimit.js";
+import { sendEmail, ADMIN_NOTIFICATION_EMAIL, escapeHtml } from "../../lib/email.js";
 
 export const prerender = false;
 
-// Formulaire de contact public (src/pages/contact.astro) — Option A du
-// workflow Messages : ANB collecte le message en base, la réponse part
-// ensuite du client e-mail de l'admin (mailto:, voir adminContent.js
-// renderMessages()). Aucun envoi d'e-mail automatique depuis cette route.
+// Formulaire de contact public (src/pages/contact.astro) — ANB collecte le
+// message en base, PUIS notifie l'admin par e-mail (best-effort, voir
+// bloc sendEmail ci-dessous). La réponse au visiteur, elle, part
+// désormais réellement depuis l'admin via Resend (POST
+// /api/admin/messages, voir adminContent.js renderMessages()) — ce n'est
+// plus l'ancien flux "Option A" (mailto: uniquement, voir
+// db/migration-2026-08-25-messages-email.sql, décision remplacée).
 //
 // category : le formulaire public n'a pas de sélecteur de catégorie
 // (contrairement aux messages de démo du seed) — 'Contact' par défaut,
@@ -65,6 +69,39 @@ export async function POST(context) {
       subject || '(Sans objet)',
       content
     ).run();
+
+    // Destinataire de la notification centralisé dans site_settings
+    // (messages_notification_email, éditable depuis Super Admin > Réglages
+    // du site), pas en dur — repli sur ADMIN_NOTIFICATION_EMAIL si la clé
+    // n'existe pas encore (installation existante non reconfigurée) ou en
+    // cas d'erreur D1. Jamais une valeur envoyée par le client.
+    let notificationEmail = ADMIN_NOTIFICATION_EMAIL;
+    try {
+      const setting = await db.prepare("SELECT value FROM site_settings WHERE key = 'messages_notification_email'").first();
+      if (setting?.value) notificationEmail = setting.value;
+    } catch { /* garde le repli ci-dessus */ }
+
+    // Notification best-effort : un échec Resend ne doit jamais empêcher
+    // le visiteur de voir son message accepté (même logique que
+    // recensement.js) — le message est de toute façon déjà en base, seule
+    // l'alerte admin est perdue, pas la donnée.
+    try {
+      const finalSubject = subject || '(Sans objet)';
+      await sendEmail(env, {
+        to: notificationEmail,
+        replyTo: email,
+        subject: "Nouveau message — ANB Bordeaux",
+        text: `Nouveau message de contact.\n\nNom : ${from_name}\nEmail : ${email}\nSujet : ${finalSubject}\n\n${content}\n\nÀ traiter dans l'espace Admin > Messages.`,
+        html: `<div style="font-family:Arial,sans-serif;font-size:15px;color:#1F2925;line-height:1.6;max-width:520px;margin:0 auto;">
+          <p><strong>Nouveau message de contact</strong></p>
+          <p>Nom : ${escapeHtml(from_name)}<br />Email : ${escapeHtml(email)}<br />Sujet : ${escapeHtml(finalSubject)}</p>
+          <p style="white-space:pre-wrap;">${escapeHtml(content)}</p>
+          <p style="font-size:12px;color:#9aa39c;">À traiter dans l'espace Admin &gt; Messages.</p>
+        </div>`,
+      });
+    } catch (mailError) {
+      console.error("Notification admin (Resend) échouée :", mailError);
+    }
 
     return new Response(JSON.stringify({
       success: true,

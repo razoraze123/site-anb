@@ -27,11 +27,24 @@ export async function GET(context) {
     const messagesRes = await db.prepare("SELECT * FROM messages ORDER BY created_at DESC").all();
     const recensementRes = await db.prepare("SELECT * FROM recensement ORDER BY created_at DESC").all();
 
+    // Historique des réponses, regroupé par message — évite une route
+    // dédiée : /admin charge déjà tout via ce seul endpoint (renderMessages
+    // lit data.messages tel quel, voir adminContent.js).
+    const reponsesRes = await db.prepare("SELECT * FROM message_reponses ORDER BY created_at ASC").all();
+    const reponsesByMessageId = {};
+    for (const r of reponsesRes.results) {
+      (reponsesByMessageId[r.message_id] ||= []).push(r);
+    }
+    const messagesWithReponses = messagesRes.results.map((m) => ({
+      ...m,
+      reponses: reponsesByMessageId[m.id] || [],
+    }));
+
     return new Response(JSON.stringify({
       actualites: actualitesRes.results,
       evenements: evenementsRes.results,
       inscriptions: inscriptionsRes.results,
-      messages: messagesRes.results,
+      messages: messagesWithReponses,
       recensement: recensementRes.results
     }), {
       status: 200,

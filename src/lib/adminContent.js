@@ -191,6 +191,9 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     eventsFilter: 'Ouvert',
     messagesTab: 'Tous',
     messageSelectedIdx: 0,
+    // Zone de réponse inline (Messages) : repliée à chaque changement de
+    // message sélectionné, jamais persistée au-delà (voir renderMessages).
+    messageReplyOpen: false,
     editingNewsId: null,
     editingEventId: null,
     editingGalerieId: null,
@@ -1119,6 +1122,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
       `;
       item.addEventListener('click', async () => {
         state.messageSelectedIdx = realIdx;
+        state.messageReplyOpen = false;
         // Ouverture = marquage "lu" : un message "Non lu" jamais encore
         // ouvert passe automatiquement à "À traiter" (lu, pas encore
         // résolu) — réutilise le PUT existant, aucune nouvelle route,
@@ -1149,23 +1153,43 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
 
     const alreadyDone = selected.status === 'Traité';
     const isArchived = selected.status === 'Archivé';
-    // mailto: — Option A du workflow Messages : ANB collecte et organise
-    // les messages, mais n'envoie jamais d'e-mail depuis l'outil. Ce lien
-    // ouvre le client e-mail habituel de l'admin, destinataire et objet
-    // pré-remplis, corps volontairement vide (jamais de réponse fabriquée).
-    const mailtoHref = `mailto:${encodeURIComponent(selected.email || '')}?subject=${encodeURIComponent('Re: ' + (selected.subject || ''))}`;
+    const reponses = selected.reponses || [];
+
+    // Historique des réponses déjà envoyées (le plus ancien en premier) —
+    // contenu échappé : une réponse d'admin reste du texte, jamais du HTML
+    // de confiance à injecter tel quel.
+    const reponsesHtml = reponses.length > 0 ? `
+      <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:18px;">
+        ${reponses.map((r) => `
+          <div style="background:rgba(23,107,77,0.05); border-radius:8px; padding:12px;">
+            <div style="font-size:11.5px; font-weight:700; color:#176B4D; margin-bottom:4px;">Réponse envoyée le ${escapeHtml(r.created_at)}</div>
+            <p style="font-size:13.5px; line-height:1.6; color:#3f4a45; margin:0; white-space:pre-wrap;">${escapeHtml(r.contenu)}</p>
+          </div>
+        `).join('')}
+      </div>
+    ` : '';
+
     detailBox.innerHTML = `
       <h3 style="font-size:16px; font-weight:700; color:#1F2925; margin:0 0 4px;">${escapeHtml(selected.subject)}</h3>
       <div style="font-size:13px; color:#5a655f; margin-bottom:4px;">De ${escapeHtml(selected.from_name)} · Catégorie : ${escapeHtml(selected.category)}</div>
-      <div style="font-size:13px; color:#5a655f; margin-bottom:16px;">${selected.email ? `<a href="${mailtoHref}" style="color:#176B4D; font-weight:600;">${escapeHtml(selected.email)}</a>` : '<span style="color:#9aa39c;">Adresse e-mail non renseignée</span>'}</div>
+      <div style="font-size:13px; color:#5a655f; margin-bottom:16px;">${selected.email ? `<span style="color:#176B4D; font-weight:600;">${escapeHtml(selected.email)}</span>` : '<span style="color:#9aa39c;">Adresse e-mail non renseignée</span>'}</div>
       <p style="font-size:13.5px; line-height:1.6; color:#3f4a45; margin:0 0 18px; background: rgba(31,41,37,0.02); padding: 12px; border-radius: 8px; white-space:pre-wrap;">${escapeHtml(selected.content)}</p>
+      ${reponsesHtml}
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
-        <a id="message-reply-btn" href="${mailtoHref}" style="background:#176B4D; color:#FFFFFF; border:none; padding:11px 20px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center;">Répondre par e-mail</a>
+        <button id="message-reply-btn" ${!selected.email ? 'disabled' : ''} style="background:#176B4D; color:#FFFFFF; border:none; padding:11px 20px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:${!selected.email ? 'default' : 'pointer'}; opacity:${!selected.email ? '0.5' : '1'};">Répondre</button>
         <button id="message-done-btn" ${alreadyDone ? 'disabled' : ''} style="background:#F8F4EC; color:#1F2925; border:none; padding:11px 20px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:${alreadyDone ? 'default' : 'pointer'}; opacity:${alreadyDone ? '0.5' : '1'};">Marquer comme traité</button>
         <button id="message-archive-btn" ${isArchived ? 'disabled' : ''} style="background:#F8F4EC; color:#1F2925; border:none; padding:11px 20px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:${isArchived ? 'default' : 'pointer'}; opacity:${isArchived ? '0.5' : '1'};">Archiver</button>
         ${isArchived ? '<button id="message-delete-btn" style="background:#c0392b; color:#FFFFFF; border:none; padding:11px 20px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">Supprimer définitivement</button>' : ''}
       </div>
-      <p style="font-size:11.5px; color:#9aa39c; margin:10px 0 0;">« Répondre par e-mail » ouvre votre messagerie habituelle — ANB n'envoie aucun e-mail depuis cet outil.</p>
+      <div id="message-reply-form" style="${state.messageReplyOpen ? '' : 'display:none;'} margin-top:16px; border-top:1px solid rgba(31,41,37,0.08); padding-top:16px;">
+        <label for="message-reply-textarea" style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:8px;">Répondre à ${escapeHtml(selected.from_name)}</label>
+        <textarea id="message-reply-textarea" rows="5" style="width:100%; padding:12px 14px; border-radius:12px; border:1.5px solid #E3DCCB; font-size:14px; font-family:inherit; resize:vertical; box-sizing:border-box;" placeholder="Votre réponse…"></textarea>
+        <p id="message-reply-error" style="display:none; font-size:13px; color:#B14524; margin:8px 0 0;"></p>
+        <div style="display:flex; gap:10px; margin-top:12px;">
+          <button id="message-reply-cancel-btn" type="button" style="background:#F8F4EC; color:#1F2925; border:none; padding:11px 20px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">Annuler</button>
+          <button id="message-reply-send-btn" type="button" style="background:#E97824; color:#FFFFFF; border:none; padding:11px 20px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;">Envoyer la réponse</button>
+        </div>
+      </div>
     `;
 
     async function updateStatus(status, successMessage) {
@@ -1215,6 +1239,71 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
         }
       });
     }
+
+    // Réponse intégrée — remplace l'ancien lien mailto:. "Répondre"
+    // déplie une zone de texte simple ; l'envoi passe par Resend côté
+    // serveur (POST /api/admin/messages) et ne réécrit l'état local
+    // qu'après confirmation réelle d'envoi (jamais de succès affiché sur
+    // la seule foi du clic).
+    const replyBtn = document.getElementById('message-reply-btn');
+    const replyTextarea = document.getElementById('message-reply-textarea');
+    const replyError = document.getElementById('message-reply-error');
+    const replyCancelBtn = document.getElementById('message-reply-cancel-btn');
+    const replySendBtn = document.getElementById('message-reply-send-btn');
+
+    if (replyBtn && !replyBtn.disabled) {
+      replyBtn.addEventListener('click', () => {
+        state.messageReplyOpen = true;
+        renderMessages();
+        // Le formulaire vient d'être recréé par le re-rendu : on lui donne
+        // le focus après coup plutôt que de chaîner sur l'ancien noeud DOM.
+        document.getElementById('message-reply-textarea')?.focus();
+      });
+    }
+
+    replyCancelBtn?.addEventListener('click', () => {
+      state.messageReplyOpen = false;
+      renderMessages();
+    });
+
+    let replySending = false;
+    replySendBtn?.addEventListener('click', async () => {
+      if (replySending) return; // anti double-clic/double-envoi
+      const contenu = (replyTextarea?.value || '').trim();
+      if (replyError) replyError.style.display = 'none';
+      if (!contenu) {
+        if (replyError) { replyError.textContent = 'La réponse ne peut pas être vide.'; replyError.style.display = 'block'; }
+        return;
+      }
+
+      replySending = true;
+      replySendBtn.disabled = true;
+      replySendBtn.textContent = 'Envoi…';
+
+      try {
+        const res = await fetch('/api/admin/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message_id: selected.id, contenu }),
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || "Erreur serveur.");
+
+        state.messageReplyOpen = false;
+        alert('Réponse envoyée.');
+        await refresh(renderMessages);
+      } catch (err) {
+        // Le contenu tapé reste dans le textarea : rien n'est effacé, pas
+        // de faux succès affiché, l'admin peut juste réessayer.
+        if (replyError) {
+          replyError.textContent = err instanceof Error ? err.message : "Erreur serveur.";
+          replyError.style.display = 'block';
+        }
+      } finally {
+        replySending = false;
+        if (replySendBtn) { replySendBtn.disabled = false; replySendBtn.textContent = 'Envoyer la réponse'; }
+      }
+    });
   }
 
   // ------------------------------------------------- Contenus & validations
@@ -1436,6 +1525,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
         <td style="padding:13px 18px; color:#5a655f; font-size:13px; white-space:nowrap;">${escapeHtml(r.phone)}</td>
         <td style="padding:13px 18px; text-align:right; white-space:nowrap;">
           <span style="font-size:11.5px; color:#9aa39c; margin-right:8px;">${dateStr}</span>
+          <a href="/api/admin/recensement/${r.id}/carte.pdf" target="_blank" rel="noopener" style="color:#176B4D; font-size:12.5px; font-weight:700; text-decoration:none; padding:5px 10px; border-radius:6px; transition:background-color 0.15s;">Carte PDF</a>
           <button class="delete-rec-btn" data-id="${r.id}" style="background:transparent; border:none; color:#B14524; font-size:12.5px; font-weight:700; cursor:pointer; padding:5px 10px; border-radius:6px; transition:background-color 0.15s;">Suppr.</button>
         </td>
       `;
