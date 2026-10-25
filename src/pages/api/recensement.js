@@ -1,5 +1,6 @@
 import { env } from "cloudflare:workers";
 import { isRateLimited, tooManyRequests } from "../../lib/rateLimit.js";
+import { formatNumeroAdherent, genererToken } from "../../lib/carteAdherent.js";
 
 export const prerender = false;
 
@@ -59,9 +60,9 @@ export async function POST(context) {
     }
 
     // Insert into D1
-    await db.prepare(
-      `INSERT INTO recensement 
-        (first_name, last_name, status, phone, email, origine, annee_arrivee, domaine, benevole, rgpd_consent) 
+    const insertResult = await db.prepare(
+      `INSERT INTO recensement
+        (first_name, last_name, status, phone, email, origine, annee_arrivee, domaine, benevole, rgpd_consent)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
       first_name.trim(),
@@ -75,6 +76,30 @@ export async function POST(context) {
       benevole ? 1 : 0,
       rgpd_consent ? 1 : 0
     ).run();
+
+    // L'adhésion est déjà actée à ce stade (INSERT réussi) — tout ce qui
+    // suit (numéro, token, carte PDF) est secondaire et ne doit jamais
+    // pouvoir remettre en cause l'adhésion elle-même. id vient directement
+    // de D1 (auto-incrément déjà garanti unique), jamais d'une valeur
+    // fournie par le client — même pattern que admin/equipe.js,
+    // admin/galerie.js (result.meta.last_row_id).
+    const nouvelId = insertResult.meta.last_row_id;
+    const numeroAdherent = formatNumeroAdherent(nouvelId, new Date().getUTCFullYear());
+
+    // Le token de téléchargement (HMAC, voir lib/carteAdherent.js) est
+    // optionnel dans cette réponse : si CARTE_HMAC_SECRET n'est pas encore
+    // configuré, l'adhésion reste enregistrée et le numéro reste affiché —
+    // seul le téléchargement immédiat de la carte devient indisponible
+    // (le visiteur pourra la récupérer plus tard une fois le secret
+    // configuré, ou via l'admin qui n'a pas besoin de ce token).
+    let carteToken = null;
+    try {
+      carteToken = await genererToken(env, nouvelId);
+    } catch (tokenError) {
+      // Jamais le secret ni sa valeur dans les logs — juste le fait qu'il
+      // manque, pour que l'admin sache quoi configurer.
+      console.error("Génération du token de carte adhérent impossible (CARTE_HMAC_SECRET absent ou invalide) :", tokenError.message);
+    }
 
     if (env.RESEND_API_KEY) {
       try {
@@ -121,7 +146,12 @@ export async function POST(context) {
 
     return new Response(JSON.stringify({
       success: true,
-      message: "Recensement enregistré avec succès !"
+      message: "Recensement enregistré avec succès !",
+      id: nouvelId,
+      numero_adherent: numeroAdherent,
+      // null si CARTE_HMAC_SECRET n'est pas configuré (voir plus haut) —
+      // le front doit gérer ce cas (bouton de téléchargement indisponible).
+      carte_token: carteToken,
     }), {
       status: 200,
       headers: { "Content-Type": "application/json" }

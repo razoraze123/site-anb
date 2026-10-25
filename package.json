@@ -13,7 +13,8 @@
     "generate-types": "wrangler types"
   },
   "dependencies": {
-    "astro": "6.4.8"
+    "astro": "6.4.8",
+    "pdf-lib": "^1.17.1"
   },
   "devDependencies": {
     "@astrojs/cloudflare": "^13.7.0",
