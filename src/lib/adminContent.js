@@ -1500,11 +1500,60 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     }).join('');
   }
 
+  // Tri par en-tête de colonne (ViewRecensement.astro, th[data-sort]).
+  // Par défaut : adhésions les plus récentes d'abord (même ordre que l'API).
+  let recensementSort = { key: 'created_at', dir: 'desc' };
+
+  // Valeur de tri par colonne ; '' = vide, toujours rangé en dernier.
+  const RECENSEMENT_SORT_VALUES = {
+    nom: (r) => `${r.last_name} ${r.first_name}`,
+    status: (r) => {
+      const i = RECENSEMENT_STATUTS.findIndex(s => s.value === r.status);
+      return i === -1 ? RECENSEMENT_STATUTS.length : i;
+    },
+    domaine: (r) => r.domaine || '',
+    benevole: (r) => (r.benevole ? 1 : 0),
+    email: (r) => r.email || '',
+    phone: (r) => r.phone || '',
+    created_at: (r) => r.created_at || '',
+  };
+  const frCollator = new Intl.Collator('fr', { sensitivity: 'base', numeric: true });
+
+  function sortRecensement(rows) {
+    const getValue = RECENSEMENT_SORT_VALUES[recensementSort.key];
+    const factor = recensementSort.dir === 'asc' ? 1 : -1;
+    return [...rows].sort((a, b) => {
+      const va = getValue(a);
+      const vb = getValue(b);
+      if (va === '' && vb !== '') return 1;
+      if (vb === '' && va !== '') return -1;
+      const cmp = typeof va === 'number' ? va - vb : frCollator.compare(va, vb);
+      return cmp * factor;
+    });
+  }
+
+  function renderRecensementSortHeaders() {
+    document.querySelectorAll('#recensement-thead th[data-sort]').forEach(th => {
+      const active = th.dataset.sort === recensementSort.key;
+      if (active) th.setAttribute('aria-sort', recensementSort.dir === 'asc' ? 'ascending' : 'descending');
+      else th.removeAttribute('aria-sort');
+      const arrow = th.querySelector('.rec-sort-arrow');
+      if (arrow) arrow.textContent = active ? (recensementSort.dir === 'asc' ? '▲' : '▼') : '';
+    });
+  }
+
+  // "2026-08-30 14:12:05" (UTC, format SQLite) -> "30/08/2026"
+  function formatRecensementDate(sqlDate) {
+    const [y, m, d] = (sqlDate || '').split(' ')[0].split('-');
+    return y && m && d ? `${d}/${m}/${y}` : '—';
+  }
+
   function renderRecensement() {
     const tbody = document.getElementById('recensement-table-body');
     if (!tbody) return;
 
     renderRecensementTabs();
+    renderRecensementSortHeaders();
     tbody.innerHTML = '';
 
     // Update counters in header
@@ -1513,7 +1562,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     if (countLabel) countLabel.textContent = data.recensement.length;
     if (benevoleLabel) benevoleLabel.textContent = data.recensement.filter(r => r.benevole).length;
 
-    const filtered = data.recensement.filter(r => {
+    const filtered = sortRecensement(data.recensement.filter(r => {
       // Filter by tab status
       if (state.recensementFilter === 'benevole') {
         if (!r.benevole) return false;
@@ -1529,12 +1578,12 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
       }
 
       return true;
-    });
+    }));
 
     if (filtered.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="9" style="padding:40px; text-align:center; color:#5a655f; font-size:14px;">
+          <td colspan="8" style="padding:40px; text-align:center; color:#5a655f; font-size:14px;">
             Aucun membre recensé ne correspond à ces critères.
           </td>
         </tr>
@@ -1549,7 +1598,6 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
       tr.onmouseout = () => tr.style.backgroundColor = 'transparent';
 
       const statusTone = r.status === 'Étudiant' ? 'g' : 'o';
-      const dateStr = r.created_at ? r.created_at.split(' ')[0] : '—';
       const benevoleHtml = r.benevole
         ? `<span style="background:rgba(233,120,36,0.12); color:#B75E12; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:700;">🤝 Oui</span>`
         : `<span style="color:#9aa39c; font-size:12px;">—</span>`;
@@ -1561,8 +1609,8 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
         <td style="padding:13px 18px;">${benevoleHtml}</td>
         <td style="padding:13px 18px; color:#5a655f; font-size:13px;">${escapeHtml(r.email)}</td>
         <td style="padding:13px 18px; color:#5a655f; font-size:13px; white-space:nowrap;">${escapeHtml(r.phone)}</td>
+        <td style="padding:13px 18px; color:#5a655f; font-size:13px; white-space:nowrap;">${formatRecensementDate(r.created_at)}</td>
         <td style="padding:13px 18px; text-align:right; white-space:nowrap;">
-          <span style="font-size:11.5px; color:#9aa39c; margin-right:8px;">${dateStr}</span>
           <a href="/api/admin/recensement/${r.id}/carte.pdf" target="_blank" rel="noopener" style="color:#176B4D; font-size:12.5px; font-weight:700; text-decoration:none; padding:5px 10px; border-radius:6px; transition:background-color 0.15s;">Carte PDF</a>
           <button class="delete-rec-btn" data-id="${r.id}" style="background:transparent; border:none; color:#B14524; font-size:12.5px; font-weight:700; cursor:pointer; padding:5px 10px; border-radius:6px; transition:background-color 0.15s;">Suppr.</button>
         </td>
@@ -1604,6 +1652,20 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
       const btn = e.target.closest('.rec-tab-btn');
       if (!btn) return;
       state.recensementFilter = btn.dataset.status;
+      renderRecensement();
+    });
+
+    // Tri : même colonne -> inverse le sens ; nouvelle colonne -> croissant,
+    // sauf la date (plus récentes d'abord, le plus utile en pratique).
+    document.getElementById('recensement-thead')?.addEventListener('click', (e) => {
+      const th = e.target.closest('th[data-sort]');
+      if (!th) return;
+      const key = th.dataset.sort;
+      if (recensementSort.key === key) {
+        recensementSort = { key, dir: recensementSort.dir === 'asc' ? 'desc' : 'asc' };
+      } else {
+        recensementSort = { key, dir: key === 'created_at' ? 'desc' : 'asc' };
+      }
       renderRecensement();
     });
 

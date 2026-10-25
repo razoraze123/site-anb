@@ -40,15 +40,17 @@
     <!-- Table -->
     <div style="background:#FFFFFF; border-radius:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05); overflow:hidden;">
       <div style="overflow-x:auto;">
-        <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13.5px; min-width:900px;">
+        <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13.5px; min-width:1000px;">
           <thead>
-            <tr style="background:#F8F4EC; border-bottom:1px solid rgba(31,41,37,0.06); color:#5a655f; font-weight:700;">
-              <th style="padding:14px 18px;">Nom Complet</th>
-              <th style="padding:14px 18px;">Statut</th>
-              <th style="padding:14px 18px;">Domaine</th>
-              <th style="padding:14px 18px;">Bénévole</th>
-              <th style="padding:14px 18px;">E-mail</th>
-              <th style="padding:14px 18px;">Tél.</th>
+            <!-- En-têtes triables : clic = tri croissant, 2e clic = décroissant (flèche et aria-sort mises à jour par renderRecensement()) -->
+            <tr id="recensement-thead" style="background:#F8F4EC; border-bottom:1px solid rgba(31,41,37,0.06); color:#5a655f; font-weight:700;">
+              <th data-sort="nom" style="padding:0;"><button type="button" class="rec-sort-btn">Nom Complet <span class="rec-sort-arrow"></span></button></th>
+              <th data-sort="status" style="padding:0;"><button type="button" class="rec-sort-btn">Statut <span class="rec-sort-arrow"></span></button></th>
+              <th data-sort="domaine" style="padding:0;"><button type="button" class="rec-sort-btn">Domaine <span class="rec-sort-arrow"></span></button></th>
+              <th data-sort="benevole" style="padding:0;"><button type="button" class="rec-sort-btn">Bénévole <span class="rec-sort-arrow"></span></button></th>
+              <th data-sort="email" style="padding:0;"><button type="button" class="rec-sort-btn">E-mail <span class="rec-sort-arrow"></span></button></th>
+              <th data-sort="phone" style="padding:0;"><button type="button" class="rec-sort-btn">Tél. <span class="rec-sort-arrow"></span></button></th>
+              <th data-sort="created_at" style="padding:0;"><button type="button" class="rec-sort-btn">Adhésion <span class="rec-sort-arrow"></span></button></th>
               <th style="padding:14px 18px; text-align:right;">Actions</th>
             </tr>
           </thead>
@@ -59,4 +61,15 @@
       </div>
     </div>
   </div>
+  <style>
+    .rec-sort-btn {
+      display: flex; align-items: center; gap: 6px; width: 100%;
+      padding: 14px 18px; background: none; border: none; cursor: pointer;
+      font: inherit; color: inherit; text-align: left; white-space: nowrap;
+      transition: color 0.15s;
+    }
+    .rec-sort-btn:hover { color: #1F2925; }
+    .rec-sort-arrow { font-size: 11px; color: #176B4D; min-width: 10px; }
+    th[aria-sort] .rec-sort-btn { color: #1F2925; }
+  </style>
 </section>
