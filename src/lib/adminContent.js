@@ -1506,7 +1506,9 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
 
   // Valeur de tri par colonne ; '' = vide, toujours rangé en dernier.
   const RECENSEMENT_SORT_VALUES = {
+    // Égalité sur le nom -> départage par le prénom (et inversement).
     nom: (r) => `${r.last_name} ${r.first_name}`,
+    prenom: (r) => `${r.first_name} ${r.last_name}`,
     status: (r) => {
       const i = RECENSEMENT_STATUTS.findIndex(s => s.value === r.status);
       return i === -1 ? RECENSEMENT_STATUTS.length : i;
@@ -1583,7 +1585,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     if (filtered.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="8" style="padding:40px; text-align:center; color:#5a655f; font-size:14px;">
+          <td colspan="9" style="padding:40px; text-align:center; color:#5a655f; font-size:14px;">
             Aucun membre recensé ne correspond à ces critères.
           </td>
         </tr>
@@ -1603,7 +1605,8 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
         : `<span style="color:#9aa39c; font-size:12px;">—</span>`;
 
       tr.innerHTML = `
-        <td style="padding:13px 18px; font-weight:700; color:#1F2925; white-space:nowrap;">${escapeHtml(r.first_name)} ${escapeHtml(r.last_name)}</td>
+        <td style="padding:13px 18px; font-weight:700; color:#1F2925; white-space:nowrap;">${escapeHtml(r.last_name)}</td>
+        <td style="padding:13px 18px; color:#1F2925; white-space:nowrap;">${escapeHtml(r.first_name)}</td>
         <td style="padding:13px 18px;">${getBadgeHtml(r.status, statusTone)}</td>
         <td style="padding:13px 18px; color:#5a655f; font-size:13px; max-width:140px; overflow:hidden; text-overflow:ellipsis;">${r.domaine ? escapeHtml(r.domaine) : '—'}</td>
         <td style="padding:13px 18px;">${benevoleHtml}</td>

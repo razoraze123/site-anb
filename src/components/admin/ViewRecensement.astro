@@ -40,11 +40,12 @@
     <!-- Table -->
     <div style="background:#FFFFFF; border-radius:20px; box-shadow:0 8px 24px rgba(31,41,37,0.05); overflow:hidden;">
       <div style="overflow-x:auto;">
-        <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13.5px; min-width:1000px;">
+        <table style="width:100%; border-collapse:collapse; text-align:left; font-size:13.5px; min-width:1100px;">
           <thead>
             <!-- En-têtes triables : clic = tri croissant, 2e clic = décroissant (flèche et aria-sort mises à jour par renderRecensement()) -->
             <tr id="recensement-thead" style="background:#F8F4EC; border-bottom:1px solid rgba(31,41,37,0.06); color:#5a655f; font-weight:700;">
-              <th data-sort="nom" style="padding:0;"><button type="button" class="rec-sort-btn">Nom Complet <span class="rec-sort-arrow"></span></button></th>
+              <th data-sort="nom" style="padding:0;"><button type="button" class="rec-sort-btn">Nom <span class="rec-sort-arrow"></span></button></th>
+              <th data-sort="prenom" style="padding:0;"><button type="button" class="rec-sort-btn">Prénom <span class="rec-sort-arrow"></span></button></th>
               <th data-sort="status" style="padding:0;"><button type="button" class="rec-sort-btn">Statut <span class="rec-sort-arrow"></span></button></th>
               <th data-sort="domaine" style="padding:0;"><button type="button" class="rec-sort-btn">Domaine <span class="rec-sort-arrow"></span></button></th>
               <th data-sort="benevole" style="padding:0;"><button type="button" class="rec-sort-btn">Bénévole <span class="rec-sort-arrow"></span></button></th>
