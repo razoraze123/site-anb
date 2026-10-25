@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { RECENSEMENT_STATUTS, RECENSEMENT_DOMAINES } from '../lib/recensementOptions.js';
 
 export const prerender = false;
 ---
@@ -106,16 +107,7 @@ export const prerender = false;
                 <div class="csel" data-icon-set="status">
                   <select id="status" name="status" required aria-required="true" class="csel-native">
                     <option value="" disabled selected>-- Sélectionnez votre statut --</option>
-                    <option value="Étudiant">Étudiant(e)</option>
-                    <option value="Salarié">Salarié(e)</option>
-                    <option value="Chercheur d'emploi">Chercheur(se) d'emploi</option>
-                    <option value="Entrepreneur / Indépendant">Entrepreneur(e) / Indépendant(e)</option>
-                    <option value="Commerçant / Artisan">Commerçant(e) / Artisan(e)</option>
-                    <option value="En exil">En exil</option>
-                    <option value="Retraité">Retraité(e)</option>
-                    <option value="Sans activité professionnelle">Sans activité professionnelle</option>
-                    <option value="Au foyer">Au foyer</option>
-                    <option value="Autre">Autre situation</option>
+                    {RECENSEMENT_STATUTS.map((s) => <option value={s.value}>{s.label}</option>)}
                   </select>
                 </div>
               </div>
@@ -151,17 +143,7 @@ export const prerender = false;
                 <div class="csel" data-icon-set="domaine">
                   <select id="domaine" class="csel-native">
                     <option value="">-- Sélectionner --</option>
-                    <option>Informatique / Tech</option>
-                    <option>Santé / Médecine</option>
-                    <option>Droit / Sciences politiques</option>
-                    <option>Sciences économiques / Commerce</option>
-                    <option>Sciences de l'ingénieur</option>
-                    <option>Arts / Culture / Communication</option>
-                    <option>Éducation / Formation</option>
-                    <option>BTP / Architecture</option>
-                    <option>Agriculture / Environnement</option>
-                    <option>Restauration / Hôtellerie</option>
-                    <option>Autre</option>
+                    {RECENSEMENT_DOMAINES.map((d) => <option value={d.value}>{d.value}</option>)}
                   </select>
                 </div>
               </div>
@@ -379,6 +361,8 @@ export const prerender = false;
 </style>
 
 <script>
+  import { RECENSEMENT_STATUTS, RECENSEMENT_DOMAINES } from '../lib/recensementOptions.js';
+
   // Reflète email/téléphone édités depuis le Super Admin
   // (src/pages/api/settings.js -> site_settings), même principe
   // best-effort que le Footer.
@@ -411,31 +395,8 @@ export const prerender = false;
   // (validation, payload) continue de lire document.getElementById(id).value
   // sans aucun changement.
   const CSEL_ICONS = {
-    status: {
-      'Étudiant': '🎓',
-      'Salarié': '💼',
-      "Chercheur d'emploi": '🔍',
-      'Entrepreneur / Indépendant': '💡',
-      'Commerçant / Artisan': '🏪',
-      'En exil': '🌍',
-      'Retraité': '🧓',
-      'Sans activité professionnelle': '🧭',
-      'Au foyer': '🏠',
-      'Autre': '➕'
-    },
-    domaine: {
-      'Informatique / Tech': '💻',
-      'Santé / Médecine': '🩺',
-      'Droit / Sciences politiques': '⚖️',
-      'Sciences économiques / Commerce': '📈',
-      "Sciences de l'ingénieur": '⚙️',
-      'Arts / Culture / Communication': '🎨',
-      'Éducation / Formation': '📚',
-      'BTP / Architecture': '🏗️',
-      'Agriculture / Environnement': '🌱',
-      'Restauration / Hôtellerie': '🍽️',
-      'Autre': '➕'
-    }
+    status: Object.fromEntries(RECENSEMENT_STATUTS.map((s) => [s.value, s.icon])),
+    domaine: Object.fromEntries(RECENSEMENT_DOMAINES.map((d) => [d.value, d.icon])),
   };
 
   function initCustomSelect(wrap) {

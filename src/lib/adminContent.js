@@ -14,6 +14,8 @@
 //   content.wire();                  // une seule fois, au chargement
 //   content.renderActualites();      // depuis le routeur de vues de la page
 
+import { RECENSEMENT_STATUTS } from './recensementOptions.js';
+
 /**
  * @param {object} deps
  * @param {(pageKey: string) => void} deps.goPage  Navigation vers une vue.
@@ -1463,42 +1465,22 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
 
   // ----------------------------------------------------------- Recensement
 
-  // Statuts du formulaire public (src/pages/adherer.astro, <select id="status">),
-  // dans le même ordre et avec les mêmes icônes — à garder synchronisés.
-  const RECENSEMENT_STATUSES = [
-    { value: 'Étudiant', label: 'Étudiants', icon: '🎓' },
-    { value: 'Salarié', label: 'Salariés', icon: '💼' },
-    { value: "Chercheur d'emploi", label: "Chercheurs d'emploi", icon: '🔍' },
-    { value: 'Entrepreneur / Indépendant', label: 'Entrepreneurs / Indépendants', icon: '💡' },
-    { value: 'Commerçant / Artisan', label: 'Commerçants / Artisans', icon: '🏪' },
-    { value: 'En exil', label: 'En exil', icon: '🌍' },
-    { value: 'Retraité', label: 'Retraités', icon: '🧓' },
-    { value: 'Sans activité professionnelle', label: 'Sans activité', icon: '🧭' },
-    { value: 'Au foyer', label: 'Au foyer', icon: '🏠' },
-    { value: 'Autre', label: 'Autre', icon: '➕' },
-  ];
-  // Anciennes valeurs encore présentes en base, rattachées au statut actuel
-  // équivalent ("Employé" a été remplacé par "Salarié" dans le formulaire).
-  const RECENSEMENT_STATUS_ALIASES = { 'Employé': 'Salarié' };
-
-  function recensementStatus(r) {
-    return RECENSEMENT_STATUS_ALIASES[r.status] || r.status;
-  }
-
   // Onglets générés à partir des données : un onglet par statut présent
-  // (avec son effectif), ordre du formulaire, statuts inconnus en dernier.
+  // (avec son effectif), ordre du formulaire (lib/recensementOptions.js),
+  // statuts inconnus en dernier.
   function renderRecensementTabs() {
     const container = document.getElementById('recensement-tabs');
     if (!container) return;
 
     const counts = {};
     for (const r of data.recensement) {
-      const s = recensementStatus(r);
-      counts[s] = (counts[s] || 0) + 1;
+      counts[r.status] = (counts[r.status] || 0) + 1;
     }
-    const known = RECENSEMENT_STATUSES.filter(s => counts[s.value]);
+    const known = RECENSEMENT_STATUTS
+      .filter(s => counts[s.value])
+      .map(s => ({ value: s.value, label: s.pluriel, icon: s.icon }));
     const unknown = Object.keys(counts)
-      .filter(v => !RECENSEMENT_STATUSES.some(s => s.value === v))
+      .filter(v => !RECENSEMENT_STATUTS.some(s => s.value === v))
       .map(v => ({ value: v, label: v, icon: '' }));
 
     // Le statut filtré a disparu (dernière fiche supprimée) : retour à "Tous".
@@ -1535,7 +1517,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
       // Filter by tab status
       if (state.recensementFilter === 'benevole') {
         if (!r.benevole) return false;
-      } else if (state.recensementFilter !== 'Tous' && recensementStatus(r) !== state.recensementFilter) {
+      } else if (state.recensementFilter !== 'Tous' && r.status !== state.recensementFilter) {
         return false;
       }
 
@@ -1574,7 +1556,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
 
       tr.innerHTML = `
         <td style="padding:13px 18px; font-weight:700; color:#1F2925; white-space:nowrap;">${escapeHtml(r.first_name)} ${escapeHtml(r.last_name)}</td>
-        <td style="padding:13px 18px;">${getBadgeHtml(recensementStatus(r), statusTone)}</td>
+        <td style="padding:13px 18px;">${getBadgeHtml(r.status, statusTone)}</td>
         <td style="padding:13px 18px; color:#5a655f; font-size:13px; max-width:140px; overflow:hidden; text-overflow:ellipsis;">${r.domaine ? escapeHtml(r.domaine) : '—'}</td>
         <td style="padding:13px 18px;">${benevoleHtml}</td>
         <td style="padding:13px 18px; color:#5a655f; font-size:13px;">${escapeHtml(r.email)}</td>

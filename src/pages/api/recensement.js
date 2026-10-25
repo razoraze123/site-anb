@@ -1,6 +1,7 @@
 import { env } from "cloudflare:workers";
 import { isRateLimited, tooManyRequests } from "../../lib/rateLimit.js";
 import { formatNumeroAdherent, genererToken } from "../../lib/carteAdherent.js";
+import { RECENSEMENT_STATUTS, RECENSEMENT_DOMAINES } from "../../lib/recensementOptions.js";
 
 export const prerender = false;
 
@@ -24,6 +25,23 @@ export async function POST(context) {
     // Validate required fields
     if (!first_name || !last_name || !status || !phone || !email) {
       return new Response(JSON.stringify({ error: "Les champs prénom, nom, statut, téléphone et email sont obligatoires." }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    // Statut et domaine limités aux listes du formulaire : sans ce contrôle,
+    // un ancien libellé ou une valeur forgée finit en base et n'apparaît
+    // dans aucun filtre de l'admin (cas "Employé" corrigé le 2026-10-25).
+    if (!RECENSEMENT_STATUTS.some((s) => s.value === String(status).trim())) {
+      return new Response(JSON.stringify({ error: "Statut invalide. Veuillez choisir un statut dans la liste." }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    const domaineValue = String(domaine ?? '').trim();
+    if (domaineValue && !RECENSEMENT_DOMAINES.some((d) => d.value === domaineValue)) {
+      return new Response(JSON.stringify({ error: "Domaine invalide. Veuillez choisir un domaine dans la liste." }), {
         status: 400,
         headers: { "Content-Type": "application/json" }
       });
@@ -72,7 +90,7 @@ export async function POST(context) {
       email.trim().toLowerCase(),
       (origine || '').trim(),
       (annee_arrivee || '').trim(),
-      (domaine || '').trim(),
+      domaineValue,
       benevole ? 1 : 0,
       rgpd_consent ? 1 : 0
     ).run();
