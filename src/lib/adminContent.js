@@ -1463,10 +1463,66 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
 
   // ----------------------------------------------------------- Recensement
 
+  // Statuts du formulaire public (src/pages/adherer.astro, <select id="status">),
+  // dans le même ordre et avec les mêmes icônes — à garder synchronisés.
+  const RECENSEMENT_STATUSES = [
+    { value: 'Étudiant', label: 'Étudiants', icon: '🎓' },
+    { value: 'Salarié', label: 'Salariés', icon: '💼' },
+    { value: "Chercheur d'emploi", label: "Chercheurs d'emploi", icon: '🔍' },
+    { value: 'Entrepreneur / Indépendant', label: 'Entrepreneurs / Indépendants', icon: '💡' },
+    { value: 'Commerçant / Artisan', label: 'Commerçants / Artisans', icon: '🏪' },
+    { value: 'En exil', label: 'En exil', icon: '🌍' },
+    { value: 'Retraité', label: 'Retraités', icon: '🧓' },
+    { value: 'Sans activité professionnelle', label: 'Sans activité', icon: '🧭' },
+    { value: 'Au foyer', label: 'Au foyer', icon: '🏠' },
+    { value: 'Autre', label: 'Autre', icon: '➕' },
+  ];
+  // Anciennes valeurs encore présentes en base, rattachées au statut actuel
+  // équivalent ("Employé" a été remplacé par "Salarié" dans le formulaire).
+  const RECENSEMENT_STATUS_ALIASES = { 'Employé': 'Salarié' };
+
+  function recensementStatus(r) {
+    return RECENSEMENT_STATUS_ALIASES[r.status] || r.status;
+  }
+
+  // Onglets générés à partir des données : un onglet par statut présent
+  // (avec son effectif), ordre du formulaire, statuts inconnus en dernier.
+  function renderRecensementTabs() {
+    const container = document.getElementById('recensement-tabs');
+    if (!container) return;
+
+    const counts = {};
+    for (const r of data.recensement) {
+      const s = recensementStatus(r);
+      counts[s] = (counts[s] || 0) + 1;
+    }
+    const known = RECENSEMENT_STATUSES.filter(s => counts[s.value]);
+    const unknown = Object.keys(counts)
+      .filter(v => !RECENSEMENT_STATUSES.some(s => s.value === v))
+      .map(v => ({ value: v, label: v, icon: '' }));
+
+    // Le statut filtré a disparu (dernière fiche supprimée) : retour à "Tous".
+    if (!['Tous', 'benevole'].includes(state.recensementFilter) && !counts[state.recensementFilter]) {
+      state.recensementFilter = 'Tous';
+    }
+
+    const tabs = [
+      { value: 'Tous', label: 'Tous', icon: '', count: data.recensement.length },
+      ...[...known, ...unknown].map(s => ({ ...s, count: counts[s.value] })),
+      { value: 'benevole', label: 'Bénévoles', icon: '🤝', count: data.recensement.filter(r => r.benevole).length },
+    ];
+
+    container.innerHTML = tabs.map(t => {
+      const active = state.recensementFilter === t.value;
+      return `<button class="rec-tab-btn" data-status="${escapeHtml(t.value)}" style="padding:7px 14px; border-radius:10px; font-size:13px; font-weight:700; border:none; cursor:pointer; background:${active ? '#176B4D' : '#F8F4EC'}; color:${active ? '#FFFFFF' : '#1F2925'};">${t.icon ? t.icon + ' ' : ''}${escapeHtml(t.label)} <span style="opacity:0.6; font-weight:600;">${t.count}</span></button>`;
+    }).join('');
+  }
+
   function renderRecensement() {
     const tbody = document.getElementById('recensement-table-body');
     if (!tbody) return;
 
+    renderRecensementTabs();
     tbody.innerHTML = '';
 
     // Update counters in header
@@ -1479,7 +1535,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
       // Filter by tab status
       if (state.recensementFilter === 'benevole') {
         if (!r.benevole) return false;
-      } else if (state.recensementFilter !== 'Tous' && r.status !== state.recensementFilter) {
+      } else if (state.recensementFilter !== 'Tous' && recensementStatus(r) !== state.recensementFilter) {
         return false;
       }
 
@@ -1518,7 +1574,7 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
 
       tr.innerHTML = `
         <td style="padding:13px 18px; font-weight:700; color:#1F2925; white-space:nowrap;">${escapeHtml(r.first_name)} ${escapeHtml(r.last_name)}</td>
-        <td style="padding:13px 18px;">${getBadgeHtml(r.status, statusTone)}</td>
+        <td style="padding:13px 18px;">${getBadgeHtml(recensementStatus(r), statusTone)}</td>
         <td style="padding:13px 18px; color:#5a655f; font-size:13px; max-width:140px; overflow:hidden; text-overflow:ellipsis;">${r.domaine ? escapeHtml(r.domaine) : '—'}</td>
         <td style="padding:13px 18px;">${benevoleHtml}</td>
         <td style="padding:13px 18px; color:#5a655f; font-size:13px;">${escapeHtml(r.email)}</td>
@@ -1561,17 +1617,12 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
       });
     }
 
-    document.querySelectorAll('.rec-tab-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        document.querySelectorAll('.rec-tab-btn').forEach(b => {
-          b.style.background = '#F8F4EC';
-          b.style.color = '#1F2925';
-        });
-        e.target.style.background = '#176B4D';
-        e.target.style.color = '#FFFFFF';
-        state.recensementFilter = e.target.dataset.status;
-        renderRecensement();
-      });
+    // Délégation : les onglets sont régénérés à chaque renderRecensement().
+    document.getElementById('recensement-tabs')?.addEventListener('click', (e) => {
+      const btn = e.target.closest('.rec-tab-btn');
+      if (!btn) return;
+      state.recensementFilter = btn.dataset.status;
+      renderRecensement();
     });
 
     const recExportBtn = document.getElementById('recensement-export-csv-btn');
