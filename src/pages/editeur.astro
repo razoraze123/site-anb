@@ -260,7 +260,7 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
               </div>
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">E-mail</label>
-                <input id="profile-form-email" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="vous@exemple.com" value={user.email} />
+                <input id="profile-form-email" autocomplete="username" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="vous@exemple.com" value={user.email} />
               </div>
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Rôle</label>
@@ -269,7 +269,7 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Nouveau mot de passe</label>
                 <div style="position:relative;">
-                  <input id="profile-form-password" type="password" style="width:100%; padding:12px 44px 12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="Laisser vide pour ne pas changer" />
+                  <input id="profile-form-password" type="password" autocomplete="new-password" style="width:100%; padding:12px 44px 12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="Laisser vide pour ne pas changer" />
                   <button type="button" class="toggle-password-visibility-btn" data-target="profile-form-password" aria-label="Afficher le mot de passe" style="position:absolute; top:50%; right:10px; transform:translateY(-50%); background:none; border:none; cursor:pointer; padding:4px; color:#5a655f; display:flex;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                   </button>
@@ -278,7 +278,7 @@ const roleLabel = ROLE_LABELS[user.role] || user.role;
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Confirmer le nouveau mot de passe</label>
                 <div style="position:relative;">
-                  <input id="profile-form-password-confirm" type="password" style="width:100%; padding:12px 44px 12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="Ressaisir le mot de passe" />
+                  <input id="profile-form-password-confirm" type="password" autocomplete="new-password" style="width:100%; padding:12px 44px 12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="Ressaisir le mot de passe" />
                   <button type="button" class="toggle-password-visibility-btn" data-target="profile-form-password-confirm" aria-label="Afficher le mot de passe" style="position:absolute; top:50%; right:10px; transform:translateY(-50%); background:none; border:none; cursor:pointer; padding:4px; color:#5a655f; display:flex;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                   </button>

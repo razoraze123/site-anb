@@ -219,7 +219,7 @@ if (!user) {
         </div>
         <div class="nav-desktop-only" style="flex:1; max-width:340px; position:relative;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5a655f" stroke-width="1.8" style="position:absolute; left:14px; top:50%; transform:translateY(-50%);"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
-          <input id="global-search-input" placeholder="Recherche globale…" style="width:100%; padding:11px 16px 11px 40px; border-radius:999px; border:1.5px solid #e3dccb; background:#FFFFFF; font-size:13.5px;" />
+          <input id="global-search-input" autocomplete="off" placeholder="Recherche globale…" style="width:100%; padding:11px 16px 11px 40px; border-radius:999px; border:1.5px solid #e3dccb; background:#FFFFFF; font-size:13.5px;" />
         </div>
         <button aria-label="Notifications" style="position:relative; width:40px; height:40px; border-radius:10px; background:#FFFFFF; border:1px solid rgba(31,41,37,0.08); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F2925" stroke-width="1.7"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 01-3.4 0"></path></svg>
@@ -575,7 +575,7 @@ if (!user) {
               </div>
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">E-mail</label>
-                <input id="profile-form-email" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="vous@exemple.com" />
+                <input id="profile-form-email" autocomplete="username" style="width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="vous@exemple.com" />
               </div>
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Rôle</label>
@@ -584,7 +584,7 @@ if (!user) {
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Nouveau mot de passe</label>
                 <div style="position:relative;">
-                  <input id="profile-form-password" type="password" style="width:100%; padding:12px 44px 12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="Laisser vide pour ne pas changer" />
+                  <input id="profile-form-password" type="password" autocomplete="new-password" style="width:100%; padding:12px 44px 12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="Laisser vide pour ne pas changer" />
                   <button type="button" class="toggle-password-visibility-btn" data-target="profile-form-password" aria-label="Afficher le mot de passe" style="position:absolute; top:50%; right:10px; transform:translateY(-50%); background:none; border:none; cursor:pointer; padding:4px; color:#5a655f; display:flex;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                   </button>
@@ -593,7 +593,7 @@ if (!user) {
               <div>
                 <label style="font-size:13px; font-weight:700; color:#1F2925; display:block; margin-bottom:6px;">Confirmer le nouveau mot de passe</label>
                 <div style="position:relative;">
-                  <input id="profile-form-password-confirm" type="password" style="width:100%; padding:12px 44px 12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="Ressaisir le mot de passe" />
+                  <input id="profile-form-password-confirm" type="password" autocomplete="new-password" style="width:100%; padding:12px 44px 12px 14px; border-radius:10px; border:1.5px solid #e3dccb; font-size:14px;" placeholder="Ressaisir le mot de passe" />
                   <button type="button" class="toggle-password-visibility-btn" data-target="profile-form-password-confirm" aria-label="Afficher le mot de passe" style="position:absolute; top:50%; right:10px; transform:translateY(-50%); background:none; border:none; cursor:pointer; padding:4px; color:#5a655f; display:flex;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                   </button>
