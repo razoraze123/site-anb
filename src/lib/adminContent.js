@@ -1544,10 +1544,49 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     });
   }
 
-  // "2026-08-30 14:12:05" (UTC, format SQLite) -> "30/08/2026"
-  function formatRecensementDate(sqlDate) {
-    const [y, m, d] = (sqlDate || '').split(' ')[0].split('-');
-    return y && m && d ? `${d}/${m}/${y}` : '—';
+  // created_at est stocké en UTC (CURRENT_TIMESTAMP SQLite) : affiché à
+  // l'heure de Paris, sinon une adhésion faite entre minuit et 2h tombe la
+  // veille. "2026-10-24 22:33:30" -> "25/10/2026" (+ ", 00:33" avec l'heure).
+  const parisDate = new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', day: '2-digit', month: '2-digit', year: 'numeric' });
+  const parisDateTime = new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  function formatRecensementDate(sqlDate, { withTime = false } = {}) {
+    const date = sqlDate ? new Date(`${sqlDate.replace(' ', 'T')}Z`) : null;
+    if (!date || Number.isNaN(date.getTime())) return '—';
+    return (withTime ? parisDateTime : parisDate).format(date);
+  }
+
+  // Affichage homogène des saisies libres du formulaire public, sans
+  // toucher aux données stockées : NOM en capitales, Prénom capitalisé.
+  function formatNom(s) {
+    return String(s ?? '').trim().toLocaleUpperCase('fr');
+  }
+  function formatPrenom(s) {
+    return String(s ?? '').trim().toLocaleLowerCase('fr')
+      .replace(/(^|[\s'-])(\p{L})/gu, (_, sep, letter) => sep + letter.toLocaleUpperCase('fr'));
+  }
+
+  // Numéros français ramenés au format national "06 12 34 56 78"
+  // (+33 6…, 0033 6…, avec ou sans espaces) ; les autres restent tels quels.
+  function phoneDigits(phone) {
+    const compact = String(phone ?? '').replace(/[^\d+]/g, '');
+    const fr = compact.match(/^(?:\+33|0033)(\d{9})$/);
+    return fr ? `0${fr[1]}` : compact;
+  }
+  function formatPhone(phone) {
+    const digits = phoneDigits(phone);
+    return /^0\d{9}$/.test(digits) ? digits.replace(/(\d{2})(?=\d)/g, '$1 ') : String(phone ?? '').trim();
+  }
+
+  // Recherche insensible à la casse et aux accents ; chaque mot doit être
+  // trouvé (donc "dandah nasser" comme "nasser dandah") ; un numéro peut
+  // être tapé avec ou sans espaces / indicatif.
+  const normalizeSearch = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  function matchesRecensementSearch(r, query) {
+    const haystack = normalizeSearch(`${r.first_name} ${r.last_name} ${r.email} ${r.origine || ''} ${r.domaine || ''}`);
+    const words = normalizeSearch(query).split(/\s+/).filter(Boolean);
+    if (words.every(w => haystack.includes(w))) return true;
+    const queryDigits = String(query).trim().replace(/^(?:\+|00)33\s*/, '0').replace(/\D/g, '');
+    return queryDigits.length >= 3 && phoneDigits(r.phone).includes(queryDigits);
   }
 
   function renderRecensement() {
@@ -1561,8 +1600,13 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
     // Update counters in header
     const countLabel = document.getElementById('rec-count-label');
     const benevoleLabel = document.getElementById('rec-benevole-label');
+    const nbBenevoles = data.recensement.filter(r => r.benevole).length;
     if (countLabel) countLabel.textContent = data.recensement.length;
-    if (benevoleLabel) benevoleLabel.textContent = data.recensement.filter(r => r.benevole).length;
+    if (benevoleLabel) benevoleLabel.textContent = nbBenevoles;
+    const countWord = document.getElementById('rec-count-word');
+    const benevoleWord = document.getElementById('rec-benevole-word');
+    if (countWord) countWord.textContent = data.recensement.length > 1 ? 'membres recensés' : 'membre recensé';
+    if (benevoleWord) benevoleWord.textContent = nbBenevoles > 1 ? 'bénévoles potentiels' : 'bénévole potentiel';
 
     const filtered = sortRecensement(data.recensement.filter(r => {
       // Filter by tab status
@@ -1573,10 +1617,8 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
       }
 
       // Filter by search query
-      if (recensementSearch) {
-        const query = recensementSearch.toLowerCase().trim();
-        const fullName = `${r.first_name} ${r.last_name}`.toLowerCase();
-        return fullName.includes(query) || r.email.toLowerCase().includes(query) || (r.phone && r.phone.includes(query)) || (r.origine && r.origine.toLowerCase().includes(query));
+      if (recensementSearch.trim()) {
+        return matchesRecensementSearch(r, recensementSearch);
       }
 
       return true;
@@ -1605,14 +1647,14 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
         : `<span style="color:#9aa39c; font-size:12px;">—</span>`;
 
       tr.innerHTML = `
-        <td style="padding:13px 18px; font-weight:700; color:#1F2925; white-space:nowrap;">${escapeHtml(r.last_name)}</td>
-        <td style="padding:13px 18px; color:#1F2925; white-space:nowrap;">${escapeHtml(r.first_name)}</td>
-        <td style="padding:13px 18px;">${getBadgeHtml(r.status, statusTone)}</td>
-        <td style="padding:13px 18px; color:#5a655f; font-size:13px; max-width:140px; overflow:hidden; text-overflow:ellipsis;">${r.domaine ? escapeHtml(r.domaine) : '—'}</td>
+        <td style="padding:13px 18px; font-weight:700; color:#1F2925; white-space:nowrap;">${escapeHtml(formatNom(r.last_name))}</td>
+        <td style="padding:13px 18px; color:#1F2925; white-space:nowrap;">${escapeHtml(formatPrenom(r.first_name))}</td>
+        <td style="padding:13px 18px; white-space:nowrap;">${getBadgeHtml(r.status, statusTone)}</td>
+        <td title="${escapeHtml(r.domaine || '')}" style="padding:13px 18px; color:#5a655f; font-size:13px; max-width:190px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r.domaine ? escapeHtml(r.domaine) : '—'}</td>
         <td style="padding:13px 18px;">${benevoleHtml}</td>
         <td style="padding:13px 18px; color:#5a655f; font-size:13px;">${escapeHtml(r.email)}</td>
-        <td style="padding:13px 18px; color:#5a655f; font-size:13px; white-space:nowrap;">${escapeHtml(r.phone)}</td>
-        <td style="padding:13px 18px; color:#5a655f; font-size:13px; white-space:nowrap;">${formatRecensementDate(r.created_at)}</td>
+        <td style="padding:13px 18px; color:#5a655f; font-size:13px; white-space:nowrap;">${escapeHtml(formatPhone(r.phone))}</td>
+        <td title="${formatRecensementDate(r.created_at, { withTime: true })}" style="padding:13px 18px; color:#5a655f; font-size:13px; white-space:nowrap;">${formatRecensementDate(r.created_at)}</td>
         <td style="padding:13px 18px; text-align:right; white-space:nowrap;">
           <a href="/api/admin/recensement/${r.id}/carte.pdf" target="_blank" rel="noopener" style="color:#176B4D; font-size:12.5px; font-weight:700; text-decoration:none; padding:5px 10px; border-radius:6px; transition:background-color 0.15s;">Carte PDF</a>
           <button class="delete-rec-btn" data-id="${r.id}" style="background:transparent; border:none; color:#B14524; font-size:12.5px; font-weight:700; cursor:pointer; padding:5px 10px; border-radius:6px; transition:background-color 0.15s;">Suppr.</button>
@@ -1679,17 +1721,27 @@ export function createAdminContent({ goPage, getBadgeHtml, onViewRegistrants }) 
           alert("Aucune donnée à exporter.");
           return;
         }
-        const headers = ["ID", "Prénom", "Nom", "Statut", "Téléphone", "E-mail", "Domaine", "Bénévole", "Date d'inscription"];
-        const csvRows = [headers.join(";")];
-        data.recensement.forEach(r => {
+        // Chaque cellule entre guillemets : un ";" ou un retour à la ligne
+        // saisi dans le formulaire public ne décale plus les colonnes. Les
+        // valeurs commençant par = + - @ sont préfixées d'une apostrophe pour
+        // qu'Excel ne les exécute pas comme formules (injection CSV).
+        const csvCell = (value) => {
+          let s = String(value ?? '');
+          if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+          return `"${s.replace(/"/g, '""')}"`;
+        };
+        const headers = ["ID", "Nom", "Prénom", "Statut", "Téléphone", "E-mail", "Domaine", "Bénévole", "Date d'adhésion"];
+        const csvRows = [headers.map(csvCell).join(";")];
+        sortRecensement(data.recensement).forEach(r => {
           csvRows.push([
-            r.id, r.first_name, r.last_name, r.status, r.phone, r.email,
+            r.id, formatNom(r.last_name), formatPrenom(r.first_name), r.status,
+            formatPhone(r.phone), r.email,
             r.domaine || '',
             r.benevole ? 'Oui' : 'Non',
-            r.created_at
-          ].join(";"));
+            formatRecensementDate(r.created_at, { withTime: true })
+          ].map(csvCell).join(";"));
         });
-        const blob = new Blob([CSV_BOM + csvRows.join("\n")], { type: 'text/csv;charset=utf-8;' });
+        const blob = new Blob([CSV_BOM + csvRows.join("\r\n")], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.setAttribute("href", url);
