@@ -1,0 +1,51 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Crédits" description="Crédits du site de l'ANB Bordeaux : conception et développement par Aboubacar Hassane Chekou Kore (Luminatera), avec l'assistance de Lamine Garba.">
+  <main>
+    <section style="max-width:800px; margin:0 auto; padding:70px clamp(20px,4vw,48px) 120px;">
+      <div style="font-size:13px; font-weight:700; color:#E97824; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:16px;">Crédits</div>
+      <h1 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(1.9rem,3.2vw,2.5rem); color:#1F2925; margin:0 0 20px;">Merci à celles et ceux qui ont fait ce site</h1>
+      <p style="font-size:17px; line-height:1.75; color:#3f4a45; margin:0 0 44px;">
+        Ce site est l'outil numérique de l'ANB Bordeaux : il fait connaître l'association, rassemble la communauté et simplifie le travail du bureau au quotidien. L'association remercie chaleureusement les personnes qui lui ont donné vie.
+      </p>
+
+      <div style="display:flex; flex-direction:column; gap:24px;">
+
+        <!-- Développeur -->
+        <article style="position:relative; background:#FFFFFF; border-radius:22px; padding:clamp(24px,4vw,36px); box-shadow:0 12px 32px rgba(31,41,37,0.06); overflow:hidden;">
+          <div aria-hidden="true" style="position:absolute; top:0; left:0; right:0; height:5px; background:linear-gradient(90deg,#E97824,#176B4D);"></div>
+          <div style="font-size:12.5px; font-weight:700; color:#176B4D; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:10px;">Conception &amp; développement</div>
+          <h2 style="font-family:'Unbounded',sans-serif; font-size:clamp(1.25rem,2.4vw,1.55rem); font-weight:700; color:#1F2925; margin:0 0 6px;">Aboubacar HASSANE CHEKOU KORE</h2>
+          <div style="font-size:14.5px; font-weight:600; color:#5a655f; margin-bottom:18px;">Ingénieur logiciel &amp; automatisation · Fondateur de Luminatera</div>
+          <p style="font-size:16px; line-height:1.8; color:#3f4a45; margin:0 0 14px;">
+            Aboubacar a imaginé, conçu et développé ce site de bout en bout : les pages publiques, mais aussi les outils de gestion de l'association — recensement des membres, carte d'adhérent, gestion des événements, des actualités et des messages, et l'espace d'administration du bureau.
+          </p>
+          <p style="font-size:16px; line-height:1.8; color:#3f4a45; margin:0 0 24px;">
+            Il dirige <strong>Luminatera</strong>, un studio bordelais qui conçoit des agents IA et des automatisations sur mesure pour les entreprises et les organisations.
+          </p>
+          <a href="https://luminatera.com" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:8px; background:#176B4D; color:#FFFFFF; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px; text-decoration:none; transition:background 0.2s;" onmouseover="this.style.background='#E97824'" onmouseout="this.style.background='#176B4D'">
+            Découvrir Luminatera
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
+          </a>
+        </article>
+
+        <!-- Assistance -->
+        <article style="background:#FFFFFF; border-radius:22px; padding:clamp(24px,4vw,36px); box-shadow:0 12px 32px rgba(31,41,37,0.06);">
+          <div style="font-size:12.5px; font-weight:700; color:#E97824; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:10px;">Assistance au projet</div>
+          <h2 style="font-family:'Unbounded',sans-serif; font-size:clamp(1.15rem,2.2vw,1.35rem); font-weight:700; color:#1F2925; margin:0 0 14px;">Lamine GARBA</h2>
+          <p style="font-size:16px; line-height:1.8; color:#3f4a45; margin:0;">
+            Un grand merci à Lamine pour son aide et son soutien tout au long de la réalisation du site.
+          </p>
+        </article>
+
+      </div>
+
+      <div style="margin-top:44px; padding-top:28px; border-top:1px solid rgba(31,41,37,0.1); font-size:15px; line-height:1.8; color:#5a655f;">
+        Le site est hébergé par Cloudflare (voir les <a href="/mentions-legales" style="color:#176B4D; font-weight:600; text-decoration:underline;">mentions légales</a>).
+        Vous souhaitez contribuer — photos, textes, idées ? <a href="/contact" style="color:#176B4D; font-weight:600; text-decoration:underline;">Écrivez-nous</a>.
+      </div>
+    </section>
+  </main>
+</Layout>
