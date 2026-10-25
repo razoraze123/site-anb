@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import NigerFlag from '../components/NigerFlag.astro';
 import { env } from "cloudflare:workers";
 
 export const prerender = false;
@@ -56,11 +57,7 @@ const eventFilters = ['Toutes', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 
   <main>
     <section style="max-width:1280px; margin:0 auto; padding:70px clamp(20px,4vw,48px) 20px;">
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
-        <span style="display:flex; gap:3px;">
-          <span style="width:5px; height:16px; border-radius:2px; background:#E97824;"></span>
-          <span style="width:5px; height:16px; border-radius:2px; background:#E8D8BF;"></span>
-          <span style="width:5px; height:16px; border-radius:2px; background:#176B4D;"></span>
-        </span>
+        <NigerFlag />
         <span style="font-size:13px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#5a655f;">Événements</span>
       </div>
       <h1 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(2.1rem,4vw,3rem); color:#1F2925; margin:0 0 40px; max-width:760px;">Se retrouver, célébrer et partager toute l'année.</h1>
@@ -336,15 +333,16 @@ const eventFilters = ['Toutes', 'Culture', 'Solidarité', 'Sport', 'Rencontre', 
       top: 0;
       left: 0;
       right: 0;
-      height: 4px;
+      height: 6px;
       display: flex;
+      flex-direction: column;
       border-radius: 24px 24px 0 0;
       overflow: hidden;
     }
     .event-modal-flag span { flex: 1; }
-    .event-modal-flag span:nth-child(1) { background: #E97824; }
-    .event-modal-flag span:nth-child(2) { background: #E8D8BF; }
-    .event-modal-flag span:nth-child(3) { background: #176B4D; }
+    .event-modal-flag span:nth-child(1) { background: #E05206; }
+    .event-modal-flag span:nth-child(2) { background: #FFFFFF; }
+    .event-modal-flag span:nth-child(3) { background: #0DB02B; }
     .event-modal-close {
       position: absolute;
       top: 16px;

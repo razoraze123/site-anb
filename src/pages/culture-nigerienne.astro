@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import NigerFlag from '../components/NigerFlag.astro';
 
 // Visuels dédiés — assets statiques du site (public/culture/), pas des
 // médias administrables : pas de table D1, pas d'API, pas de R2 pour ces
@@ -61,11 +62,7 @@ const peuples = [
   <main>
     <section style="max-width:1280px; margin:0 auto; padding:70px clamp(20px,4vw,48px) 20px;">
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
-        <span style="display:flex; gap:3px;">
-          <span style="width:5px; height:16px; border-radius:2px; background:#E97824;"></span>
-          <span style="width:5px; height:16px; border-radius:2px; background:#E8D8BF;"></span>
-          <span style="width:5px; height:16px; border-radius:2px; background:#176B4D;"></span>
-        </span>
+        <NigerFlag />
         <span style="font-size:13px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#5a655f;">Culture nigérienne</span>
       </div>
       <h1 style="font-family:'Unbounded',sans-serif; font-weight:700; font-size:clamp(2.1rem,4vw,3.2rem); color:#1F2925; margin:0 0 24px; max-width:760px;">Nos racines, notre richesse, notre fierté.</h1>

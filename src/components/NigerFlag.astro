@@ -1,0 +1,13 @@
+---
+// Drapeau du Niger : bandes horizontales orange / blanc / vert, disque orange
+// au centre de la bande blanche (proportions officielles 7:6).
+const { height = 18 } = Astro.props;
+const width = Math.round((height * 7) / 6);
+---
+
+<svg width={width} height={height} viewBox="0 0 7 6" role="img" aria-label="Drapeau du Niger" style="display:block; flex-shrink:0; border-radius:2px; box-shadow:0 0 0 1px rgba(31,41,37,0.15);">
+  <rect width="7" height="2" fill="#E05206" />
+  <rect y="2" width="7" height="2" fill="#FFFFFF" />
+  <rect y="4" width="7" height="2" fill="#0DB02B" />
+  <circle cx="3.5" cy="3" r="0.85" fill="#E05206" />
+</svg>
